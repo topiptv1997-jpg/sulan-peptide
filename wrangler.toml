@@ -13,7 +13,7 @@ id = "3f028eee62c44e3584e798a6db40b0dd"
 
 [[kv_namespaces]]
 binding = "CONFIG_KV"
-id = "8f1229f807b429eaba34c68d23289e8"
+id = "8f1229f8070b429eaba34c68d23289e8"
 
 [vars]
 ADMIN_USER = "admin"
