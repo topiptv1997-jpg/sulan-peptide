@@ -1,0 +1,21 @@
+name = "danye"
+main = "src/index.ts"
+compatibility_date = "2026-08-30"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/admin*", "/api/*", "/go/*"]
+
+[[kv_namespaces]]
+binding = "ADMIN_KV"
+id = "3f028eee62c44e3584e798a6db40b0dd"
+
+[[kv_namespaces]]
+binding = "CONFIG_KV"
+id = "8f1229f807b429eaba34c68d23289e8"
+
+[vars]
+ADMIN_USER = "admin"
+ADMIN_PASSWORD = "CHANGE-ME-BEFORE-PRODUCTION"
+SESSION_SECRET = "CHANGE-ME-TO-A-LONG-RANDOM-SECRET"

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sulan Peptide Admin</title>
+<style>
+:root{--g:#00583f;--g2:#003f2e;--bg:#f3f7f5;--line:#dbe8e2;--text:#102033}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:28px 18px}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.brand{font-weight:900;color:var(--g);letter-spacing:.08em}.muted{color:#718078;font-size:12px}
+h1{margin:3px 0 0;font-size:27px}h2{font-size:18px;margin:0 0 15px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:0 7px 20px #003c2d0b}
+.stat{font-size:28px;font-weight:900;color:var(--g);margin-top:4px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #edf2ef}.row:last-child{border-bottom:0}
+.btn{border:0;border-radius:8px;padding:10px 14px;background:var(--g);color:#fff;font-weight:800;cursor:pointer}.btn.alt{background:#e8f4ef;color:var(--g)}.btn.red{background:#fff0f0;color:#a03d3d}
+input,select{width:100%;padding:10px;border:1px solid #cbdcd5;border-radius:8px;background:#fff}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8f4ef;color:var(--g);font-size:11px;font-weight:900}.pill.off{background:#f1eeee;color:#8a5a5a}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.modal{position:fixed;inset:0;background:#002d2355;display:none;align-items:center;justify-content:center;padding:18px}.modal.open{display:flex}.modalbox{background:#fff;width:min(470px,100%);border-radius:13px;padding:22px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:9px;border-bottom:1px solid #edf2ef;font-size:12px}
+.notice{background:#fff7df;border:1px solid #efd38a;padding:10px 12px;border-radius:9px;margin-bottom:14px}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}@media(max-width:520px){.grid{grid-template-columns:1fr}.wrap{padding:18px 12px}}
+</style></head><body>
+<div class="wrap">
+<header><div><div class="brand">SULAN PEPTIDE</div><div class="muted">ADMINISTRATION</div><h1>Campaign Dashboard</h1></div><button class="btn alt" onclick="logout()">Log out</button></header>
+<div class="notice">This panel controls the live landing page. Changes to WhatsApp, form visibility and pixels are stored server-side in Cloudflare KV.</div>
+<div class="grid" id="stats"></div>
+<div class="two">
+<section class="card"><h2>Lead Form</h2><div class="row"><span>Visibility</span><span id="formPill" class="pill">—</span></div><div class="actions"><button class="btn" onclick="setForm(true)">Turn ON</button><button class="btn alt" onclick="setForm(false)">Turn OFF</button></div><p class="muted">Manual switch. TikTok/Facebook does not automatically change it.</p></section>
+<section class="card"><h2>Pixel Settings</h2><div class="row"><span>Meta</span><span id="metaPill" class="pill">—</span></div><div class="row"><span>TikTok</span><span id="ttPill" class="pill">—</span></div><button class="btn" onclick="editPixels()">Manage pixels</button></section>
+</div>
+<section class="card" style="margin-top:14px"><h2>WhatsApp Numbers</h2><div class="actions"><button class="btn" onclick="addWA()">+ Add number</button><button class="btn alt" onclick="cycleMode()">Change routing mode</button><span class="pill" id="modePill">—</span></div><div id="numbers"></div></section>
+<section class="card" style="margin-top:14px"><h2>Recent WhatsApp Clicks</h2><div id="clicks"></div></section>
+</div>
+<div class="modal" id="wam"><div class="modalbox"><h2 id="watitle">Add WhatsApp</h2><input id="walabel" placeholder="Label, e.g. Sales 01"><br><br><input id="wanumber" placeholder="Country code + number, digits only"><br><br><div class="actions"><button class="btn" onclick="saveWA()">Save</button><button class="btn alt" onclick="closeM('wam')">Cancel</button></div></div></div>
+<div class="modal" id="pxm"><div class="modalbox"><h2>Pixel Settings</h2><label>Meta Pixel ID</label><input id="metaid"><br><br><label>Meta enabled</label><select id="metaon"><option value="1">ON</option><option value="0">OFF</option></select><br><br><label>TikTok Pixel ID</label><input id="ttid"><br><br><label>TikTok enabled</label><select id="tton"><option value="1">ON</option><option value="0">OFF</option></select><br><br><div class="actions"><button class="btn" onclick="savePixels()">Save</button><button class="btn alt" onclick="closeM('pxm')">Cancel</button></div></div></div>
+<script>
+const $=s=>document.querySelector(s);const api=async(u,o={})=>{const r=await fetch(u,{credentials:'same-origin',...o});if(r.status===401){location='/admin/login';return null}return r.json()};
+function openM(x){$('#'+x).classList.add('open')}function closeM(x){$('#'+x).classList.remove('open')}
+async function setForm(v){await api('/api/settings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({form_enabled:v})});load()}
+async function addWA(){window.editId=null;$('#watitle').textContent='Add WhatsApp';$('#walabel').value='';$('#wanumber').value='';openM('wam')}
+async function saveWA(){const body={label:$('#walabel').value,number:$('#wanumber').value};if(window.editId)body.id=window.editId;await api('/api/whatsapp',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});closeM('wam');load()}
+async function editWA(x){window.editId=x.id;$('#watitle').textContent='Edit WhatsApp';$('#walabel').value=x.label;$('#wanumber').value=x.number;openM('wam')}
+async function waAction(id,action){await api('/api/whatsapp/'+id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({action})});load()}
+async function cycleMode(){const s=await api('/api/config');await api('/api/settings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({routing_mode:s.routing_mode==='round_robin'?'single':'round_robin'})});load()}
+async function editPixels(){const p=await api('/api/pixels');$('#metaid').value=p.meta_id||'';$('#metaon').value=p.meta_enabled?'1':'0';$('#ttid').value=p.tiktok_id||'';$('#tton').value=p.tiktok_enabled?'1':'0';openM('pxm')}
+async function savePixels(){await api('/api/pixels',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({meta_id:$('#metaid').value,meta_enabled:$('#metaon').value==='1',tiktok_id:$('#ttid').value,tiktok_enabled:$('#tton').value==='1'})});closeM('pxm');load()}
+async function logout(){await fetch('/api/logout',{method:'POST'});location='/admin/login'}
+async function load(){const [s,w,c,p]=await Promise.all([api('/api/stats'),api('/api/whatsapp'),api('/api/clicks'),api('/api/pixels')]);if(!s)return;
+$('#stats').innerHTML=[['Page Views',s.page_views],['WhatsApp Clicks',s.whatsapp_clicks],['Form Submissions',s.form_submissions],['WhatsApp CTR',s.ctr+'%']].map(x=>`<div class="card"><div class="muted">${x[0]}</div><div class="stat">${x[1]}</div></div>`).join('');
+$('#formPill').textContent=s.form_enabled?'ON · Visible':'OFF · Hidden';$('#formPill').className='pill '+(s.form_enabled?'':'off');
+$('#metaPill').textContent=p.meta_enabled?'ON':'OFF';$('#ttPill').textContent=p.tiktok_enabled?'ON':'OFF';$('#modePill').textContent=s.routing_mode==='round_robin'?'ROUND ROBIN':'SINGLE NUMBER';
+$('#numbers').innerHTML=w.map(x=>`<div class="row"><div><b>${x.label||'WhatsApp'}</b> · +${x.number} ${x.is_default?'· DEFAULT':''}<div class="muted">${x.clicks} clicks</div></div><div class="actions"><button class="btn alt" onclick='editWA(${JSON.stringify(x)})'>Edit</button><button class="btn alt" onclick="waAction(${x.id},'${x.active?'disable':'enable'}')">${x.active?'Disable':'Enable'}</button>${x.is_default?'':'<button class="btn alt" onclick="waAction('+x.id+',\\'default\\')">Set default</button>'}<button class="btn red" onclick="waAction(${x.id},'delete')">Delete</button></div></div>`).join('')||'<p class="muted">No WhatsApp numbers configured.</p>';
+$('#clicks').innerHTML=c.map(x=>`<div class="row"><div><b>${x.source||'direct'}</b> · ${x.campaign||'-'} · ${x.number||'-'}</div><div class="muted">${x.created_at}</div></div>`).join('')||'<p class="muted">No clicks recorded yet.</p>';
+}
+load();setInterval(load,30000);
+</script></body></html>

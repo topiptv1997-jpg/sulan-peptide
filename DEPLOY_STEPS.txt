@@ -1,0 +1,25 @@
+SULAN PEPTIDE V2 — DEPLOYMENT
+
+IMPORTANT:
+This is a Cloudflare Worker project, not a static-upload-only project.
+
+1) Keep the existing Worker name: danye.
+2) The wrangler.toml already points to:
+   ADMIN_KV   -> SULAN_ADMIN
+   CONFIG_KV  -> SULAN_CONFIG
+3) Before production, change ADMIN_PASSWORD and SESSION_SECRET in wrangler.toml,
+   or convert them to Worker secrets.
+4) From this project folder:
+   npx wrangler login
+   npx wrangler deploy
+5) After deploy test:
+   /                 landing page
+   /admin/login      admin login
+   /admin            admin dashboard
+   /go/whatsapp      WhatsApp routing endpoint
+
+Initial login:
+username = admin
+password = CHANGE-ME-BEFORE-PRODUCTION
+
+Immediately change the password before using the site for real traffic.
