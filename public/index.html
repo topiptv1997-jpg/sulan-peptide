@@ -436,5 +436,6 @@ if(mobileNav){
   fetch("/api/pageview",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({path:location.pathname,referrer:document.referrer,source:new URLSearchParams(location.search).get("utm_source")||"direct",campaign:new URLSearchParams(location.search).get("utm_campaign")||"",adset:new URLSearchParams(location.search).get("utm_content")||""})}).catch(()=>{}); loadSulanConfig();
 })();
 </script>
+  <script src="/pixel.js"></script>
 </body>
 </html>
