@@ -2,9 +2,6 @@ export interface Env {
   ADMIN_KV: KVNamespace;
   CONFIG_KV: KVNamespace;
   ASSETS: Fetcher;
-  ADMIN_USER: string;
-  ADMIN_PASSWORD: string;
-  SESSION_SECRET: string;
 }
 
 type PixelKind = "meta" | "tiktok";
@@ -38,7 +35,6 @@ const WHATSAPP_KEY = "whatsapp";
 const STATS_KEY = "stats";
 const EVENT_PREFIX = "event:";
 const LEAD_PREFIX = "lead:";
-const SESSION_PREFIX = "session:";
 
 const json = (data: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(data), {
@@ -75,125 +71,6 @@ const noContent = (status = 204) =>
     status,
     headers: { "cache-control": "no-store" },
   });
-
-const getCookie = (req: Request, name: string) => {
-  const value = req.headers.get("cookie") || "";
-  const m = value.match(new RegExp("(?:^|;\\s*)" + name.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&") + "=([^;]*)"));
-  return m ? decodeURIComponent(m[1]) : null;
-};
-
-const makeCookie = (name: string, value: string, maxAge = 60 * 60 * 12) =>
-  `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
-
-const clearCookie = (name: string) =>
-  `${name}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
-
-async function sha256(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function base64url(bytes: Uint8Array): string {
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/g, "");
-}
-
-function fromBase64url(value: string): Uint8Array {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((value.length + 3) % 4);
-  const binary = atob(normalized);
-  return Uint8Array.from(binary, c => c.charCodeAt(0));
-}
-
-async function hmacSign(value: string, secret: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"],
-  );
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(value),
-  );
-  return base64url(new Uint8Array(signature));
-}
-
-async function hmacVerify(value: string, signature: string, secret: string): Promise<boolean> {
-  try {
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(secret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign", "verify"],
-    );
-    return await crypto.subtle.verify(
-      "HMAC",
-      key,
-      fromBase64url(signature),
-      new TextEncoder().encode(value),
-    );
-  } catch {
-    return false;
-  }
-}
-
-/*
- * Authentication deliberately does NOT use ADMIN_KV for the session itself.
- * This prevents an unavailable/empty session KV from causing /admin redirect
- * loops or turning the admin page into a 500 error.
- */
-async function createSession(env: Env, username: string) {
-  const secret = env.SESSION_SECRET || "";
-  if (!secret || secret.length < 16) {
-    throw new Error("SESSION_SECRET is missing or too short. Set a long random SESSION_SECRET.");
-  }
-
-  const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 12;
-  const payload = `${username}.${exp}`;
-  const signature = await hmacSign(payload, secret);
-  return `${base64url(new TextEncoder().encode(payload))}.${signature}`;
-}
-
-async function isAuthenticated(req: Request, env: Env) {
-  const token = getCookie(req, "sulan_admin");
-  const secret = env.SESSION_SECRET || "";
-  if (!token || !secret) return false;
-
-  const parts = token.split(".");
-  if (parts.length !== 2) return false;
-
-  try {
-    const payload = new TextDecoder().decode(fromBase64url(parts[0]));
-    const dot = payload.lastIndexOf(".");
-    if (dot <= 0) return false;
-
-    const username = payload.slice(0, dot);
-    const exp = Number(payload.slice(dot + 1));
-
-    if (!username || !Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) {
-      return false;
-    }
-
-    if (username !== (env.ADMIN_USER || "admin")) return false;
-
-    return await hmacVerify(payload, parts[1], secret);
-  } catch {
-    return false;
-  }
-}
-
-async function destroySession(_req: Request, _env: Env) {
-  // Stateless signed cookie: clearing the cookie is sufficient.
-}
 
 async function readJson(req: Request): Promise<any> {
   const type = req.headers.get("content-type") || "";
@@ -392,59 +269,11 @@ async function saveLead(env: Env, body: any) {
   return lead;
 }
 
-function unauthorized() {
-  return json({ error: "Unauthorized" }, 401, {
-    "WWW-Authenticate": "Session",
-  });
-}
-
-async function requireAuth(req: Request, env: Env) {
-  return isAuthenticated(req, env);
-}
 
 async function serveAsset(req: Request, env: Env, path: string) {
   const url = new URL(req.url);
   const assetUrl = new URL(path || "/", url);
   return env.ASSETS.fetch(new Request(assetUrl.toString(), req));
-}
-
-function loginPage() {
-  return `<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sulan Peptide — Admin Login</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f3f7f5;color:#102033;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-.card{width:min(430px,calc(100% - 32px));background:#fff;border:1px solid #dce7e2;border-radius:18px;padding:34px;box-shadow:0 20px 60px rgba(0,65,48,.10)}
-.brand{color:#00583f;font-weight:900;letter-spacing:1px;font-size:16px}
-.sub{color:#6d7b86;font-size:12px;letter-spacing:1.2px;margin-top:2px}
-h1{margin:24px 0 18px;font-size:28px}
-label{display:block;font-weight:800;font-size:12px;margin:0 0 7px}
-input{display:block;width:100%;padding:12px;border:1px solid #cfdcd7;border-radius:9px;margin-bottom:14px}
-button{width:100%;border:0;border-radius:9px;padding:12px;background:#00583f;color:#fff;font-weight:900;cursor:pointer}
-button:hover{background:#087a59}
-.err{display:none;background:#fff0ef;color:#b42318;padding:10px;border-radius:8px;margin-bottom:14px}
-</style>
-</head>
-<body>
-<div class="card">
-<div class="brand">SULAN PEPTIDE</div>
-<div class="sub">ADMINISTRATION / 管理后台</div>
-<h1>Admin Login / 管理员登录</h1>
-<div class="err" id="err"></div>
-<form method="post" action="/api/login">
-<label>Username / 用户名</label>
-<input name="username" autocomplete="username" required>
-<label>Password / 密码</label>
-<input name="password" type="password" autocomplete="current-password" required>
-<button type="submit">Sign in / 登录</button>
-</form>
-</div>
-</body>
-</html>`;
 }
 
 function pixelJs() {
@@ -601,36 +430,7 @@ function pixelJs() {
 })();`;
 }
 
-async function handleLogin(req: Request, env: Env) {
-  const body = await readJson(req);
-  const username = String(body.username ?? body.user ?? "").trim();
-  const password = String(body.password ?? "").trim();
-
-  if (!username || !password) {
-    return json({ error: "Username and password are required." }, 400);
-  }
-
-  const expectedUser = env.ADMIN_USER || "admin";
-  const expectedPassword = env.ADMIN_PASSWORD || "";
-
-  if (username !== expectedUser || password !== expectedPassword) {
-    return json({ error: "Invalid username or password." }, 401);
-  }
-
-  const sid = await createSession(env, username);
-
-  return new Response(null, {
-    status: 303,
-    headers: {
-      "Location": "/admin/",
-      "Set-Cookie": makeCookie("sulan_admin", sid),
-      "cache-control": "no-store",
-    },
-  });
-}
-
 async function handleAdminApi(req: Request, env: Env, url: URL) {
-  if (!(await requireAuth(req, env))) return unauthorized();
 
   const path = url.pathname;
 
@@ -876,35 +676,26 @@ async function handlePixelJs() {
 }
 
 async function handleAdminPage(req: Request, env: Env, url: URL) {
-  const loggedIn = await isAuthenticated(req, env);
+  // Authentication is intentionally disabled during development.
+  // The admin dashboard is directly accessible so we can finish and test
+  // all backend features before re-introducing an authentication layer.
 
   if (url.pathname === "/admin/login") {
-    if (loggedIn) {
-      return new Response(null, {
-        status: 303,
-        headers: { Location: "/admin/" },
-      });
-    }
-
-    if (req.method === "GET") {
-      return html(loginPage());
-    }
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/admin/",
+        "cache-control": "no-store",
+      },
+    });
   }
 
   if (url.pathname === "/admin" || url.pathname === "/admin/") {
-    if (!loggedIn) {
-      // Do not redirect. Returning the login HTML directly prevents redirect loops.
-      return html(loginPage(), 401);
-    }
-
     return serveAsset(req, env, "/admin/index.html");
   }
 
   if (url.pathname.startsWith("/admin/")) {
-    if (!loggedIn) return html(loginPage(), 401);
-
-    const assetPath =
-      url.pathname === "/admin/" ? "/admin/index.html" : url.pathname;
+    const assetPath = url.pathname;
     return serveAsset(req, env, assetPath);
   }
 
@@ -921,21 +712,14 @@ export default {
         return handlePixelJs();
       }
 
-      // Login endpoints. Support both paths so old/new login.html files work.
-      if (
-        (url.pathname === "/api/login" || url.pathname === "/api/admin/login") &&
-        req.method === "POST"
-      ) {
-        return handleLogin(req, env);
-      }
-
+      // Authentication is disabled for development.
+      // Keep /api/logout as a harmless compatibility endpoint so an older
+      // dashboard button cannot break the page.
       if (url.pathname === "/api/logout") {
-        await destroySession(req, env);
         return new Response(null, {
-          status: 303,
+          status: 302,
           headers: {
-            Location: "/admin/login",
-            "Set-Cookie": clearCookie("sulan_admin"),
+            Location: "/admin/",
             "cache-control": "no-store",
           },
         });
