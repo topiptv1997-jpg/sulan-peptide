@@ -16,7 +16,7 @@ button,input,select{font:inherit}button{cursor:pointer}
 .brand{padding:6px 12px 26px}.brand b{display:block;color:var(--green);font-size:17px;letter-spacing:.8px}.brand span{font-size:11px;color:var(--muted);letter-spacing:1.6px}
 .nav{display:grid;gap:5px}.nav button{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:9px;color:#4e5c65}.nav button.active,.nav button:hover{background:var(--soft);color:var(--green);font-weight:800}
 .nav small{display:block;color:#9aa6ad;padding:18px 12px 5px;font-size:10px;text-transform:uppercase;letter-spacing:1.2px}
-.main{margin-left:244px;width:calc(100% - 244px);padding:28px 34px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:1.5px}.title{font-size:28px;font-weight:900;margin:2px 0}.sub{color:var(--muted)}.topright{display:flex;gap:10px;align-items:center}.status{padding:8px 11px;background:#e8f6ef;border-radius:999px;color:var(--green);font-weight:800;font-size:12px}
+.main{margin-left:244px;width:calc(100% - 244px);padding:28px 34px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:1.5px}.title{font-size:28px;font-weight:900;margin:2px 0}.sub{color:var(--muted)}.topright{display:flex;gap:10px;align-items:center}.status{padding:8px 11px;background:#e8f6ef;border-radius:999px;color:var(--green);font-weight:800;font-size:12px}.lang{display:flex;background:#eef4f1;border-radius:9px;padding:3px}.langbtn{border:0;background:transparent;color:#62716a;padding:6px 9px;border-radius:7px;font-weight:800;font-size:12px}.langbtn.active{background:#fff;color:var(--green);box-shadow:0 1px 4px #003b2612}
 .btn{border:0;border-radius:9px;padding:10px 14px;font-weight:800}.primary{background:var(--green);color:#fff}.secondary{background:#e8f2ee;color:var(--green)}.danger{background:#fff0ef;color:var(--red)}
 .page{display:none}.page.active{display:block}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px;box-shadow:var(--shadow)}.metric .label{color:var(--muted);font-weight:700}.metric .num{font-size:30px;font-weight:900;margin:8px 0 2px}.metric .hint{color:var(--green);font-size:12px}
@@ -55,7 +55,7 @@ button,input,select{font:inherit}button{cursor:pointer}
 <main class="main">
 <header class="top">
   <div><div class="eyebrow">SULAN PEPTIDE</div><div class="title" id="pageTitle">Dashboard</div><div class="sub" id="pageSub">Campaign and conversion overview</div></div>
-  <div class="topright"><span class="status">● System operational</span><button class="btn secondary" id="refresh">Refresh</button><button class="btn danger" id="logout">Log out</button></div>
+  <div class="topright"><div class="lang"><button id="langZh" class="langbtn active">中文</button><button id="langEn" class="langbtn">EN</button></div><span class="status" id="systemStatus">● System operational</span><button class="btn secondary" id="refresh">Refresh</button><button class="btn danger" id="logout">Log out</button></div>
 </header>
 
 <section class="page active" id="dashboard">
@@ -156,6 +156,39 @@ button,input,select{font:inherit}button{cursor:pointer}
 
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const LANG_PAIRS = {'Dashboard': '控制面板', 'Analytics': '数据分析', 'Leads': '询盘管理', 'WhatsApp': 'WhatsApp', 'Pixels': '像素管理', 'Events': '事件中心', 'Settings': '系统设置', 'Campaign and conversion overview': '广告与转化概览', 'Attribution and campaign performance': '归因与广告表现', 'Inquiry management and pipeline': '询盘管理与销售流程', 'Numbers and routing': '号码与流量路由', 'Tracking configuration and event delivery': '追踪配置与事件发送', 'Event Center and diagnostics': '事件中心与诊断', 'Landing page and system configuration': '单页与系统配置', 'Operations': '运营', 'System': '系统', 'System status': '系统状态', '● Worker connected': '● Worker 已连接', '● System operational': '● 系统正常运行', 'Refresh': '刷新', 'Log out': '退出登录', 'Page Views': '页面访问', 'Tracked landing-page visits': '单页访问量', 'WhatsApp Clicks': 'WhatsApp 点击', 'Outbound contact actions': '外部联系操作', 'Form submissions': '表单提交', 'WhatsApp CTR': 'WhatsApp 点击率', 'Clicks ÷ page views': '点击 ÷ 页面访问', 'Conversion funnel': '转化漏斗', 'All stored events': '全部已记录事件', 'Live configuration': '当前配置', 'Lead Form': '询盘表单', 'Enabled': '已启用', 'Disabled': '已关闭', 'Single / Default': '单号码 / 默认', 'Round Robin': '轮询', 'Meta Pixel': 'Meta 像素', 'TikTok Pixel': 'TikTok 像素', 'Not configured': '未配置', 'Recent WhatsApp activity': '最近 WhatsApp 活动', 'View all events': '查看全部事件', 'Time': '时间', 'Number': '号码', 'Campaign': '广告系列', 'Source': '来源', 'Traffic sources': '流量来源', 'Distinct recorded sources': '已记录的不同来源', 'Campaigns': '广告系列', 'Distinct campaigns': '不同广告系列', 'Ad sets': '广告组', 'Distinct ad-set values': '不同广告组', 'Attribution table': '归因明细', 'Current stored WhatsApp events': '当前已存储的 WhatsApp 事件', 'Ad set': '广告组', 'Clicks': '点击', 'Lead management': '询盘管理', 'Total Leads': '询盘总数', 'New': '新询盘', 'Contacted': '已联系', 'Won': '已成交', 'WhatsApp numbers': 'WhatsApp 号码', 'Add number': '+ 添加号码', 'Edit': '编辑', 'Disable': '停用', 'Enable': '启用', 'Set default': '设为默认', 'Delete': '删除', 'No WhatsApp numbers configured.': '尚未配置 WhatsApp 号码。', 'Event delivery': '事件发送', 'Ready': '就绪', 'Landing page traffic': '单页访问', 'Contact intent': '联系意向', 'Form submission': '表单提交', 'Event Center': '事件中心', 'Refresh events': '刷新事件', 'Event': '事件', 'No events yet.': '暂无事件。', 'Landing page': '单页', 'Enable or disable the inquiry form.': '启用或关闭询盘表单。', 'Security': '安全', 'Worker': 'Worker', 'Connected': '已连接', 'Configuration KV': '配置 KV', 'Asset binding': '静态资源绑定', 'Save number': '保存号码', 'Close': '关闭', 'Add WhatsApp number': '添加 WhatsApp 号码', 'Edit WhatsApp number': '编辑 WhatsApp 号码', 'Label': '名称', 'Phone number': '电话号码', 'No WhatsApp activity yet.': '暂无 WhatsApp 活动。', 'No attributed clicks yet.': '暂无归因点击。', 'Primary Meta Pixel': '主 Meta 像素', 'Primary TikTok Pixel': '主 TikTok 像素', 'Add pixel': '+ 添加像素', 'The current Worker already records source, campaign and ad-set attribution on events. This screen is structured for the next analytics layer; detailed campaign grouping will become available when the event API is expanded.': '当前 Worker 已记录来源、广告系列和广告组归因。本页面已为下一阶段分析功能预留，待事件 API 扩展后可提供更完整的广告系列分组。', 'Lead records are already stored as form_submit events. The current API does not yet expose a dedicated lead-management endpoint, so this first UI reserves the complete Lead module without pretending data is available that the API cannot currently return.': '询盘已经以 form_submit 事件保存。当前 API 尚未提供独立的询盘管理接口，因此本版本先完整预留 Lead 模块，不虚构当前 API 无法提供的数据。', 'The UI is prepared for multiple pixels. The current Worker configuration still exposes one Meta Pixel and one TikTok Pixel, so this screen keeps the existing bindings intact until the multi-pixel API is added.': '界面已经为多像素做好准备。当前 Worker 仍只提供一个 Meta Pixel 和一个 TikTok Pixel，在多像素 API 完成前保持现有绑定。', 'Dedicated lead list, status workflow, attribution detail and export will be enabled with the next Worker API layer.': '下一阶段 Worker API 将启用完整询盘列表、状态流程、归因明细和导出功能。', 'Admin credentials remain Cloudflare environment variables. Password/session secrets are not stored in this UI.': '管理员账号仍由 Cloudflare 环境变量管理，密码和会话密钥不会存储在此界面。', 'Choose how active numbers receive traffic.': '选择启用号码如何接收流量。'};
+let currentLang = localStorage.getItem("sulan_admin_lang") || "zh";
+const ZH_TO_EN = Object.fromEntries(Object.entries(LANG_PAIRS).map(([en,zh])=>[zh,en]));
+
+function translateStatic(lang){
+  currentLang=lang;
+  const dict=lang==="zh"?LANG_PAIRS:ZH_TO_EN;
+  document.documentElement.lang=lang==="zh"?"zh-CN":"en";
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(n=>{
+    const t=n.nodeValue.trim();
+    if(dict[t]) n.nodeValue=n.nodeValue.replace(t,dict[t]);
+  });
+  document.querySelectorAll("option").forEach(o=>{
+    const t=o.textContent.trim();
+    if(dict[t]) o.textContent=dict[t];
+  });
+  document.querySelectorAll("input[placeholder]").forEach(el=>{
+    const t=el.placeholder.trim();
+    if(dict[t]) el.placeholder=dict[t];
+  });
+  const zh=document.getElementById("langZh"), en=document.getElementById("langEn");
+  if(zh) zh.classList.toggle("active",lang==="zh");
+  if(en) en.classList.toggle("active",lang==="en");
+  localStorage.setItem("sulan_admin_lang",lang);
+}
+
+function refreshLanguage(){
+  if(currentLang==="zh") setTimeout(()=>translateStatic("zh"),0);
+}
+
 const api=async (url,opt={})=>{const r=await fetch(url,{...opt,cache:"no-store"});if(!r.ok)throw new Error((await r.text())||r.status);return r.status===204?null:r.json()};
 const state={stats:null,config:null,clicks:[]};
 
@@ -167,7 +200,7 @@ function page(p){
     leads:["Leads","Inquiry management and pipeline"],whatsapp:["WhatsApp","Numbers and routing"],
     pixels:["Pixels","Tracking configuration and event delivery"],events:["Events","Event Center and diagnostics"],
     settings:["Settings","Landing page and system configuration"]
-  }[p];$("#pageTitle").textContent=meta[0];$("#pageSub").textContent=meta[1];
+  }[p];$("#pageTitle").textContent=meta[0];$("#pageSub").textContent=meta[1];refreshLanguage();
 }
 $$(".nav button[data-page]").forEach(b=>b.onclick=()=>page(b.dataset.page));
 $$("[data-page-link]").forEach(b=>b.onclick=()=>page(b.dataset.pageLink));
@@ -223,7 +256,10 @@ $("#routingSelect").onchange=()=>saveSettings(state.config?.form_enabled,$("#rou
 $("#routingSettings").onchange=()=>saveSettings(state.config?.form_enabled,$("#routingSettings").value);
 $("#formToggle").onclick=()=>saveSettings(!state.config?.form_enabled,state.config?.routing_mode||"single");
 $("#refresh").onclick=load;$("#loadEvents").onclick=load;$("#logout").onclick=()=>location.href="/api/logout";
-load();
+$("#langZh").onclick=()=>translateStatic("zh");
+$("#langEn").onclick=()=>translateStatic("en");
+const initialLang=localStorage.getItem("sulan_admin_lang")||"zh";
+load().then(()=>setTimeout(()=>translateStatic(initialLang),50));
 </script>
 </body>
 </html>
