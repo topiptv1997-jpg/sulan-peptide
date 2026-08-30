@@ -1,52 +1,229 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sulan Peptide Admin</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sulan Peptide — Campaign Center</title>
 <style>
-:root{--g:#00583f;--g2:#003f2e;--bg:#f3f7f5;--line:#dbe8e2;--text:#102033}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-.wrap{max-width:1180px;margin:auto;padding:28px 18px}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.brand{font-weight:900;color:var(--g);letter-spacing:.08em}.muted{color:#718078;font-size:12px}
-h1{margin:3px 0 0;font-size:27px}h2{font-size:18px;margin:0 0 15px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:0 7px 20px #003c2d0b}
-.stat{font-size:28px;font-weight:900;color:var(--g);margin-top:4px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #edf2ef}.row:last-child{border-bottom:0}
-.btn{border:0;border-radius:8px;padding:10px 14px;background:var(--g);color:#fff;font-weight:800;cursor:pointer}.btn.alt{background:#e8f4ef;color:var(--g)}.btn.red{background:#fff0f0;color:#a03d3d}
-input,select{width:100%;padding:10px;border:1px solid #cbdcd5;border-radius:8px;background:#fff}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8f4ef;color:var(--g);font-size:11px;font-weight:900}.pill.off{background:#f1eeee;color:#8a5a5a}
-.actions{display:flex;gap:7px;flex-wrap:wrap}.modal{position:fixed;inset:0;background:#002d2355;display:none;align-items:center;justify-content:center;padding:18px}.modal.open{display:flex}.modalbox{background:#fff;width:min(470px,100%);border-radius:13px;padding:22px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:9px;border-bottom:1px solid #edf2ef;font-size:12px}
-.notice{background:#fff7df;border:1px solid #efd38a;padding:10px 12px;border-radius:9px;margin-bottom:14px}
-@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}@media(max-width:520px){.grid{grid-template-columns:1fr}.wrap{padding:18px 12px}}
-</style></head><body>
-<div class="wrap">
-<header><div><div class="brand">SULAN PEPTIDE</div><div class="muted">ADMINISTRATION</div><h1>Campaign Dashboard</h1></div><button class="btn alt" onclick="logout()">Log out</button></header>
-<div class="notice">This panel controls the live landing page. Changes to WhatsApp, form visibility and pixels are stored server-side in Cloudflare KV.</div>
-<div class="grid" id="stats"></div>
-<div class="two">
-<section class="card"><h2>Lead Form</h2><div class="row"><span>Visibility</span><span id="formPill" class="pill">—</span></div><div class="actions"><button class="btn" onclick="setForm(true)">Turn ON</button><button class="btn alt" onclick="setForm(false)">Turn OFF</button></div><p class="muted">Manual switch. TikTok/Facebook does not automatically change it.</p></section>
-<section class="card"><h2>Pixel Settings</h2><div class="row"><span>Meta</span><span id="metaPill" class="pill">—</span></div><div class="row"><span>TikTok</span><span id="ttPill" class="pill">—</span></div><button class="btn" onclick="editPixels()">Manage pixels</button></section>
-</div>
-<section class="card" style="margin-top:14px"><h2>WhatsApp Numbers</h2><div class="actions"><button class="btn" onclick="addWA()">+ Add number</button><button class="btn alt" onclick="cycleMode()">Change routing mode</button><span class="pill" id="modePill">—</span></div><div id="numbers"></div></section>
-<section class="card" style="margin-top:14px"><h2>Recent WhatsApp Clicks</h2><div id="clicks"></div></section>
-</div>
-<div class="modal" id="wam"><div class="modalbox"><h2 id="watitle">Add WhatsApp</h2><input id="walabel" placeholder="Label, e.g. Sales 01"><br><br><input id="wanumber" placeholder="Country code + number, digits only"><br><br><div class="actions"><button class="btn" onclick="saveWA()">Save</button><button class="btn alt" onclick="closeM('wam')">Cancel</button></div></div></div>
-<div class="modal" id="pxm"><div class="modalbox"><h2>Pixel Settings</h2><label>Meta Pixel ID</label><input id="metaid"><br><br><label>Meta enabled</label><select id="metaon"><option value="1">ON</option><option value="0">OFF</option></select><br><br><label>TikTok Pixel ID</label><input id="ttid"><br><br><label>TikTok enabled</label><select id="tton"><option value="1">ON</option><option value="0">OFF</option></select><br><br><div class="actions"><button class="btn" onclick="savePixels()">Save</button><button class="btn alt" onclick="closeM('pxm')">Cancel</button></div></div></div>
-<script>
-const $=s=>document.querySelector(s);const api=async(u,o={})=>{const r=await fetch(u,{credentials:'same-origin',...o});if(r.status===401){location='/admin/login';return null}return r.json()};
-function openM(x){$('#'+x).classList.add('open')}function closeM(x){$('#'+x).classList.remove('open')}
-async function setForm(v){await api('/api/settings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({form_enabled:v})});load()}
-async function addWA(){window.editId=null;$('#watitle').textContent='Add WhatsApp';$('#walabel').value='';$('#wanumber').value='';openM('wam')}
-async function saveWA(){const body={label:$('#walabel').value,number:$('#wanumber').value};if(window.editId)body.id=window.editId;await api('/api/whatsapp',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});closeM('wam');load()}
-async function editWA(x){window.editId=x.id;$('#watitle').textContent='Edit WhatsApp';$('#walabel').value=x.label;$('#wanumber').value=x.number;openM('wam')}
-async function waAction(id,action){await api('/api/whatsapp/'+id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({action})});load()}
-async function cycleMode(){const s=await api('/api/config');await api('/api/settings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({routing_mode:s.routing_mode==='round_robin'?'single':'round_robin'})});load()}
-async function editPixels(){const p=await api('/api/pixels');$('#metaid').value=p.meta_id||'';$('#metaon').value=p.meta_enabled?'1':'0';$('#ttid').value=p.tiktok_id||'';$('#tton').value=p.tiktok_enabled?'1':'0';openM('pxm')}
-async function savePixels(){await api('/api/pixels',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({meta_id:$('#metaid').value,meta_enabled:$('#metaon').value==='1',tiktok_id:$('#ttid').value,tiktok_enabled:$('#tton').value==='1'})});closeM('pxm');load()}
-async function logout(){await fetch('/api/logout',{method:'POST'});location='/admin/login'}
-async function load(){const [s,w,c,p]=await Promise.all([api('/api/stats'),api('/api/whatsapp'),api('/api/clicks'),api('/api/pixels')]);if(!s)return;
-$('#stats').innerHTML=[['Page Views',s.page_views],['WhatsApp Clicks',s.whatsapp_clicks],['Form Submissions',s.form_submissions],['WhatsApp CTR',s.ctr+'%']].map(x=>`<div class="card"><div class="muted">${x[0]}</div><div class="stat">${x[1]}</div></div>`).join('');
-$('#formPill').textContent=s.form_enabled?'ON · Visible':'OFF · Hidden';$('#formPill').className='pill '+(s.form_enabled?'':'off');
-$('#metaPill').textContent=p.meta_enabled?'ON':'OFF';$('#ttPill').textContent=p.tiktok_enabled?'ON':'OFF';$('#modePill').textContent=s.routing_mode==='round_robin'?'ROUND ROBIN':'SINGLE NUMBER';
-$('#numbers').innerHTML=w.map(x=>`<div class="row"><div><b>${x.label||'WhatsApp'}</b> · +${x.number} ${x.is_default?'· DEFAULT':''}<div class="muted">${x.clicks} clicks</div></div><div class="actions"><button class="btn alt" onclick='editWA(${JSON.stringify(x)})'>Edit</button><button class="btn alt" onclick="waAction(${x.id},'${x.active?'disable':'enable'}')">${x.active?'Disable':'Enable'}</button>${x.is_default?'':'<button class="btn alt" onclick="waAction('+x.id+',\\'default\\')">Set default</button>'}<button class="btn red" onclick="waAction(${x.id},'delete')">Delete</button></div></div>`).join('')||'<p class="muted">No WhatsApp numbers configured.</p>';
-$('#clicks').innerHTML=c.map(x=>`<div class="row"><div><b>${x.source||'direct'}</b> · ${x.campaign||'-'} · ${x.number||'-'}</div><div class="muted">${x.created_at}</div></div>`).join('')||'<p class="muted">No clicks recorded yet.</p>';
+:root{
+  --green:#00583f;--green2:#087a59;--ink:#102033;--muted:#6d7b86;
+  --bg:#f3f7f5;--card:#fff;--line:#dce7e2;--soft:#e7f3ee;
+  --amber:#fff4cf;--red:#b42318;--shadow:0 10px 35px rgba(0,65,48,.08)
 }
-load();setInterval(load,30000);
-</script></body></html>
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+.app{display:flex;min-height:100vh}.side{width:244px;background:#fff;border-right:1px solid var(--line);padding:24px 16px;position:fixed;inset:0 auto 0 0;z-index:3}
+.brand{padding:6px 12px 26px}.brand b{display:block;color:var(--green);font-size:17px;letter-spacing:.8px}.brand span{font-size:11px;color:var(--muted);letter-spacing:1.6px}
+.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:9px;color:#4e5c65}.nav button.active,.nav button:hover{background:var(--soft);color:var(--green);font-weight:800}
+.nav small{display:block;color:#9aa6ad;padding:18px 12px 5px;font-size:10px;text-transform:uppercase;letter-spacing:1.2px}
+.main{margin-left:244px;width:calc(100% - 244px);padding:28px 34px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:1.5px}.title{font-size:28px;font-weight:900;margin:2px 0}.sub{color:var(--muted)}.topright{display:flex;gap:10px;align-items:center}.status{padding:8px 11px;background:#e8f6ef;border-radius:999px;color:var(--green);font-weight:800;font-size:12px}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:800}.primary{background:var(--green);color:#fff}.secondary{background:#e8f2ee;color:var(--green)}.danger{background:#fff0ef;color:var(--red)}
+.page{display:none}.page.active{display:block}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px;box-shadow:var(--shadow)}.metric .label{color:var(--muted);font-weight:700}.metric .num{font-size:30px;font-weight:900;margin:8px 0 2px}.metric .hint{color:var(--green);font-size:12px}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px}.sectionhead h2{font-size:17px;margin:0}.sectionhead span{color:var(--muted);font-size:12px}
+.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line)}.table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.7px}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--green);font-size:11px;font-weight:800}.muted{color:var(--muted)}
+.bar{height:8px;background:#edf2f0;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+.formrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px;margin-bottom:13px}.field label{font-weight:800;font-size:12px}.field input,.field select{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;background:#fff}
+.switch{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.switch:last-child{border-bottom:0}.toggle{width:45px;height:25px;border:0;border-radius:20px;background:#cbd8d3;padding:3px}.toggle i{display:block;width:19px;height:19px;background:#fff;border-radius:50%;transition:.2s}.toggle.on{background:var(--green)}.toggle.on i{transform:translateX(20px)}
+.pixel{display:flex;align-items:center;justify-content:space-between;padding:15px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}.pixel .id{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.notice{background:var(--amber);border:1px solid #ead79b;padding:12px 14px;border-radius:10px;margin-bottom:16px}.empty{padding:30px;text-align:center;color:var(--muted)}
+.modal{position:fixed;inset:0;background:#001b1433;display:none;place-items:center;z-index:9}.modal.open{display:grid}.modalbox{background:#fff;border-radius:16px;width:min(520px,calc(100% - 30px));padding:22px;box-shadow:0 25px 80px #001b1433}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+@media(max-width:1000px){.side{width:205px}.main{margin-left:205px;width:calc(100% - 205px);padding:22px}.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+@media(max-width:700px){.side{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.app{display:block}.main{margin:0;width:100%}.nav{grid-template-columns:repeat(2,1fr)}.grid4{grid-template-columns:1fr}.top{align-items:flex-start;gap:15px;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><b>SULAN PEPTIDE</b><span>CAMPAIGN CENTER</span></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">◈ &nbsp;Dashboard</button>
+    <button data-page="analytics">◫ &nbsp;Analytics</button>
+    <button data-page="leads">▣ &nbsp;Leads</button>
+    <small>Operations</small>
+    <button data-page="whatsapp">◉ &nbsp;WhatsApp</button>
+    <button data-page="pixels">◌ &nbsp;Pixels</button>
+    <button data-page="events">≡ &nbsp;Events</button>
+    <small>System</small>
+    <button data-page="settings">⚙ &nbsp;Settings</button>
+  </nav>
+  <div style="position:absolute;left:16px;right:16px;bottom:20px">
+    <div class="card" style="padding:13px"><div style="font-weight:800">System status</div><div class="muted" style="font-size:12px;margin-top:3px">● Worker connected</div></div>
+  </div>
+</aside>
+
+<main class="main">
+<header class="top">
+  <div><div class="eyebrow">SULAN PEPTIDE</div><div class="title" id="pageTitle">Dashboard</div><div class="sub" id="pageSub">Campaign and conversion overview</div></div>
+  <div class="topright"><span class="status">● System operational</span><button class="btn secondary" id="refresh">Refresh</button><button class="btn danger" id="logout">Log out</button></div>
+</header>
+
+<section class="page active" id="dashboard">
+  <div class="grid4">
+    <div class="card metric"><div class="label">Page Views</div><div class="num" id="mViews">—</div><div class="hint">Tracked landing-page visits</div></div>
+    <div class="card metric"><div class="label">WhatsApp Clicks</div><div class="num" id="mClicks">—</div><div class="hint">Outbound contact actions</div></div>
+    <div class="card metric"><div class="label">Leads</div><div class="num" id="mLeads">—</div><div class="hint">Form submissions</div></div>
+    <div class="card metric"><div class="label">WhatsApp CTR</div><div class="num" id="mCtr">—</div><div class="hint">Clicks ÷ page views</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card" style="margin-top:18px"><div class="sectionhead"><h2>Conversion funnel</h2><span>All stored events</span></div>
+      <div style="display:grid;gap:18px">
+        <div><div style="display:flex;justify-content:space-between"><b>Page Views</b><span id="fViews">—</span></div><div class="bar"><i id="bViews" style="width:100%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between"><b>WhatsApp Clicks</b><span id="fClicks">—</span></div><div class="bar"><i id="bClicks" style="width:0%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between"><b>Leads</b><span id="fLeads">—</span></div><div class="bar"><i id="bLeads" style="width:0%"></i></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px"><div class="sectionhead"><h2>Live configuration</h2></div>
+      <div class="switch"><div><b>Lead Form</b><div class="muted" id="formState">—</div></div><span class="badge" id="routingState">—</span></div>
+      <div class="switch"><div><b>Meta Pixel</b><div class="muted" id="metaState">—</div></div><span class="badge" id="metaBadge">—</span></div>
+      <div class="switch"><div><b>TikTok Pixel</b><div class="muted" id="ttState">—</div></div><span class="badge" id="ttBadge">—</span></div>
+    </div>
+  </div>
+  <div class="sectionhead"><h2>Recent WhatsApp activity</h2><button class="btn secondary" data-page-link="events">View all events</button></div>
+  <div class="card"><table class="table"><thead><tr><th>Time</th><th>Number</th><th>Campaign</th><th>Source</th></tr></thead><tbody id="recentClicks"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div>
+</section>
+
+<section class="page" id="analytics">
+  <div class="notice">The current Worker already records source, campaign and ad-set attribution on events. This screen is structured for the next analytics layer; detailed campaign grouping will become available when the event API is expanded.</div>
+  <div class="grid3">
+    <div class="card"><div class="label muted">Traffic sources</div><div class="num" id="aSources">—</div><div class="muted">Distinct recorded sources</div></div>
+    <div class="card"><div class="label muted">Campaigns</div><div class="num" id="aCampaigns">—</div><div class="muted">Distinct campaigns</div></div>
+    <div class="card"><div class="label muted">Ad sets</div><div class="num" id="aAdsets">—</div><div class="muted">Distinct ad-set values</div></div>
+  </div>
+  <div class="sectionhead"><h2>Attribution table</h2><span>Current stored WhatsApp events</span></div>
+  <div class="card"><table class="table"><thead><tr><th>Source</th><th>Campaign</th><th>Ad set</th><th>Clicks</th></tr></thead><tbody id="analyticsRows"></tbody></table></div>
+</section>
+
+<section class="page" id="leads">
+  <div class="notice">Lead records are already stored as <b>form_submit</b> events. The current API does not yet expose a dedicated lead-management endpoint, so this first UI reserves the complete Lead module without pretending data is available that the API cannot currently return.</div>
+  <div class="grid4">
+    <div class="card metric"><div class="label">Total Leads</div><div class="num" id="leadTotal">—</div></div>
+    <div class="card metric"><div class="label">New</div><div class="num">—</div></div>
+    <div class="card metric"><div class="label">Contacted</div><div class="num">—</div></div>
+    <div class="card metric"><div class="label">Won</div><div class="num">—</div></div>
+  </div>
+  <div class="sectionhead"><h2>Lead management</h2></div>
+  <div class="card empty">Dedicated lead list, status workflow, attribution detail and export will be enabled with the next Worker API layer.</div>
+</section>
+
+<section class="page" id="whatsapp">
+  <div class="sectionhead"><h2>WhatsApp numbers</h2><button class="btn primary" id="addWa">+ Add number</button></div>
+  <div class="card">
+    <div class="formrow" style="margin-bottom:12px"><div><b>Routing mode</b><div class="muted">Choose how active numbers receive traffic.</div></div><select id="routingSelect"><option value="single">Single / Default</option><option value="round_robin">Round Robin</option></select></div>
+    <div id="waList"></div>
+  </div>
+</section>
+
+<section class="page" id="pixels">
+  <div class="notice">The UI is prepared for multiple pixels. The current Worker configuration still exposes one Meta Pixel and one TikTok Pixel, so this screen keeps the existing bindings intact until the multi-pixel API is added.</div>
+  <div class="grid2">
+    <div class="card"><div class="sectionhead"><h2>Meta Pixels</h2><button class="btn secondary" disabled>+ Add pixel</button></div><div id="metaPixelBox"></div></div>
+    <div class="card"><div class="sectionhead"><h2>TikTok Pixels</h2><button class="btn secondary" disabled>+ Add pixel</button></div><div id="ttPixelBox"></div></div>
+  </div>
+  <div class="sectionhead"><h2>Event delivery</h2></div>
+  <div class="card"><div class="grid3">
+    <div class="pixel"><div><b>PageView</b><div class="muted">Landing page traffic</div></div><span class="badge">Ready</span></div>
+    <div class="pixel"><div><b>WhatsApp Click</b><div class="muted">Contact intent</div></div><span class="badge">Ready</span></div>
+    <div class="pixel"><div><b>Lead</b><div class="muted">Form submission</div></div><span class="badge">Ready</span></div>
+  </div></div>
+</section>
+
+<section class="page" id="events">
+  <div class="sectionhead"><h2>Event Center</h2><button class="btn secondary" id="loadEvents">Refresh events</button></div>
+  <div class="card"><table class="table"><thead><tr><th>Time</th><th>Event</th><th>Source</th><th>Campaign</th><th>Ad set</th><th>Number</th></tr></thead><tbody id="eventRows"></tbody></table></div>
+</section>
+
+<section class="page" id="settings">
+  <div class="grid2">
+    <div class="card"><div class="sectionhead"><h2>Landing page</h2></div>
+      <div class="switch"><div><b>Lead form</b><div class="muted">Enable or disable the inquiry form.</div></div><button class="toggle" id="formToggle"><i></i></button></div>
+      <div class="switch"><div><b>Routing mode</b><div class="muted">Single/default or round robin.</div></div><select id="routingSettings"><option value="single">Single</option><option value="round_robin">Round Robin</option></select></div>
+    </div>
+    <div class="card"><div class="sectionhead"><h2>Security</h2></div><div class="empty">Admin credentials remain Cloudflare environment variables. Password/session secrets are not stored in this UI.</div></div>
+  </div>
+  <div class="sectionhead"><h2>System</h2></div>
+  <div class="card"><div class="grid3">
+    <div><div class="muted">Worker</div><b>Connected</b></div>
+    <div><div class="muted">Configuration KV</div><b>Connected</b></div>
+    <div><div class="muted">Asset binding</div><b>Connected</b></div>
+  </div></div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="waModal"><div class="modalbox"><div class="modalhead"><h2 id="waModalTitle">Add WhatsApp number</h2><button class="btn secondary" id="closeWa">Close</button></div>
+<form id="waForm"><input type="hidden" id="waId"><div class="field"><label>Label</label><input id="waLabel" placeholder="Puerto Rico Main" required></div><div class="field"><label>Phone number</label><input id="waNumber" placeholder="1787..." required></div><button class="btn primary">Save number</button></form></div></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const api=async (url,opt={})=>{const r=await fetch(url,{...opt,cache:"no-store"});if(!r.ok)throw new Error((await r.text())||r.status);return r.status===204?null:r.json()};
+const state={stats:null,config:null,clicks:[]};
+
+function page(p){
+  $$(".page").forEach(x=>x.classList.toggle("active",x.id===p));
+  $$(".nav button[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===p));
+  const meta={
+    dashboard:["Dashboard","Campaign and conversion overview"],analytics:["Analytics","Attribution and campaign performance"],
+    leads:["Leads","Inquiry management and pipeline"],whatsapp:["WhatsApp","Numbers and routing"],
+    pixels:["Pixels","Tracking configuration and event delivery"],events:["Events","Event Center and diagnostics"],
+    settings:["Settings","Landing page and system configuration"]
+  }[p];$("#pageTitle").textContent=meta[0];$("#pageSub").textContent=meta[1];
+}
+$$(".nav button[data-page]").forEach(b=>b.onclick=()=>page(b.dataset.page));
+$$("[data-page-link]").forEach(b=>b.onclick=()=>page(b.dataset.pageLink));
+
+function fmt(n){return Number(n||0).toLocaleString()}
+function time(s){return s?new Date(s).toLocaleString():"—"}
+
+async function load(){
+  try{
+    state.stats=await api("/api/stats");
+    state.config=await api("/api/config");
+    state.clicks=await api("/api/clicks");
+    render();
+  }catch(e){console.error(e);document.querySelector(".status").textContent="● API error"}
+}
+function render(){
+  const s=state.stats||{},c=state.config||{};
+  $("#mViews").textContent=fmt(s.page_views);$("#mClicks").textContent=fmt(s.whatsapp_clicks);$("#mLeads").textContent=fmt(s.form_submissions);$("#mCtr").textContent=(s.ctr||"0.00")+"%";
+  $("#fViews").textContent=fmt(s.page_views);$("#fClicks").textContent=fmt(s.whatsapp_clicks);$("#fLeads").textContent=fmt(s.form_submissions);
+  const v=Number(s.page_views)||1;$("#bClicks").style.width=Math.min(100,(Number(s.whatsapp_clicks||0)/v)*100)+"%";$("#bLeads").style.width=Math.min(100,(Number(s.form_submissions||0)/v)*100)+"%";
+  $("#formState").textContent=c.form_enabled?"Enabled":"Disabled";$("#routingState").textContent=c.routing_mode==="round_robin"?"Round robin":"Single / Default";
+  $("#metaState").textContent=c.meta_enabled?"Enabled":"Disabled";$("#ttState").textContent=c.tiktok_enabled?"Enabled":"Disabled";$("#metaBadge").textContent=c.meta_id||"Not configured";$("#ttBadge").textContent=c.tiktok_id||"Not configured";
+  $("#leadTotal").textContent=fmt(s.form_submissions);
+  $("#recentClicks").innerHTML=state.clicks.slice(0,8).map(x=>`<tr><td>${time(x.created_at)}</td><td>${x.number||"—"}</td><td>${x.campaign||"—"}</td><td>${x.source||"direct"}</td></tr>`).join("")||'<tr><td colspan="4" class="empty">No WhatsApp activity yet.</td></tr>';
+  $("#metaPixelBox").innerHTML=`<div class="pixel"><div><b>Primary Meta Pixel</b><div class="id">${c.meta_id||"Not configured"}</div></div><span class="badge">${c.meta_enabled?"Active":"Disabled"}</span></div>`;
+  $("#ttPixelBox").innerHTML=`<div class="pixel"><div><b>Primary TikTok Pixel</b><div class="id">${c.tiktok_id||"Not configured"}</div></div><span class="badge">${c.tiktok_enabled?"Active":"Disabled"}</span></div>`;
+  $("#routingSelect").value=c.routing_mode||"single";$("#routingSettings").value=c.routing_mode||"single";
+  $("#formToggle").classList.toggle("on",!!c.form_enabled);
+  renderAnalytics();renderEvents();loadWa();
+}
+function renderAnalytics(){
+ const src=new Set(),cam=new Set(),ads=new Set(),map={};
+ state.clicks.forEach(x=>{src.add(x.source||"direct");cam.add(x.campaign||"");ads.add(x.adset||"");const k=[x.source||"direct",x.campaign||"—",x.adset||"—"].join("|||");map[k]=(map[k]||0)+1});
+ $("#aSources").textContent=src.size;$("#aCampaigns").textContent=[...cam].filter(Boolean).length;$("#aAdsets").textContent=[...ads].filter(Boolean).length;
+ $("#analyticsRows").innerHTML=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,50).map(([k,n])=>{const [a,b,d]=k.split("|||");return `<tr><td>${a}</td><td>${b}</td><td>${d}</td><td>${n}</td></tr>`}).join("")||'<tr><td colspan="4" class="empty">No attributed clicks yet.</td></tr>';
+}
+function renderEvents(){
+ $("#eventRows").innerHTML=state.clicks.map(x=>`<tr><td>${time(x.created_at)}</td><td><span class="badge">WhatsApp Click</span></td><td>${x.source||"direct"}</td><td>${x.campaign||"—"}</td><td>${x.adset||"—"}</td><td>${x.number||"—"}</td></tr>`).join("")||'<tr><td colspan="6" class="empty">No events yet.</td></tr>';
+}
+async function loadWa(){
+ try{
+  const xs=await api("/api/whatsapp");
+  $("#waList").innerHTML=xs.map(x=>`<div class="pixel"><div><b>${x.label||"WhatsApp"}</b><div class="id">${x.number}</div><div class="muted">${x.is_default?"Default · ":""}${x.active?"Active":"Disabled"}</div></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn secondary" onclick='editWa(${JSON.stringify(x)})'>Edit</button><button class="btn secondary" onclick="waAction(${x.id},'${x.active?"disable":"enable"}')">${x.active?"Disable":"Enable"}</button>${!x.is_default?`<button class="btn secondary" onclick="waAction(${x.id},'default')">Set default</button>`:""}<button class="btn danger" onclick="waAction(${x.id},'delete')">Delete</button></div></div>`).join("")||'<div class="empty">No WhatsApp numbers configured.</div>';
+ }catch(e){$("#waList").innerHTML='<div class="empty">Unable to load WhatsApp configuration.</div>'}
+}
+async function waAction(id,action){await api("/api/whatsapp/"+id,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action})});await load()}
+function editWa(x){$("#waId").value=x.id;$("#waLabel").value=x.label||"";$("#waNumber").value=x.number||"";$("#waModalTitle").textContent="Edit WhatsApp number";$("#waModal").classList.add("open")}
+$("#addWa").onclick=()=>{$("#waId").value="";$("#waLabel").value="";$("#waNumber").value="";$("#waModalTitle").textContent="Add WhatsApp number";$("#waModal").classList.add("open")}
+$("#closeWa").onclick=()=>$("#waModal").classList.remove("open");
+$("#waForm").onsubmit=async e=>{e.preventDefault();await api("/api/whatsapp",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:$("#waId").value||undefined,label:$("#waLabel").value,number:$("#waNumber").value})});$("#waModal").classList.remove("open");await load()};
+async function saveSettings(form_enabled,routing_mode){await api("/api/settings",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({form_enabled,routing_mode})});await load()}
+$("#routingSelect").onchange=()=>saveSettings(state.config?.form_enabled,$("#routingSelect").value);
+$("#routingSettings").onchange=()=>saveSettings(state.config?.form_enabled,$("#routingSettings").value);
+$("#formToggle").onclick=()=>saveSettings(!state.config?.form_enabled,state.config?.routing_mode||"single");
+$("#refresh").onclick=load;$("#loadEvents").onclick=load;$("#logout").onclick=()=>location.href="/api/logout";
+load();
+</script>
+</body>
+</html>
