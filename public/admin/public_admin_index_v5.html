@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sulan Peptide — Campaign Center</title>
+<style>
+:root{--green:#00583f;--green2:#087a59;--ink:#102033;--muted:#6d7b86;--bg:#f3f7f5;--card:#fff;--line:#dce7e2;--soft:#e7f3ee;--amber:#fff4cf;--red:#b42318;--shadow:0 10px 35px rgba(0,65,48,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer}
+.app{display:flex;min-height:100vh}.side{width:244px;background:#fff;border-right:1px solid var(--line);padding:24px 16px;position:fixed;inset:0 auto 0 0;z-index:3}.brand{padding:6px 12px 26px}.brand b{display:block;color:var(--green);font-size:17px;letter-spacing:.8px}.brand span{font-size:11px;color:var(--muted);letter-spacing:1.6px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:9px;color:#4e5c65}.nav button.active,.nav button:hover{background:var(--soft);color:var(--green);font-weight:800}.nav small{display:block;color:#9aa6ad;padding:18px 12px 5px;font-size:10px;text-transform:uppercase;letter-spacing:1.2px}
+.main{margin-left:244px;width:calc(100% - 244px);padding:28px 34px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:1.5px}.title{font-size:28px;font-weight:900;margin:2px 0}.sub{color:var(--muted)}.topright{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.status{padding:8px 11px;background:#e8f6ef;border-radius:999px;color:var(--green);font-weight:800;font-size:12px}.status.err{background:#fff0ef;color:var(--red)}.lang{display:flex;background:#eef4f1;border-radius:9px;padding:3px}.langbtn{border:0;background:transparent;color:#62716a;padding:6px 9px;border-radius:7px;font-weight:800;font-size:12px}.langbtn.active{background:#fff;color:var(--green);box-shadow:0 1px 4px #003b2612}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:800}.primary{background:var(--green);color:#fff}.secondary{background:#e8f2ee;color:var(--green)}.danger{background:#fff0ef;color:var(--red)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.page{display:none}.page.active{display:block}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px;box-shadow:var(--shadow)}.metric .label{color:var(--muted);font-weight:700}.metric .num{font-size:30px;font-weight:900;margin:8px 0 2px}.metric .hint{color:var(--green);font-size:12px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:24px 0 12px}.sectionhead h2{font-size:17px;margin:0}.sectionhead span{color:var(--muted);font-size:12px}
+.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);white-space:nowrap}.table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.7px}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--green);font-size:11px;font-weight:800}.badge.off{background:#eef1f0;color:#68736f}.muted{color:var(--muted)}.bar{height:8px;background:#edf2f0;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:99px}.notice{background:var(--amber);border:1px solid #ead79b;padding:12px 14px;border-radius:10px;margin-bottom:16px}.empty{padding:30px;text-align:center;color:var(--muted)}
+.formrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px;margin-bottom:13px}.field label{font-weight:800;font-size:12px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;background:#fff}.field textarea{min-height:90px;resize:vertical}.switch{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.switch:last-child{border-bottom:0}.toggle{width:45px;height:25px;border:0;border-radius:20px;background:#cbd8d3;padding:3px}.toggle i{display:block;width:19px;height:19px;background:#fff;border-radius:50%;transition:.2s}.toggle.on{background:var(--green)}.toggle.on i{transform:translateX(20px)}
+.pixel{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:15px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}.pixel .id{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);word-break:break-all}.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.rulegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:#001b1433;display:none;place-items:center;z-index:9}.modal.open{display:grid}.modalbox{background:#fff;border-radius:16px;width:min(620px,calc(100% - 30px));max-height:90vh;overflow:auto;padding:22px;box-shadow:0 25px 80px #001b1433}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.toast{position:fixed;right:22px;bottom:22px;z-index:20;background:#102033;color:#fff;padding:11px 15px;border-radius:10px;display:none}.toast.show{display:block}.dangertext{color:var(--red)}
+@media(max-width:1100px){.side{width:205px}.main{margin-left:205px;width:calc(100% - 205px);padding:22px}.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+@media(max-width:700px){.side{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.app{display:block}.main{margin:0;width:100%;padding:18px}.nav{grid-template-columns:repeat(2,1fr)}.grid4,.grid3{grid-template-columns:1fr}.top{align-items:flex-start;gap:15px;flex-direction:column}.formrow{grid-template-columns:1fr}.pixel{flex-direction:column}.actions{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><b>SULAN PEPTIDE</b><span>CAMPAIGN CENTER</span></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">◈ &nbsp;<span data-i18n="Dashboard">控制面板</span></button>
+    <button data-page="analytics">◫ &nbsp;<span data-i18n="Analytics">数据分析</span></button>
+    <button data-page="leads">▣ &nbsp;<span data-i18n="Leads">询盘管理</span></button>
+    <small data-i18n="Operations">运营</small>
+    <button data-page="whatsapp">◉ &nbsp;WhatsApp</button>
+    <button data-page="pixels">◌ &nbsp;<span data-i18n="Pixels">像素管理</span></button>
+    <button data-page="events">≡ &nbsp;<span data-i18n="Events">事件中心</span></button>
+    <small data-i18n="System">系统</small>
+    <button data-page="settings">⚙ &nbsp;<span data-i18n="Settings">系统设置</span></button>
+  </nav>
+  <div style="position:absolute;left:16px;right:16px;bottom:20px"><div class="card" style="padding:13px"><div style="font-weight:800" data-i18n="System status">系统状态</div><div class="muted" style="font-size:12px;margin-top:3px" id="workerState">● Worker 已连接</div></div></div>
+</aside>
+
+<main class="main">
+<header class="top">
+  <div><div class="eyebrow">SULAN PEPTIDE</div><div class="title" id="pageTitle">控制面板</div><div class="sub" id="pageSub">广告与转化概览</div></div>
+  <div class="topright">
+    <div class="lang"><button id="langZh" class="langbtn active">中文</button><button id="langEn" class="langbtn">EN</button></div>
+    <span class="status" id="systemStatus">● 系统正常运行</span>
+    <button class="btn secondary" id="refresh">刷新</button>
+    <button class="btn danger" id="logout">退出登录</button>
+  </div>
+</header>
+
+<section class="page active" id="dashboard">
+  <div class="grid4">
+    <div class="card metric"><div class="label" data-i18n="Page Views">页面访问</div><div class="num" id="mViews">—</div><div class="hint" data-i18n="Tracked landing-page visits">单页访问量</div></div>
+    <div class="card metric"><div class="label">WhatsApp Clicks</div><div class="num" id="mClicks">—</div><div class="hint" data-i18n="Outbound contact actions">外部联系操作</div></div>
+    <div class="card metric"><div class="label" data-i18n="Form submissions">表单提交</div><div class="num" id="mLeads">—</div><div class="hint">form_submit</div></div>
+    <div class="card metric"><div class="label">WhatsApp CTR</div><div class="num" id="mCtr">—</div><div class="hint">Clicks ÷ page views</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card" style="margin-top:18px"><div class="sectionhead"><h2 data-i18n="Conversion funnel">转化漏斗</h2><span data-i18n="All stored events">全部已记录事件</span></div>
+      <div style="display:grid;gap:18px">
+        <div><div style="display:flex;justify-content:space-between"><b data-i18n="Page Views">页面访问</b><span id="fViews">—</span></div><div class="bar"><i style="width:100%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between"><b>WhatsApp Clicks</b><span id="fClicks">—</span></div><div class="bar"><i id="bClicks" style="width:0%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between"><b data-i18n="Form submissions">表单提交</b><span id="fLeads">—</span></div><div class="bar"><i id="bLeads" style="width:0%"></i></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px"><div class="sectionhead"><h2 data-i18n="Live configuration">当前配置</h2></div>
+      <div class="switch"><div><b data-i18n="Lead Form">询盘表单</b><div class="muted" id="formState">—</div></div><span class="badge" id="routingState">—</span></div>
+      <div class="switch"><div><b>Meta Pixel</b><div class="muted" id="metaState">—</div></div><span class="badge" id="metaBadge">—</span></div>
+      <div class="switch"><div><b>TikTok Pixel</b><div class="muted" id="ttState">—</div></div><span class="badge" id="ttBadge">—</span></div>
+    </div>
+  </div>
+  <div class="sectionhead"><h2 data-i18n="Recent WhatsApp activity">最近 WhatsApp 活动</h2><button class="btn secondary" data-page-link="events" data-i18n="View all events">查看全部事件</button></div>
+  <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Time / 时间</th><th>Number / 号码</th><th>Campaign / 广告系列</th><th>Source / 来源</th></tr></thead><tbody id="recentClicks"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div></div>
+</section>
+
+<section class="page" id="analytics">
+  <div class="notice" data-i18n="AnalyticsNotice">当前 Worker 已记录来源、广告系列和广告组归因。此页面会优先使用现有事件 API，并为后续按日期/广告系列统计预留空间。</div>
+  <div class="grid3">
+    <div class="card metric"><div class="label muted" data-i18n="Traffic sources">流量来源</div><div class="num" id="aSources">—</div></div>
+    <div class="card metric"><div class="label muted" data-i18n="Campaigns">广告系列</div><div class="num" id="aCampaigns">—</div></div>
+    <div class="card metric"><div class="label muted" data-i18n="Ad sets">广告组</div><div class="num" id="aAdsets">—</div></div>
+  </div>
+  <div class="sectionhead"><h2 data-i18n="Attribution table">归因明细</h2><span>Stored events / 已存储事件</span></div>
+  <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Source</th><th>Campaign</th><th>Ad set</th><th>Event</th><th>Count</th></tr></thead><tbody id="analyticsRows"></tbody></table></div></div>
+</section>
+
+<section class="page" id="leads">
+  <div class="sectionhead"><h2 data-i18n="Lead management">询盘管理</h2><button class="btn secondary" id="loadLeads" data-i18n="Refresh">刷新</button></div>
+  <div class="grid4">
+    <div class="card metric"><div class="label" data-i18n="Total Leads">询盘总数</div><div class="num" id="leadTotal">—</div></div>
+    <div class="card metric"><div class="label" data-i18n="New">新询盘</div><div class="num" id="leadNew">—</div></div>
+    <div class="card metric"><div class="label" data-i18n="Contacted">已联系</div><div class="num" id="leadContacted">—</div></div>
+    <div class="card metric"><div class="label" data-i18n="Won">已成交</div><div class="num" id="leadWon">—</div></div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="tablewrap"><table class="table"><thead><tr><th>Time</th><th>Name</th><th>Contact</th><th>Campaign</th><th>Status</th><th>Action</th></tr></thead><tbody id="leadRows"></tbody></table></div></div>
+</section>
+
+<section class="page" id="whatsapp">
+  <div class="sectionhead"><h2 data-i18n="WhatsApp numbers">WhatsApp 号码</h2><button class="btn primary" id="addWa">+ 添加号码</button></div>
+  <div class="card">
+    <div class="formrow" style="margin-bottom:12px"><div><b data-i18n="Routing mode">流量路由模式</b><div class="muted" data-i18n="Choose how active numbers receive traffic.">选择启用号码如何接收流量。</div></div><select id="routingSelect"><option value="single">Single / Default</option><option value="round_robin">Round Robin</option></select></div>
+    <div id="waList"></div>
+  </div>
+</section>
+
+<section class="page" id="pixels">
+  <div class="notice" data-i18n="PixelNotice">多像素管理已接入后台结构。每个 Pixel 可以独立启用/停用，并选择需要发送的事件；最终是否生效以 Worker API 返回的配置为准。</div>
+  <div class="grid2">
+    <div class="card"><div class="sectionhead"><h2>Meta Pixels</h2><button class="btn primary" id="addMeta">+ Add Meta Pixel</button></div><div id="metaPixelBox"></div></div>
+    <div class="card"><div class="sectionhead"><h2>TikTok Pixels</h2><button class="btn primary" id="addTikTok">+ Add TikTok Pixel</button></div><div id="ttPixelBox"></div></div>
+  </div>
+  <div class="sectionhead"><h2 data-i18n="Event delivery">事件发送规则</h2></div>
+  <div class="card"><div class="grid3">
+    <div class="pixel"><div><b>PageView</b><div class="muted">Landing page traffic</div></div><span class="badge">Ready / 就绪</span></div>
+    <div class="pixel"><div><b>WhatsApp Click</b><div class="muted">Contact intent</div></div><span class="badge">Ready / 就绪</span></div>
+    <div class="pixel"><div><b>Lead</b><div class="muted">Form submission</div></div><span class="badge">Ready / 就绪</span></div>
+  </div></div>
+</section>
+
+<section class="page" id="events">
+  <div class="sectionhead"><h2 data-i18n="Event Center">事件中心</h2><button class="btn secondary" id="loadEvents" data-i18n="Refresh events">刷新事件</button></div>
+  <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Time</th><th>Event</th><th>Source</th><th>Campaign</th><th>Ad set</th><th>Number</th></tr></thead><tbody id="eventRows"></tbody></table></div></div>
+</section>
+
+<section class="page" id="settings">
+  <div class="grid2">
+    <div class="card"><div class="sectionhead"><h2 data-i18n="Landing page">单页</h2></div>
+      <div class="switch"><div><b data-i18n="Lead Form">询盘表单</b><div class="muted" data-i18n="Enable or disable the inquiry form.">启用或关闭询盘表单。</div></div><button class="toggle" id="formToggle"><i></i></button></div>
+      <div class="switch"><div><b data-i18n="Routing mode">流量路由模式</b><div class="muted">Single/default or round robin</div></div><select id="routingSettings"><option value="single">Single</option><option value="round_robin">Round Robin</option></select></div>
+    </div>
+    <div class="card"><div class="sectionhead"><h2 data-i18n="Security">安全</h2></div><div class="empty" data-i18n="SecurityNotice">管理员账号、密码和 Session Secret 继续由 Cloudflare 环境变量管理，不在前端保存。</div></div>
+  </div>
+  <div class="sectionhead"><h2 data-i18n="System">系统</h2></div>
+  <div class="card"><div class="grid3">
+    <div><div class="muted">Worker</div><b id="sysWorker">Connected / 已连接</b></div>
+    <div><div class="muted">Configuration KV</div><b id="sysConfig">Connected / 已连接</b></div>
+    <div><div class="muted">Asset binding</div><b id="sysAssets">Connected / 已连接</b></div>
+  </div></div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="waModal"><div class="modalbox"><div class="modalhead"><h2 id="waModalTitle">添加 WhatsApp 号码</h2><button class="btn secondary" id="closeWa">关闭</button></div>
+<form id="waForm"><input type="hidden" id="waId"><div class="field"><label>Label / 名称</label><input id="waLabel" placeholder="Puerto Rico Main" required></div><div class="field"><label>Phone number / 电话号码</label><input id="waNumber" placeholder="1787..." required></div><button class="btn primary">Save / 保存</button></form></div></div>
+
+<div class="modal" id="pixelModal"><div class="modalbox"><div class="modalhead"><h2 id="pixelModalTitle">Add Pixel</h2><button class="btn secondary" id="closePixel">Close / 关闭</button></div>
+<form id="pixelForm">
+<input type="hidden" id="pixelId"><input type="hidden" id="pixelKind">
+<div class="field"><label>Pixel ID</label><input id="pixelCode" required placeholder="Enter Pixel ID"></div>
+<div class="field"><label>Name / 名称</label><input id="pixelName" placeholder="Primary / Main"></div>
+<div class="field"><label>Events / 事件</label><div class="rulegrid">
+<label class="check"><input type="checkbox" value="pageview" checked> PageView</label>
+<label class="check"><input type="checkbox" value="whatsapp_click" checked> WhatsApp Click</label>
+<label class="check"><input type="checkbox" value="form_submit" checked> Lead</label>
+<label class="check"><input type="checkbox" value="viewcontent"> ViewContent</label>
+</div></div>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn secondary" id="cancelPixel">Cancel</button><button class="btn primary">Save Pixel</button></div>
+</form></div></div>
+
+<div class="modal" id="leadModal"><div class="modalbox"><div class="modalhead"><h2>Lead / 询盘</h2><button class="btn secondary" id="closeLead">Close / 关闭</button></div><div id="leadDetail"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const state={stats:{},config:{},events:[],leads:[],whatsapp:[],pixels:{meta:[],tiktok:[]}};
+const I18N={
+zh:{Dashboard:"控制面板",Analytics:"数据分析",Leads:"询盘管理",Pixels:"像素管理",Events:"事件中心",Settings:"系统设置",Operations:"运营",System:"系统","System status":"系统状态","Page Views":"页面访问","Tracked landing-page visits":"单页访问量","Outbound contact actions":"外部联系操作","Form submissions":"表单提交","Conversion funnel":"转化漏斗","All stored events":"全部已记录事件","Live configuration":"当前配置","Lead Form":"询盘表单","Recent WhatsApp activity":"最近 WhatsApp 活动","View all events":"查看全部事件","Traffic sources":"流量来源","Campaigns":"广告系列","Ad sets":"广告组","Attribution table":"归因明细","Lead management":"询盘管理","Total Leads":"询盘总数","New":"新询盘","Contacted":"已联系","Won":"已成交","WhatsApp numbers":"WhatsApp 号码","Routing mode":"流量路由模式","Choose how active numbers receive traffic.":"选择启用号码如何接收流量。","Event delivery":"事件发送规则","Event Center":"事件中心","Refresh events":"刷新事件","Landing page":"单页","Enable or disable the inquiry form.":"启用或关闭询盘表单。","Security":"安全","System":"系统",AnalyticsNotice:"当前 Worker 已记录来源、广告系列和广告组归因。此页面会优先使用现有事件 API，并为后续按日期/广告系列统计预留空间。",PixelNotice:"多像素管理已接入后台结构。每个 Pixel 可以独立启用/停用，并选择需要发送的事件；最终是否生效以 Worker API 返回的配置为准。",SecurityNotice:"管理员账号、密码和 Session Secret 继续由 Cloudflare 环境变量管理，不在前端保存。"},
+en:{Dashboard:"Dashboard",Analytics:"Analytics",Leads:"Leads",Pixels:"Pixels",Events:"Events",Settings:"Settings",Operations:"Operations",System:"System","System status":"System status","Page Views":"Page Views","Tracked landing-page visits":"Tracked landing-page visits","Outbound contact actions":"Outbound contact actions","Form submissions":"Form submissions","Conversion funnel":"Conversion funnel","All stored events":"All stored events","Live configuration":"Live configuration","Lead Form":"Lead Form","Recent WhatsApp activity":"Recent WhatsApp activity","View all events":"View all events","Traffic sources":"Traffic sources","Campaigns":"Campaigns","Ad sets":"Ad sets","Attribution table":"Attribution table","Lead management":"Lead management","Total Leads":"Total Leads","New":"New","Contacted":"Contacted","Won":"Won","WhatsApp numbers":"WhatsApp numbers","Routing mode":"Routing mode","Choose how active numbers receive traffic.":"Choose how active numbers receive traffic.","Event delivery":"Event delivery","Event Center":"Event Center","Refresh events":"Refresh events","Landing page":"Landing page","Enable or disable the inquiry form.":"Enable or disable the inquiry form.","Security":"Security","System":"System",AnalyticsNotice:"The Worker already records source, campaign and ad-set attribution. This page uses the current event API and leaves room for future date/campaign reporting.",PixelNotice:"Multi-pixel management is connected to the admin structure. Each pixel can be enabled or disabled and assigned event rules; actual delivery follows the Worker API configuration.",SecurityNotice:"Admin credentials and the session secret remain Cloudflare environment variables and are never stored in this UI."}
+};
+let lang=localStorage.getItem("sulan_admin_lang")||"zh";
+const titles={dashboard:["Dashboard","Campaign and conversion overview"],analytics:["Analytics","Attribution and campaign performance"],leads:["Leads","Inquiry management and pipeline"],whatsapp:["WhatsApp","Numbers and routing"],pixels:["Pixels","Tracking configuration and event delivery"],events:["Events","Event Center and diagnostics"],settings:["Settings","Landing page and system configuration"]};
+
+function t(key){return I18N[lang][key]||I18N.en[key]||key}
+function applyLang(){
+ document.documentElement.lang=lang==="zh"?"zh-CN":"en";
+ $$("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
+ const p=$(".page.active")?.id||"dashboard";$("#pageTitle").textContent=lang==="zh"?t(titles[p][0]):titles[p][0];$("#pageSub").textContent=lang==="zh"?t(titles[p][1]):titles[p][1];
+ $("#langZh").classList.toggle("active",lang==="zh");$("#langEn").classList.toggle("active",lang==="en");
+ localStorage.setItem("sulan_admin_lang",lang);
+}
+function page(p){$$(".page").forEach(x=>x.classList.toggle("active",x.id===p));$$(".nav button[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===p));applyLang();if(p==="events")loadEvents();if(p==="leads")loadLeads();if(p==="pixels")loadPixels();if(p==="whatsapp")loadWa()}
+$$(".nav button[data-page]").forEach(b=>b.onclick=()=>page(b.dataset.page));$$("[data-page-link]").forEach(b=>b.onclick=()=>page(b.dataset.pageLink));
+
+async function api(path,opt={}){
+ const r=await fetch(path,{...opt,cache:"no-store",credentials:"same-origin",headers:{"Accept":"application/json",...(opt.headers||{})}});
+ const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
+ if(!r.ok){throw new Error(typeof data==="string"?data:(data?.error||data?.message||`HTTP ${r.status}`))}
+ return data;
+}
+function arr(x){if(Array.isArray(x))return x;return x?.items||x?.data||x?.events||x?.leads||x?.whatsapp||[]}
+function num(...xs){for(const x of xs){if(x!==undefined&&x!==null&&x!=="")return Number(x)||0}return 0}
+function fmt(n){return Number(n||0).toLocaleString()}
+function time(s){return s?new Date(s).toLocaleString():"—"}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function toast(msg){const x=$("#toast");x.textContent=msg;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200)}
+function setError(msg){$("#systemStatus").textContent="● "+msg;$("#systemStatus").classList.add("err");$("#workerState").textContent="● Worker / API error"}
+
+async function load(){
+ try{
+   const [stats,config,events]=await Promise.all([api("/api/admin/stats"),api("/api/admin/config"),api("/api/admin/events")]);
+   state.stats=stats||{};state.config=config||{};state.events=arr(events);
+   $("#systemStatus").textContent=lang==="zh"?"● 系统正常运行":"● System operational";$("#systemStatus").classList.remove("err");$("#workerState").textContent=lang==="zh"?"● Worker 已连接":"● Worker connected";
+   render();loadWa();loadPixels();
+ }catch(e){console.error(e);setError(lang==="zh"?"API 连接失败":"API error")}
+}
+function render(){
+ const s=state.stats||{},c=state.config||{};
+ const views=num(s.page_views,s.pageViews,s.views),clicks=num(s.whatsapp_clicks,s.whatsappClicks,s.clicks),leads=num(s.form_submissions,s.formSubmissions,s.leads);
+ $("#mViews").textContent=fmt(views);$("#mClicks").textContent=fmt(clicks);$("#mLeads").textContent=fmt(leads);$("#mCtr").textContent=(s.ctr!==undefined?s.ctr:(views?(clicks/views*100).toFixed(2):"0.00"))+"%";
+ $("#fViews").textContent=fmt(views);$("#fClicks").textContent=fmt(clicks);$("#fLeads").textContent=fmt(leads);
+ $("#bClicks").style.width=Math.min(100,views?clicks/views*100:0)+"%";$("#bLeads").style.width=Math.min(100,views?leads/views*100:0)+"%";
+ const form=!!(c.form_enabled??c.formEnabled);const route=c.routing_mode||c.routingMode||"single";const meta=getPixelArray(c,"meta"),tt=getPixelArray(c,"tiktok");
+ $("#formState").textContent=form?(lang==="zh"?"已启用":"Enabled"):(lang==="zh"?"已关闭":"Disabled");$("#routingState").textContent=route==="round_robin"?"Round Robin / 轮询":"Single / Default / 单号码";
+ $("#metaState").textContent=meta.length?`${meta.filter(x=>x.enabled!==false).length}/${meta.length} active`:"Not configured / 未配置";$("#ttState").textContent=tt.length?`${tt.filter(x=>x.enabled!==false).length}/${tt.length} active`:"Not configured / 未配置";
+ $("#metaBadge").textContent=meta.length?`${meta.length} pixels`:"—";$("#ttBadge").textContent=tt.length?`${tt.length} pixels`:"—";
+ $("#leadTotal").textContent=fmt(leads);$("#leadNew").textContent="—";$("#leadContacted").textContent="—";$("#leadWon").textContent="—";
+ const clicksEvents=state.events.filter(isWa).slice(0,8);
+ $("#recentClicks").innerHTML=clicksEvents.map(x=>`<tr><td>${esc(time(x.created_at||x.createdAt))}</td><td>${esc(x.number||x.phone||"—")}</td><td>${esc(x.campaign||x.utm_campaign||"—")}</td><td>${esc(x.source||x.utm_source||"direct")}</td></tr>`).join("")||'<tr><td colspan="4" class="empty">No WhatsApp activity yet.</td></tr>';
+ renderAnalytics();renderEvents();
+ $("#routingSelect").value=route;$("#routingSettings").value=route;$("#formToggle").classList.toggle("on",form);
+}
+function getPixelArray(c,kind){
+ const p=c?.pixels?.[kind]??c?.[kind+"_pixels"]??c?.[kind+"Pixels"]??[];
+ if(Array.isArray(p))return p;
+ if(p&&typeof p==="object"){return Object.entries(p).map(([id,v])=>typeof v==="object"?{id,...v}:{id,enabled:!!v})}
+ const id=c?.[kind+"_id"]||c?.[kind+"Id"];return id?[{id,enabled:c?.[kind+"_enabled"]!==false,name:"Primary"}]:[];
+}
+function isWa(x){const typ=String(x.type||x.event||"").toLowerCase();return typ==="whatsapp_click"||typ==="whatsapp-click"||typ==="whatsapp"}
+function renderAnalytics(){
+ const map={};const src=new Set(),cam=new Set(),ads=new Set();
+ state.events.forEach(x=>{const source=x.source||x.utm_source||"direct",campaign=x.campaign||x.utm_campaign||"—",adset=x.adset||x.utm_adset||"—";src.add(source);if(campaign!=="—")cam.add(campaign);if(adset!=="—")ads.add(adset);const event=x.type||x.event||"event",k=[source,campaign,adset,event].join("|||");map[k]=(map[k]||0)+1});
+ $("#aSources").textContent=src.size;$("#aCampaigns").textContent=cam.size;$("#aAdsets").textContent=ads.size;
+ $("#analyticsRows").innerHTML=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,100).map(([k,n])=>{const [a,b,d,e]=k.split("|||");return `<tr><td>${esc(a)}</td><td>${esc(b)}</td><td>${esc(d)}</td><td>${esc(e)}</td><td>${n}</td></tr>`}).join("")||'<tr><td colspan="5" class="empty">No events yet.</td></tr>';
+}
+function renderEvents(){
+ $("#eventRows").innerHTML=state.events.slice(0,500).map(x=>`<tr><td>${esc(time(x.created_at||x.createdAt))}</td><td><span class="badge">${esc(x.type||x.event||"event")}</span></td><td>${esc(x.source||x.utm_source||"direct")}</td><td>${esc(x.campaign||x.utm_campaign||"—")}</td><td>${esc(x.adset||x.utm_adset||"—")}</td><td>${esc(x.number||x.phone||"—")}</td></tr>`).join("")||'<tr><td colspan="6" class="empty">No events yet.</td></tr>';
+}
+async function loadEvents(){try{state.events=arr(await api("/api/admin/events"));renderAnalytics();renderEvents()}catch(e){toast(e.message)}}
+async function loadWa(){try{state.whatsapp=arr(await api("/api/admin/whatsapp"));$("#waList").innerHTML=state.whatsapp.map(x=>`<div class="pixel"><div><b>${esc(x.label||"WhatsApp")}</b><div class="id">${esc(x.number||x.phone||"")}</div><div class="muted">${x.is_default||x.isDefault?"Default · ":""}${x.active===false?"Disabled":"Active"}</div></div><div class="actions"><button class="btn secondary" onclick='editWa(${JSON.stringify(x).replace(/'/g,"&#39;")})'>Edit / 编辑</button><button class="btn secondary" onclick="waAction(${Number(x.id)},'${x.active===false?"enable":"disable"}')">${x.active===false?"Enable":"Disable"}</button>${!(x.is_default||x.isDefault)?`<button class="btn secondary" onclick="waAction(${Number(x.id)},'default')">Set default</button>`:""}<button class="btn danger" onclick="waAction(${Number(x.id)},'delete')">Delete</button></div></div>`).join("")||'<div class="empty">No WhatsApp numbers configured.</div>'}catch(e){$("#waList").innerHTML='<div class="empty">Unable to load WhatsApp configuration.</div>'}}
+async function waAction(id,action){try{await api("/api/admin/whatsapp/"+id,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action})});toast("Saved / 已保存");loadWa()}catch(e){toast(e.message)}}
+function editWa(x){$("#waId").value=x.id??"";$("#waLabel").value=x.label||"";$("#waNumber").value=x.number||x.phone||"";$("#waModalTitle").textContent="Edit WhatsApp number / 编辑号码";$("#waModal").classList.add("open")}
+$("#addWa").onclick=()=>{$("#waId").value="";$("#waLabel").value="";$("#waNumber").value="";$("#waModalTitle").textContent="Add WhatsApp number / 添加号码";$("#waModal").classList.add("open")};
+$("#closeWa").onclick=()=>$("#waModal").classList.remove("open");
+$("#waForm").onsubmit=async e=>{e.preventDefault();try{await api("/api/admin/whatsapp",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:$("#waId").value||undefined,label:$("#waLabel").value,number:$("#waNumber").value})});$("#waModal").classList.remove("open");toast("Saved / 已保存");loadWa()}catch(err){toast(err.message)}};
+
+function normalizePixels(data){
+ const c=data||{};return {meta:getPixelArray(c,"meta"),tiktok:getPixelArray(c,"tiktok")};
+}
+async function loadPixels(){
+ try{
+  const data=await api("/api/admin/pixels");state.pixels=normalizePixels(data);renderPixels();
+ }catch(e){
+  state.pixels={meta:getPixelArray(state.config,"meta"),tiktok:getPixelArray(state.config,"tiktok")};renderPixels();
+ }
+}
+function renderPixels(){
+ const box=(kind,items)=>items.map((x,i)=>`<div class="pixel"><div style="flex:1"><b>${esc(x.name||`${kind==="meta"?"Meta":"TikTok"} Pixel ${i+1}`)}</b><div class="id">${esc(x.id||x.pixel_id||x.pixelId||"")}</div><div class="muted">${x.enabled===false?"Disabled / 已停用":"Active / 已启用"}</div><div class="rulegrid">${(x.events||x.event_rules||x.rules||["pageview","whatsapp_click","form_submit"]).map(ev=>`<span class="badge">${esc(ev)}</span>`).join("")}</div></div><div class="actions"><button class="btn secondary" onclick='editPixel("${kind}",${JSON.stringify(x).replace(/"/g,"&quot;")})'>Edit</button><button class="btn secondary" onclick="pixelAction('${kind}','${esc(x.id||x.pixel_id||"")}','toggle')">${x.enabled===false?"Enable":"Disable"}</button><button class="btn danger" onclick="pixelAction('${kind}','${esc(x.id||x.pixel_id||"")}','delete')">Delete</button></div></div>`).join("")||'<div class="empty">No pixels configured.</div>';
+ $("#metaPixelBox").innerHTML=box("meta",state.pixels.meta);$("#ttPixelBox").innerHTML=box("tiktok",state.pixels.tiktok);
+}
+function openPixel(kind,x=null){$("#pixelId").value=x?.id||x?.pixel_id||"";$("#pixelKind").value=kind;$("#pixelCode").value=x?.id||x?.pixel_id||"";$("#pixelName").value=x?.name||"";$$('#pixelForm input[type="checkbox"]').forEach(c=>c.checked=(x?.events||x?.event_rules||["pageview","whatsapp_click","form_submit"]).includes(c.value));$("#pixelModalTitle").textContent=(x?"Edit ":"Add ")+(kind==="meta"?"Meta":"TikTok")+" Pixel";$("#pixelModal").classList.add("open")}
+function editPixel(kind,x){openPixel(kind,x)}
+$("#addMeta").onclick=()=>openPixel("meta");$("#addTikTok").onclick=()=>openPixel("tiktok");$("#closePixel").onclick=()=>$("#pixelModal").classList.remove("open");$("#cancelPixel").onclick=()=>$("#pixelModal").classList.remove("open");
+$("#pixelForm").onsubmit=async e=>{e.preventDefault();const events=$$('#pixelForm input[type="checkbox"]:checked').map(x=>x.value);const body={id:$("#pixelId").value||undefined,name:$("#pixelName").value,events,enabled:true};const kind=$("#pixelKind").value;try{if($("#pixelId").value){await api("/api/admin/pixels/"+encodeURIComponent($("#pixelId").value),{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind,...body})})}else{await api("/api/admin/pixels",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,...body,pixel_id:$("#pixelCode").value})})}$("#pixelModal").classList.remove("open");toast("Pixel saved / 像素已保存");loadPixels();load()}catch(err){toast(err.message)}};
+async function pixelAction(kind,id,action){try{await api("/api/admin/pixels/"+encodeURIComponent(id),{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind,action})});toast("Saved / 已保存");loadPixels()}catch(e){toast(e.message)}}
+
+async function loadLeads(){
+ try{
+  const data=arr(await api("/api/admin/leads"));state.leads=data;
+  $("#leadRows").innerHTML=data.map((x,i)=>`<tr><td>${esc(time(x.created_at||x.createdAt))}</td><td>${esc(x.name||x.full_name||"—")}</td><td>${esc(x.phone||x.email||x.contact||"—")}</td><td>${esc(x.campaign||x.utm_campaign||"—")}</td><td><span class="badge">${esc(x.status||"new")}</span></td><td><button class="btn secondary" onclick="viewLead(${i})">View / 查看</button></td></tr>`).join("")||'<tr><td colspan="6" class="empty">No leads yet.</td></tr>';
+  const statuses=data.map(x=>String(x.status||"new").toLowerCase());$("#leadNew").textContent=statuses.filter(x=>x==="new").length;$("#leadContacted").textContent=statuses.filter(x=>x==="contacted").length;$("#leadWon").textContent=statuses.filter(x=>x==="won").length;$("#leadTotal").textContent=fmt(data.length);
+ }catch(e){$("#leadRows").innerHTML='<tr><td colspan="6" class="empty">Lead API unavailable / 询盘 API 暂不可用。</td></tr>'}
+}
+function viewLead(i){const x=state.leads[i]||{};$("#leadDetail").innerHTML=Object.entries(x).map(([k,v])=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>${esc(k)}</b><div class="muted" style="word-break:break-word">${esc(typeof v==="object"?JSON.stringify(v):v)}</div></div>`).join("");$("#leadModal").classList.add("open")}
+$("#closeLead").onclick=()=>$("#leadModal").classList.remove("open");$("#loadLeads").onclick=loadLeads;
+
+async function saveSettings(form_enabled,routing_mode){try{await api("/api/admin/settings",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({form_enabled,routing_mode})});toast("Saved / 已保存");load()}catch(e){toast(e.message)}}
+$("#routingSelect").onchange=()=>saveSettings(state.config?.form_enabled??state.config?.formEnabled,$("#routingSelect").value);
+$("#routingSettings").onchange=()=>saveSettings(state.config?.form_enabled??state.config?.formEnabled,$("#routingSettings").value);
+$("#formToggle").onclick=()=>saveSettings(!(state.config?.form_enabled??state.config?.formEnabled),state.config?.routing_mode||"single");
+$("#refresh").onclick=load;$("#loadEvents").onclick=loadEvents;$("#logout").onclick=()=>location.href="/api/logout";
+$("#langZh").onclick=()=>{lang="zh";applyLang();render()};$("#langEn").onclick=()=>{lang="en";applyLang();render()};
+applyLang();load();
+</script>
+</body>
+</html>
