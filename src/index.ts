@@ -344,10 +344,13 @@ export default {
       return env.ASSETS.fetch(
         new Request(
           new URL(
-            "/admin/index.html",
+            "/admin/",
             u
           ),
-          req
+          {
+            method: "GET",
+            headers: req.headers
+          }
         )
       );
     }
@@ -387,10 +390,13 @@ export default {
       return env.ASSETS.fetch(
         new Request(
           new URL(
-            "/admin/index.html",
+            "/admin/",
             u
           ),
-          req
+          {
+            method: "GET",
+            headers: req.headers
+          }
         )
       );
     }
