@@ -258,7 +258,7 @@ input{width:100%;box-sizing:border-box;padding:13px;margin:7px 0 14px;border:1px
 button{width:100%;padding:13px;border:0;border-radius:9px;background:#00583f;color:#fff;font-weight:800;cursor:pointer}.err{color:#a33;background:#fff1f1;padding:9px;border-radius:8px}
 </style></head><body><div class="box"><div class="brand">SULAN PEPTIDE</div><div class="sub">ADMINISTRATION</div>
 <h1>Admin Login</h1>${error ? `<div class="err">${error}</div>` : ""}
-<form method="post"><input name="user" placeholder="Username" required><input name="pass" type="password" placeholder="Password" required><button>Sign in / 登录</button></form>
+<form method="post" action="/admin/login"><input name="user" placeholder="Username" required><input name="pass" type="password" placeholder="Password" required><button>Sign in / 登录</button></form>
 </div></body></html>`;
 }
 
