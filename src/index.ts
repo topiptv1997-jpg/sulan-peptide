@@ -98,27 +98,101 @@ async function sha256(value: string): Promise<string> {
     .join("");
 }
 
-async function createSession(env: Env, username: string) {
-  const raw = `${username}:${env.SESSION_SECRET}:${crypto.randomUUID()}:${Date.now()}`;
-  const sid = await sha256(raw);
-  await env.ADMIN_KV.put(
-    `${SESSION_PREFIX}${sid}`,
-    JSON.stringify({ username, createdAt: Date.now() }),
-    { expirationTtl: 60 * 60 * 12 },
+function base64url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/g, "");
+}
+
+function fromBase64url(value: string): Uint8Array {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((value.length + 3) % 4);
+  const binary = atob(normalized);
+  return Uint8Array.from(binary, c => c.charCodeAt(0));
+}
+
+async function hmacSign(value: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign", "verify"],
   );
-  return sid;
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(value),
+  );
+  return base64url(new Uint8Array(signature));
+}
+
+async function hmacVerify(value: string, signature: string, secret: string): Promise<boolean> {
+  try {
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign", "verify"],
+    );
+    return await crypto.subtle.verify(
+      "HMAC",
+      key,
+      fromBase64url(signature),
+      new TextEncoder().encode(value),
+    );
+  } catch {
+    return false;
+  }
+}
+
+/*
+ * Authentication deliberately does NOT use ADMIN_KV for the session itself.
+ * This prevents an unavailable/empty session KV from causing /admin redirect
+ * loops or turning the admin page into a 500 error.
+ */
+async function createSession(env: Env, username: string) {
+  const secret = env.SESSION_SECRET || "";
+  if (!secret || secret.length < 16) {
+    throw new Error("SESSION_SECRET is missing or too short. Set a long random SESSION_SECRET.");
+  }
+
+  const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 12;
+  const payload = `${username}.${exp}`;
+  const signature = await hmacSign(payload, secret);
+  return `${base64url(new TextEncoder().encode(payload))}.${signature}`;
 }
 
 async function isAuthenticated(req: Request, env: Env) {
-  const sid = getCookie(req, "sulan_admin");
-  if (!sid) return false;
-  const value = await env.ADMIN_KV.get(`${SESSION_PREFIX}${sid}`);
-  return !!value;
+  const token = getCookie(req, "sulan_admin");
+  const secret = env.SESSION_SECRET || "";
+  if (!token || !secret) return false;
+
+  const parts = token.split(".");
+  if (parts.length !== 2) return false;
+
+  try {
+    const payload = new TextDecoder().decode(fromBase64url(parts[0]));
+    const dot = payload.lastIndexOf(".");
+    if (dot <= 0) return false;
+
+    const username = payload.slice(0, dot);
+    const exp = Number(payload.slice(dot + 1));
+
+    if (!username || !Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) {
+      return false;
+    }
+
+    if (username !== (env.ADMIN_USER || "admin")) return false;
+
+    return await hmacVerify(payload, parts[1], secret);
+  } catch {
+    return false;
+  }
 }
 
-async function destroySession(req: Request, env: Env) {
-  const sid = getCookie(req, "sulan_admin");
-  if (sid) await env.ADMIN_KV.delete(`${SESSION_PREFIX}${sid}`);
+async function destroySession(_req: Request, _env: Env) {
+  // Stateless signed cookie: clearing the cookie is sufficient.
 }
 
 async function readJson(req: Request): Promise<any> {
