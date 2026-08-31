@@ -1118,7 +1118,7 @@ IMPORTANT:
     try {
       if (toggle) toggle.disabled = true;
       const saved = await api82("/api/admin/settings", {
-        method: "PATCH",
+        method: "POST",
         headers: {"content-type":"application/json"},
         body: JSON.stringify({
           form_enabled: enabled,
@@ -1162,7 +1162,7 @@ IMPORTANT:
       toggle.disabled = true;
 
       const saved = await api82("/api/admin/settings", {
-        method: "PATCH",
+        method: "POST",
         headers: {"content-type":"application/json"},
         body: JSON.stringify({
           form_enabled: !current,
