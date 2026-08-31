@@ -4,88 +4,103 @@ export interface Env {
   ASSETS: Fetcher;
 }
 
-/* =========================================================
-   SULAN PEPTIDE WORKER
-   V9 FINAL
-   - Admin authentication disabled
-   - No admin redirects
-   - Admin routes serve /admin/index.html directly
-   - Public API
-   - Admin API
-   - Pixel management
-   - WhatsApp management
-   - Form configuration
-   - Events / Leads / Stats
-   ========================================================= */
+type PixelKind = "meta" | "tiktok";
+
+type EventName =
+  | "pageview"
+  | "view_content"
+  | "lead"
+  | "whatsapp_click";
+
+type RoutingMode = "single" | "round_robin";
+
+interface PixelConfig {
+  id: string;
+  name: string;
+  enabled: boolean;
+  events: EventName[];
+}
+
+interface WhatsAppNumber {
+  id: number;
+  label: string;
+  number: string;
+  active: boolean;
+  is_default: boolean;
+}
+
+interface FormField {
+  enabled: boolean;
+  required: boolean;
+}
+
+interface AppConfig {
+  version: number;
+  updated_at: string;
+  form_enabled: boolean;
+  routing_mode: RoutingMode;
+  next_index: number;
+
+  pixels: {
+    meta: PixelConfig[];
+    tiktok: PixelConfig[];
+  };
+
+  form_fields: Record<string, FormField>;
+}
+
+interface Stats {
+  page_views: number;
+  whatsapp_clicks: number;
+  form_submissions: number;
+}
 
 const CONFIG_KEY = "config";
 const WHATSAPP_KEY = "whatsapp";
-const PIXELS_KEY = "pixels";
-const EVENTS_KEY = "events";
-const LEADS_KEY = "leads";
 const STATS_KEY = "stats";
 
-const EVENT_LIMIT = 5000;
-const LEAD_LIMIT = 5000;
+const EVENT_PREFIX = "event:";
+const LEAD_PREFIX = "lead:";
+const DEDUPE_PREFIX = "dedupe:";
 
-/* =========================================================
-   Default configuration
-   ========================================================= */
+const DEFAULT_EVENTS: EventName[] = [
+  "pageview",
+  "whatsapp_click",
+  "lead",
+];
 
-const DEFAULT_FORM_FIELDS = {
+const DEFAULT_FORM_FIELDS: Record<string, FormField> = {
   name: {
     enabled: true,
     required: true,
   },
+
   email: {
     enabled: true,
     required: false,
   },
+
   whatsapp: {
     enabled: true,
     required: true,
   },
+
   company: {
     enabled: true,
     required: false,
   },
+
   country: {
     enabled: true,
     required: false,
   },
+
   message: {
     enabled: true,
     required: false,
   },
 };
 
-const DEFAULT_CONFIG = {
-  version: 1,
-  form_enabled: true,
-  routing_mode: "round_robin",
-  next_index: 0,
-  pixels: {
-    meta: [],
-    tiktok: [],
-  },
-  form_fields: DEFAULT_FORM_FIELDS,
-};
-
-const DEFAULT_WHATSAPP = {
-  routing_mode: "round_robin",
-  number: "",
-  numbers: [],
-};
-
-const DEFAULT_STATS = {
-  page_views: 0,
-  whatsapp_clicks: 0,
-  form_submissions: 0,
-  pageViews: 0,
-  whatsappClicks: 0,
-  formSubmissions: 0,
-  ctr: 0,
-};
 
 /* =========================================================
    Response helpers
@@ -94,2024 +109,3792 @@ const DEFAULT_STATS = {
 function json(
   data: unknown,
   status = 200,
-  extra: Record<string, string> = {},
-) {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store, no-cache, must-revalidate",
-      "access-control-allow-origin": "*",
-      "access-control-allow-methods":
-        "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-      "access-control-allow-headers":
-        "Content-Type, Authorization, X-Requested-With",
-      ...extra,
-    },
-  });
+  extra: Record<string, string> = {}
+): Response {
+  return new Response(
+    JSON.stringify(data, null, 2),
+    {
+      status,
+      headers: {
+        "content-type":
+          "application/json; charset=utf-8",
+
+        "cache-control":
+          "no-store, no-cache, must-revalidate",
+
+        "pragma": "no-cache",
+
+        ...extra,
+      },
+    }
+  );
 }
 
 function text(
   body: string,
   status = 200,
-  extra: Record<string, string> = {},
-) {
+  extra: Record<string, string> = {}
+): Response {
   return new Response(body, {
     status,
+
     headers: {
-      "content-type": "text/plain; charset=utf-8",
-      "cache-control": "no-store",
+      "content-type":
+        "text/plain; charset=utf-8",
+
+      "cache-control":
+        "no-store, no-cache, must-revalidate",
+
+      "pragma": "no-cache",
+
       ...extra,
     },
   });
 }
 
-function html(
-  body: string,
-  status = 200,
-  extra: Record<string, string> = {},
-) {
-  return new Response(body, {
-    status,
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store, no-cache, must-revalidate",
-      ...extra,
-    },
-  });
-}
-
-function noContent() {
+function noContent(status = 204): Response {
   return new Response(null, {
-    status: 204,
+    status,
+
     headers: {
       "cache-control": "no-store",
-      "access-control-allow-origin": "*",
     },
   });
 }
+
 
 /* =========================================================
    Request helpers
    ========================================================= */
 
-async function readJson<T = any>(request: Request): Promise<T> {
-  const type = request.headers.get("content-type") || "";
+async function readJson(
+  req: Request
+): Promise<Record<string, any>> {
+  const contentType =
+    req.headers.get("content-type") || "";
 
-  if (!type.includes("application/json")) {
-    const body = await request.text();
-
-    if (!body) {
-      return {} as T;
-    }
-
+  if (
+    contentType
+      .toLowerCase()
+      .includes("application/json")
+  ) {
     try {
-      return JSON.parse(body) as T;
+      const body = await req.json();
+
+      if (
+        body &&
+        typeof body === "object" &&
+        !Array.isArray(body)
+      ) {
+        return body as Record<string, any>;
+      }
+
+      return {};
     } catch {
-      return {} as T;
+      return {};
     }
   }
 
   try {
-    return (await request.json()) as T;
-  } catch {
-    return {} as T;
-  }
-}
+    const form = await req.formData();
 
-function now() {
-  return new Date().toISOString();
-}
+    const output: Record<string, any> = {};
 
-function cleanString(value: unknown) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value).trim();
-}
-
-function makeId(prefix = "") {
-  return (
-    prefix +
-    crypto.randomUUID().replace(/-/g, "")
-  );
-}
-
-/* =========================================================
-   KV helpers
-   ========================================================= */
-
-async function getKVJson<T>(
-  kv: KVNamespace,
-  key: string,
-  fallback: T,
-): Promise<T> {
-  try {
-    const value = await kv.get(key, "json");
-
-    if (value === null || value === undefined) {
-      return fallback;
+    for (const [key, value] of form.entries()) {
+      output[key] =
+        typeof value === "string"
+          ? value
+          : "";
     }
 
-    return value as T;
+    return output;
   } catch {
+    return {};
+  }
+}
+
+function boolValue(
+  value: any,
+  fallback = false
+): boolean {
+  if (value === undefined || value === null) {
     return fallback;
   }
-}
 
-async function putKVJson(
-  kv: KVNamespace,
-  key: string,
-  value: unknown,
-) {
-  await kv.put(key, JSON.stringify(value));
-}
-
-/* =========================================================
-   Config normalization
-   ========================================================= */
-
-function normalizePixel(pixel: any) {
-  return {
-    id: cleanString(pixel?.id),
-    name: cleanString(pixel?.name),
-    enabled: pixel?.enabled !== false,
-    events: Array.isArray(pixel?.events)
-      ? pixel.events.map((x: any) => cleanString(x)).filter(Boolean)
-      : ["pageview", "whatsapp_click"],
-  };
-}
-
-function normalizePixels(input: any) {
-  const result = {
-    meta: [] as any[],
-    tiktok: [] as any[],
-  };
-
-  if (Array.isArray(input?.meta)) {
-    result.meta = input.meta
-      .map(normalizePixel)
-      .filter((x: any) => x.id);
+  if (typeof value === "boolean") {
+    return value;
   }
 
-  if (Array.isArray(input?.tiktok)) {
-    result.tiktok = input.tiktok
-      .map(normalizePixel)
-      .filter((x: any) => x.id);
+  if (typeof value === "number") {
+    return value !== 0;
   }
 
-  return result;
-}
+  const normalized =
+    String(value)
+      .trim()
+      .toLowerCase();
 
-function normalizeFormFields(input: any) {
-  const result: Record<string, any> = {};
-
-  for (const key of Object.keys(DEFAULT_FORM_FIELDS)) {
-    const source = input?.[key];
-
-    result[key] = {
-      enabled:
-        source?.enabled !== undefined
-          ? Boolean(source.enabled)
-          : DEFAULT_FORM_FIELDS[key as keyof typeof DEFAULT_FORM_FIELDS]
-              .enabled,
-
-      required:
-        source?.required !== undefined
-          ? Boolean(source.required)
-          : DEFAULT_FORM_FIELDS[key as keyof typeof DEFAULT_FORM_FIELDS]
-              .required,
-    };
-  }
-
-  return result;
-}
-
-function normalizeConfig(input: any) {
-  return {
-    version:
-      typeof input?.version === "number"
-        ? input.version
-        : 1,
-
-    updated_at:
-      cleanString(input?.updated_at) || now(),
-
-    form_enabled:
-      input?.form_enabled !== false,
-
-    routing_mode:
-      input?.routing_mode === "round_robin"
-        ? "round_robin"
-        : "round_robin",
-
-    next_index:
-      Number.isFinite(Number(input?.next_index))
-        ? Number(input.next_index)
-        : 0,
-
-    pixels: normalizePixels(input?.pixels),
-
-    tiktok: Array.isArray(input?.tiktok)
-      ? input.tiktok.map(normalizePixel)
-      : [],
-
-    form_fields:
-      normalizeFormFields(input?.form_fields),
-  };
-}
-
-async function loadConfig(env: Env) {
-  const saved = await getKVJson<any>(
-    env.CONFIG_KV,
-    CONFIG_KEY,
-    null,
-  );
-
-  if (!saved) {
-    return {
-      ...DEFAULT_CONFIG,
-      updated_at: now(),
-    };
-  }
-
-  const config = normalizeConfig(saved);
-
-  /*
-   * Backward compatibility:
-   * If old data stores TikTok directly under "tiktok",
-   * keep it.
-   */
   if (
-    Array.isArray(saved?.tiktok) &&
-    config.pixels.tiktok.length === 0
+    normalized === "true" ||
+    normalized === "1" ||
+    normalized === "yes" ||
+    normalized === "on"
   ) {
-    config.pixels.tiktok = saved.tiktok.map(normalizePixel);
+    return true;
   }
 
-  return config;
-}
-
-async function saveConfig(env: Env, input: any) {
-  const current = await loadConfig(env);
-
-  const merged = {
-    ...current,
-    ...input,
-    updated_at: now(),
-  };
-
-  const normalized = normalizeConfig(merged);
-
-  normalized.version =
-    Number(current.version || 0) + 1;
-
-  await putKVJson(
-    env.CONFIG_KV,
-    CONFIG_KEY,
-    normalized,
-  );
-
-  return normalized;
-}
-
-/* =========================================================
-   WhatsApp
-   ========================================================= */
-
-function normalizeWhatsApp(input: any) {
-  let numbers: any[] = [];
-
-  if (Array.isArray(input?.numbers)) {
-    numbers = input.numbers;
-  }
-
-  /*
-   * Backward compatibility with a single number.
-   */
   if (
-    numbers.length === 0 &&
-    cleanString(input?.number)
+    normalized === "false" ||
+    normalized === "0" ||
+    normalized === "no" ||
+    normalized === "off"
   ) {
-    numbers = [
-      {
-        id: Date.now(),
-        label: "Default",
-        number: cleanString(input.number),
-        active: true,
-        is_default: true,
-      },
-    ];
+    return false;
   }
 
-  numbers = numbers
-    .map((item: any) => ({
-      id:
-        item?.id ??
-        Date.now() + Math.floor(Math.random() * 10000),
+  return fallback;
+}
 
-      label:
-        cleanString(item?.label) ||
-        "WhatsApp",
-
-      number:
-        cleanString(item?.number)
-          .replace(/[^\d+]/g, ""),
-
-      active:
-        item?.active !== false,
-
-      is_default:
-        Boolean(item?.is_default),
-    }))
-    .filter((item: any) => item.number);
-
-  let defaultNumber =
-    numbers.find((x) => x.is_default && x.active) ||
-    numbers.find((x) => x.active) ||
-    numbers[0];
-
-  if (defaultNumber) {
-    numbers = numbers.map((item: any) => ({
-      ...item,
-      is_default:
-        item.id === defaultNumber.id,
-    }));
+function uniqueStrings(value: any): string[] {
+  if (!Array.isArray(value)) {
+    return [];
   }
 
-  return {
-    routing_mode:
-      input?.routing_mode === "round_robin"
-        ? "round_robin"
-        : "round_robin",
-
-    number:
-      defaultNumber?.number || "",
-
-    numbers,
-  };
+  return [
+    ...new Set(
+      value
+        .map((item) => String(item).trim())
+        .filter(Boolean)
+    ),
+  ];
 }
 
-async function loadWhatsApp(env: Env) {
-  const saved = await getKVJson<any>(
-    env.ADMIN_KV,
-    WHATSAPP_KEY,
-    null,
-  );
-
-  if (!saved) {
-    return DEFAULT_WHATSAPP;
-  }
-
-  return normalizeWhatsApp(saved);
-}
-
-async function saveWhatsApp(
-  env: Env,
-  input: any,
-) {
-  const value = normalizeWhatsApp(input);
-
-  await putKVJson(
-    env.ADMIN_KV,
-    WHATSAPP_KEY,
-    value,
-  );
-
-  return value;
-}
-
-/* =========================================================
-   Stats
-   ========================================================= */
-
-function calculateStats(stats: any) {
-  const pageViews = Number(
-    stats?.page_views ??
-      stats?.pageViews ??
-      0,
-  );
-
-  const whatsappClicks = Number(
-    stats?.whatsapp_clicks ??
-      stats?.whatsappClicks ??
-      0,
-  );
-
-  const formSubmissions = Number(
-    stats?.form_submissions ??
-      stats?.formSubmissions ??
-      0,
-  );
-
-  const ctr =
-    pageViews > 0
-      ? Number(
-          (
-            (whatsappClicks / pageViews) *
-            100
-          ).toFixed(2),
-        )
-      : 0;
-
-  return {
-    page_views: pageViews,
-    whatsapp_clicks: whatsappClicks,
-    form_submissions: formSubmissions,
-
-    pageViews,
-    whatsappClicks,
-    formSubmissions,
-
-    ctr,
-  };
-}
-
-async function loadStats(env: Env) {
-  const stats = await getKVJson<any>(
-    env.ADMIN_KV,
-    STATS_KEY,
-    DEFAULT_STATS,
-  );
-
-  return calculateStats(stats);
-}
-
-async function saveStats(
-  env: Env,
-  stats: any,
-) {
-  const normalized = calculateStats(stats);
-
-  await putKVJson(
-    env.ADMIN_KV,
-    STATS_KEY,
-    normalized,
-  );
-
-  return normalized;
-}
-
-async function incrementStat(
-  env: Env,
-  key:
-    | "page_views"
-    | "whatsapp_clicks"
-    | "form_submissions",
-) {
-  const stats = await loadStats(env);
-
-  stats[key] =
-    Number(stats[key] || 0) + 1;
-
-  return saveStats(env, stats);
-}
-
-/* =========================================================
-   Events
-   ========================================================= */
-
-async function loadEvents(env: Env) {
-  return getKVJson<any[]>(
-    env.ADMIN_KV,
-    EVENTS_KEY,
-    [],
-  );
-}
-
-async function saveEvents(
-  env: Env,
-  events: any[],
-) {
-  const limited = events.slice(-EVENT_LIMIT);
-
-  await putKVJson(
-    env.ADMIN_KV,
-    EVENTS_KEY,
-    limited,
-  );
-
-  return limited;
-}
-
-async function addEvent(
-  env: Env,
-  input: any,
-) {
-  const events = await loadEvents(env);
-
-  const event = {
-    id:
-      cleanString(input?.id) ||
-      makeId("event_"),
-
-    created_at:
-      cleanString(input?.created_at) ||
-      now(),
-
-    path:
-      cleanString(input?.path) || "/",
-
-    referrer:
-      cleanString(input?.referrer),
-
-    source:
-      cleanString(input?.source) || "direct",
-
-    campaign:
-      cleanString(input?.campaign),
-
-    adset:
-      cleanString(input?.adset),
-
-    event_id:
-      cleanString(input?.event_id) ||
-      makeId(),
-
-    type:
-      cleanString(input?.type) ||
-      "pageview",
-
-    ip:
-      cleanString(input?.ip),
-
-    country:
-      cleanString(input?.country),
-
-    user_agent:
-      cleanString(input?.user_agent),
-  };
-
-  events.push(event);
-
-  await saveEvents(env, events);
-
-  return event;
-}
-
-/* =========================================================
-   Leads
-   ========================================================= */
-
-async function loadLeads(env: Env) {
-  return getKVJson<any[]>(
-    env.ADMIN_KV,
-    LEADS_KEY,
-    [],
-  );
-}
-
-async function saveLeads(
-  env: Env,
-  leads: any[],
-) {
-  const limited = leads.slice(-LEAD_LIMIT);
-
-  await putKVJson(
-    env.ADMIN_KV,
-    LEADS_KEY,
-    limited,
-  );
-
-  return limited;
-}
-
-async function addLead(
-  env: Env,
-  input: any,
-) {
-  const leads = await loadLeads(env);
-
-  const lead = {
-    id:
-      cleanString(input?.id) ||
-      makeId("lead_"),
-
-    created_at:
-      cleanString(input?.created_at) ||
-      now(),
-
-    name:
-      cleanString(input?.name),
-
-    email:
-      cleanString(input?.email),
-
-    whatsapp:
-      cleanString(input?.whatsapp),
-
-    company:
-      cleanString(input?.company),
-
-    country:
-      cleanString(input?.country),
-
-    message:
-      cleanString(input?.message),
-
-    source:
-      cleanString(input?.source),
-
-    campaign:
-      cleanString(input?.campaign),
-
-    adset:
-      cleanString(input?.adset),
-
-    path:
-      cleanString(input?.path),
-
-    referrer:
-      cleanString(input?.referrer),
-
-    user_agent:
-      cleanString(input?.user_agent),
-  };
-
-  leads.push(lead);
-
-  await saveLeads(env, leads);
-
-  await incrementStat(
-    env,
-    "form_submissions",
-  );
-
-  return lead;
-}
 
 /* =========================================================
    Pixel helpers
    ========================================================= */
 
-async function getAllPixels(env: Env) {
-  const config = await loadConfig(env);
+function normalizeEvents(
+  value: any
+): EventName[] {
+  const allowed = new Set<EventName>([
+    "pageview",
+    "view_content",
+    "lead",
+    "whatsapp_click",
+  ]);
 
-  return {
-    meta:
-      Array.isArray(config.pixels?.meta)
-        ? config.pixels.meta
-        : [],
+  const raw = uniqueStrings(value);
 
-    tiktok:
-      Array.isArray(config.pixels?.tiktok)
-        ? config.pixels.tiktok
-        : [],
-  };
-}
-
-async function saveAllPixels(
-  env: Env,
-  pixels: any,
-) {
-  const config = await loadConfig(env);
-
-  config.pixels = normalizePixels(
-    pixels,
+  const result = raw.filter(
+    (item): item is EventName =>
+      allowed.has(item as EventName)
   );
 
-  config.updated_at = now();
-  config.version =
-    Number(config.version || 0) + 1;
+  if (result.length > 0) {
+    return result;
+  }
 
-  await putKVJson(
-    env.CONFIG_KV,
-    CONFIG_KEY,
-    config,
-  );
-
-  return config.pixels;
+  return [...DEFAULT_EVENTS];
 }
 
-function findPixel(
-  pixels: any,
-  platform: string,
-  id: string,
-) {
-  const list =
-    Array.isArray(pixels?.[platform])
-      ? pixels[platform]
-      : [];
+function normalizePixels(
+  value: any
+): PixelConfig[] {
+  if (Array.isArray(value)) {
+    return value
+      .map(
+        (
+          item: any,
+          index: number
+        ) => {
+          if (
+            typeof item === "string"
+          ) {
+            const id =
+              item.trim();
 
-  return list.find(
-    (pixel: any) =>
-      String(pixel.id) === String(id),
-  );
+            if (!id) {
+              return null;
+            }
+
+            return {
+              id,
+
+              name:
+                `Pixel ${index + 1}`,
+
+              enabled: true,
+
+              events:
+                [...DEFAULT_EVENTS],
+            };
+          }
+
+          if (
+            !item ||
+            typeof item !== "object"
+          ) {
+            return null;
+          }
+
+          const id =
+            String(
+              item.id ??
+              item.pixel_id ??
+              item.pixelId ??
+              ""
+            ).trim();
+
+          if (!id) {
+            return null;
+          }
+
+          return {
+            id,
+
+            name:
+              String(
+                item.name ??
+                `Pixel ${index + 1}`
+              ),
+
+            enabled:
+              item.enabled !== false,
+
+            events:
+              normalizeEvents(
+                item.events
+              ),
+          };
+        }
+      )
+      .filter(Boolean) as PixelConfig[];
+  }
+
+  if (
+    value &&
+    typeof value === "object"
+  ) {
+    return Object.entries(value)
+      .map(
+        ([id, item]: [
+          string,
+          any
+        ]) => ({
+          id: id.trim(),
+
+          name:
+            String(
+              item?.name ??
+              "Pixel"
+            ),
+
+          enabled:
+            item?.enabled !== false,
+
+          events:
+            normalizeEvents(
+              item?.events
+            ),
+        })
+      )
+      .filter(
+        (item) => !!item.id
+      );
+  }
+
+  return [];
 }
+
 
 /* =========================================================
-   Public configuration
+   Config
    ========================================================= */
 
-async function publicConfig(env: Env) {
-  const config = await loadConfig(env);
-  const whatsapp = await loadWhatsApp(env);
+function cloneDefaultFields() {
+  return JSON.parse(
+    JSON.stringify(
+      DEFAULT_FORM_FIELDS
+    )
+  ) as Record<
+    string,
+    FormField
+  >;
+}
 
+function defaultConfig(): AppConfig {
   return {
-    form_enabled:
-      Boolean(config.form_enabled),
-
-    form_fields:
-      config.form_fields,
-
-    routing_mode:
-      config.routing_mode,
-
-    pixels:
-      config.pixels,
-
-    tiktok:
-      config.pixels.tiktok,
-
-    whatsapp,
-
-    version:
-      config.version,
+    version: 1,
 
     updated_at:
-      config.updated_at,
+      new Date().toISOString(),
+
+    form_enabled: true,
+
+    routing_mode: "single",
+
+    next_index: 0,
+
+    pixels: {
+      meta: [],
+      tiktok: [],
+    },
+
+    form_fields:
+      cloneDefaultFields(),
   };
 }
 
-/* =========================================================
-   Pixel.js
-   ========================================================= */
+function normalizeFormFields(
+  value: any
+): Record<string, FormField> {
+  const output =
+    cloneDefaultFields();
 
-const PIXEL_JS = `
-(function () {
-  "use strict";
+  if (
+    !value ||
+    typeof value !== "object"
+  ) {
+    return output;
+  }
 
-  const ENDPOINT = "/api/event";
+  for (
+    const key of Object.keys(output)
+  ) {
+    const incoming =
+      value[key];
 
-  function getQuery() {
-    try {
-      return new URLSearchParams(window.location.search);
-    } catch (_) {
-      return new URLSearchParams();
+    if (
+      !incoming ||
+      typeof incoming !== "object"
+    ) {
+      continue;
+    }
+
+    if (
+      incoming.enabled !== undefined
+    ) {
+      output[key].enabled =
+        boolValue(
+          incoming.enabled,
+          output[key].enabled
+        );
+    }
+
+    if (
+      incoming.required !== undefined
+    ) {
+      output[key].required =
+        boolValue(
+          incoming.required,
+          output[key].required
+        );
     }
   }
 
-  function send(type, extra) {
-    try {
-      const qs = getQuery();
+  return output;
+}
 
-      const payload = Object.assign({
-        type: type,
-        path: window.location.pathname || "/",
-        referrer: document.referrer || "",
-        source: qs.get("utm_source") || "direct",
-        campaign: qs.get("utm_campaign") || "",
-        adset: qs.get("utm_content") || "",
-        event_id:
-          (window.crypto &&
-           crypto.randomUUID)
-            ? crypto.randomUUID()
-            : String(Date.now()) +
-              Math.random()
-      }, extra || {});
+async function getConfig(
+  env: Env
+): Promise<AppConfig> {
+  const raw =
+    (await env.CONFIG_KV.get(
+      CONFIG_KEY,
+      "json"
+    )) as any;
 
-      const body = JSON.stringify(payload);
-
-      if (navigator.sendBeacon) {
-        try {
-          navigator.sendBeacon(
-            ENDPOINT,
-            new Blob(
-              [body],
-              { type: "application/json" }
-            )
-          );
-          return;
-        } catch (_) {}
-      }
-
-      fetch(ENDPOINT, {
-        method: "POST",
-        headers: {
-          "content-type":
-            "application/json"
-        },
-        body: body,
-        keepalive: true
-      }).catch(function () {});
-    } catch (_) {}
-  }
-
-  window.SulanPixel = {
-    track: send
-  };
+  const base =
+    defaultConfig();
 
   if (
-    document.readyState === "loading"
+    !raw ||
+    typeof raw !== "object"
   ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      function () {
-        send("pageview");
-      }
-    );
-  } else {
-    send("pageview");
+    return base;
   }
 
-  document.addEventListener(
-    "click",
-    function (event) {
-      const target =
-        event.target &&
-        event.target.closest
-          ? event.target.closest(
-              "a[href*='whatsapp'],a[href*='/go/whatsapp'],[data-whatsapp]"
-            )
-          : null;
+  const routingMode =
+    raw.routing_mode ??
+    raw.routingMode;
 
-      if (target) {
-        send("whatsapp_click");
-      }
+  return {
+    version:
+      Number(
+        raw.version ??
+        base.version
+      ),
+
+    updated_at:
+      String(
+        raw.updated_at ??
+        raw.updatedAt ??
+        base.updated_at
+      ),
+
+    form_enabled:
+      boolValue(
+        raw.form_enabled ??
+          raw.formEnabled,
+        true
+      ),
+
+    routing_mode:
+      routingMode ===
+        "round_robin"
+        ? "round_robin"
+        : "single",
+
+    next_index:
+      Math.max(
+        0,
+        Number(
+          raw.next_index ??
+          raw.nextIndex ??
+          0
+        )
+      ),
+
+    pixels: {
+      meta:
+        normalizePixels(
+          raw.pixels?.meta ??
+            raw.meta_pixels ??
+            raw.metaPixels ??
+            []
+        ),
+
+      tiktok:
+        normalizePixels(
+          raw.pixels?.tiktok ??
+            raw.tiktok_pixels ??
+            raw.tiktokPixels ??
+            []
+        ),
     },
-    true
+
+    form_fields:
+      normalizeFormFields(
+        raw.form_fields ??
+          raw.formFields
+      ),
+  };
+}
+
+async function saveConfig(
+  env: Env,
+  config: AppConfig
+): Promise<AppConfig> {
+  const next: AppConfig = {
+    ...config,
+
+    version:
+      Number(config.version || 0) +
+      1,
+
+    updated_at:
+      new Date().toISOString(),
+  };
+
+  await env.CONFIG_KV.put(
+    CONFIG_KEY,
+    JSON.stringify(next)
   );
-})();
-`;
+
+  return next;
+}
+
 
 /* =========================================================
-   WhatsApp routing
+   WhatsApp
    ========================================================= */
 
-async function chooseWhatsAppNumber(
+function normalizePhone(
+  value: any
+): string {
+  return String(
+    value ?? ""
+  ).replace(/[^\d]/g, "");
+}
+
+function waUrl(
+  number: string,
+  message = ""
+): string {
+  const clean =
+    normalizePhone(number);
+
+  const base =
+    `https://wa.me/${clean}`;
+
+  if (!message) {
+    return base;
+  }
+
+  return (
+    `${base}?text=` +
+    encodeURIComponent(message)
+  );
+}
+
+async function getWhatsApp(
+  env: Env
+): Promise<WhatsAppNumber[]> {
+  const raw =
+    (await env.CONFIG_KV.get(
+      WHATSAPP_KEY,
+      "json"
+    )) as any;
+
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  return raw
+    .map(
+      (
+        item: any,
+        index: number
+      ) => ({
+        id:
+          Number(
+            item.id ??
+            index + 1
+          ),
+
+        label:
+          String(
+            item.label ??
+            `WhatsApp ${index + 1}`
+          ),
+
+        number:
+          normalizePhone(
+            item.number ??
+              item.phone ??
+              ""
+          ),
+
+        active:
+          item.active !== false,
+
+        is_default:
+          boolValue(
+            item.is_default ??
+              item.isDefault,
+            false
+          ),
+      })
+    )
+    .filter(
+      (item) =>
+        !!item.number
+    );
+}
+
+async function saveWhatsApp(
   env: Env,
-) {
-  const whatsapp =
-    await loadWhatsApp(env);
+  list: WhatsAppNumber[]
+): Promise<WhatsAppNumber[]> {
+  const cleaned =
+    list
+      .map(
+        (item, index) => ({
+          id:
+            Number(
+              item.id ??
+              Date.now() +
+                index
+            ),
+
+          label:
+            String(
+              item.label ??
+              `WhatsApp ${index + 1}`
+            ),
+
+          number:
+            normalizePhone(
+              item.number
+            ),
+
+          active:
+            item.active !== false,
+
+          is_default:
+            !!item.is_default,
+        })
+      )
+      .filter(
+        (item) =>
+          !!item.number
+      );
 
   const active =
-    whatsapp.numbers.filter(
-      (x: any) => x.active,
+    cleaned.filter(
+      (item) =>
+        item.active
     );
 
-  if (active.length === 0) {
-    return "";
+  let defaultId:
+    number | null = null;
+
+  const existingDefault =
+    active.find(
+      (item) =>
+        item.is_default
+    );
+
+  if (existingDefault) {
+    defaultId =
+      existingDefault.id;
+  } else if (active[0]) {
+    defaultId =
+      active[0].id;
   }
 
-  /*
-   * Single active number.
-   */
-  if (active.length === 1) {
-    return active[0].number;
-  }
+  const normalized =
+    cleaned.map(
+      (item) => ({
+        ...item,
 
-  /*
-   * Round-robin.
-   * Stored in CONFIG_KV to keep the routing
-   * state separate from the WhatsApp records.
-   */
-  const config = await loadConfig(env);
+        is_default:
+          item.active &&
+          item.id === defaultId,
+      })
+    );
 
-  const index =
-    Number(config.next_index || 0) %
-    active.length;
-
-  const selected =
-    active[index];
-
-  config.next_index =
-    (index + 1) % active.length;
-
-  await putKVJson(
-    env.CONFIG_KV,
-    CONFIG_KEY,
-    {
-      ...config,
-      updated_at: now(),
-    },
+  await env.CONFIG_KV.put(
+    WHATSAPP_KEY,
+    JSON.stringify(normalized)
   );
 
-  return selected.number;
+  return normalized;
 }
+
 
 /* =========================================================
-   Admin HTML
+   Stats
    ========================================================= */
 
-async function serveAdmin(
-  request: Request,
+async function getStats(
+  env: Env
+): Promise<Stats> {
+  const raw =
+    (await env.ADMIN_KV.get(
+      STATS_KEY,
+      "json"
+    )) as any;
+
+  return {
+    page_views:
+      Number(
+        raw?.page_views ??
+          raw?.pageViews ??
+          0
+      ),
+
+    whatsapp_clicks:
+      Number(
+        raw?.whatsapp_clicks ??
+          raw?.whatsappClicks ??
+          0
+      ),
+
+    form_submissions:
+      Number(
+        raw?.form_submissions ??
+          raw?.formSubmissions ??
+          0
+      ),
+  };
+}
+
+async function incrementStat(
   env: Env,
+  key: keyof Stats
 ) {
-  /*
-   * IMPORTANT:
-   *
-   * Never redirect here.
-   *
-   * All these paths directly return the
-   * same admin index:
-   *
-   * /admin
-   * /admin/
-   * /admin/login
-   * /admin/login/
-   * /admin/index.html
-   */
+  const stats =
+    await getStats(env);
 
-  const url = new URL(request.url);
+  stats[key] =
+    Number(stats[key] || 0) +
+    1;
 
-  const adminRequest =
-    new Request(
-      new URL(
-        "/admin/index.html",
-        url.origin,
-      ),
-      request,
-    );
+  await env.ADMIN_KV.put(
+    STATS_KEY,
+    JSON.stringify(stats)
+  );
 
-  const response =
-    await env.ASSETS.fetch(
-      adminRequest,
-    );
+  return stats;
+}
 
-  if (response.ok) {
-    return response;
+
+/* =========================================================
+   Event / Lead storage
+   ========================================================= */
+
+async function saveEvent(
+  env: Env,
+  input: Record<string, any>
+): Promise<{
+  event: Record<string, any>;
+  duplicate: boolean;
+}> {
+  const suppliedId =
+    String(
+      input.event_id ??
+        input.eventId ??
+        ""
+    ).trim();
+
+  const eventId =
+    suppliedId ||
+    crypto.randomUUID();
+
+  if (suppliedId) {
+    const dedupeKey =
+      `${DEDUPE_PREFIX}${suppliedId}`;
+
+    const existing =
+      await env.ADMIN_KV.get(
+        dedupeKey
+      );
+
+    if (existing) {
+      const old =
+        await env.ADMIN_KV.get(
+          `${EVENT_PREFIX}${existing}`,
+          "json"
+        );
+
+      return {
+        event:
+          old ||
+          {
+            id: suppliedId,
+            event_id:
+              suppliedId,
+          },
+
+        duplicate: true,
+      };
+    }
   }
 
-  /*
-   * Fallback for deployments where the admin
-   * page was uploaded as public_admin_index_v5.html.
-   */
-  const fallbackRequest =
-    new Request(
-      new URL(
-        "/admin/public_admin_index_v5.html",
-        url.origin,
-      ),
-      request,
-    );
+  const type =
+    String(
+      input.type ??
+        "event"
+    ).toLowerCase();
 
-  const fallback =
-    await env.ASSETS.fetch(
-      fallbackRequest,
-    );
+  const createdAt =
+    new Date().toISOString();
 
-  if (fallback.ok) {
-    return fallback;
+  const event = {
+    ...input,
+
+    id: eventId,
+
+    event_id:
+      eventId,
+
+    type,
+
+    created_at:
+      createdAt,
+  };
+
+  const eventKey =
+    `${EVENT_PREFIX}${createdAt}:${eventId}`;
+
+  await env.ADMIN_KV.put(
+    eventKey,
+    JSON.stringify(event),
+    {
+      expirationTtl:
+        60 * 60 * 24 * 180,
+    }
+  );
+
+  if (suppliedId) {
+    await env.ADMIN_KV.put(
+      `${DEDUPE_PREFIX}${suppliedId}`,
+      `${createdAt}:${eventId}`,
+      {
+        expirationTtl:
+          60 * 60 * 24 * 180,
+      }
+    );
   }
 
-  return html(
-    `
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Sulan Peptide Admin</title>
-</head>
-<body>
-<h1>Admin page not found</h1>
-<p>Please deploy public/admin/index.html.</p>
-</body>
-</html>
-    `,
-    404,
+  if (
+    type === "pageview"
+  ) {
+    await incrementStat(
+      env,
+      "page_views"
+    );
+  }
+
+  if (
+    type ===
+    "whatsapp_click"
+  ) {
+    await incrementStat(
+      env,
+      "whatsapp_clicks"
+    );
+  }
+
+  if (
+    type === "lead" ||
+    type === "form_submit"
+  ) {
+    await incrementStat(
+      env,
+      "form_submissions"
+    );
+  }
+
+  return {
+    event,
+    duplicate: false,
+  };
+}
+
+async function saveLead(
+  env: Env,
+  body: Record<string, any>,
+  eventId: string
+) {
+  const id =
+    crypto.randomUUID();
+
+  const createdAt =
+    new Date().toISOString();
+
+  const lead = {
+    ...body,
+
+    id,
+
+    event_id:
+      eventId,
+
+    created_at:
+      createdAt,
+
+    status:
+      "new",
+  };
+
+  await env.ADMIN_KV.put(
+    `${LEAD_PREFIX}${createdAt}:${id}`,
+    JSON.stringify(lead),
+    {
+      expirationTtl:
+        60 * 60 * 24 * 365,
+    }
+  );
+
+  return lead;
+}
+
+async function listByPrefix(
+  env: Env,
+  prefix: string,
+  limit = 500
+): Promise<any[]> {
+  const listed =
+    await env.ADMIN_KV.list({
+      prefix,
+      limit,
+    });
+
+  const rows: any[] = [];
+
+  for (
+    const key of listed.keys
+  ) {
+    const value =
+      await env.ADMIN_KV.get(
+        key.name,
+        "json"
+      );
+
+    if (value) {
+      rows.push(value);
+    }
+  }
+
+  rows.sort(
+    (a, b) =>
+      String(
+        b.created_at ?? ""
+      ).localeCompare(
+        String(
+          a.created_at ?? ""
+        )
+      )
+  );
+
+  return rows.slice(
+    0,
+    limit
   );
 }
+
+async function listEvents(
+  env: Env,
+  limit = 500
+) {
+  return listByPrefix(
+    env,
+    EVENT_PREFIX,
+    limit
+  );
+}
+
+async function listLeads(
+  env: Env,
+  limit = 500
+) {
+  return listByPrefix(
+    env,
+    LEAD_PREFIX,
+    limit
+  );
+}
+
+
+/* =========================================================
+   Asset routing
+   ========================================================= */
+
+async function serveAsset(
+  req: Request,
+  env: Env,
+  requestedPath: string
+): Promise<Response> {
+  if (
+    !env.ASSETS ||
+    typeof env.ASSETS.fetch !==
+      "function"
+  ) {
+    return text(
+      "ASSETS binding is not configured.",
+      500
+    );
+  }
+
+  const incoming =
+    new URL(req.url);
+
+  let cleanPath =
+    requestedPath || "/";
+
+  if (
+    !cleanPath.startsWith("/")
+  ) {
+    cleanPath =
+      "/" + cleanPath;
+  }
+
+  /*
+   * Admin entry points.
+   *
+   * There is intentionally NO authentication
+   * during the current development stage.
+   */
+  if (
+    cleanPath === "/admin" ||
+    cleanPath === "/admin/" ||
+    cleanPath === "/admin/login"
+  ) {
+    cleanPath =
+      "/admin/index.html";
+  }
+
+  /*
+   * Some deployments keep the admin file directly
+   * under /public/admin/.
+   */
+  if (
+    cleanPath ===
+    "/admin/index.html"
+  ) {
+    // keep as-is
+  }
+
+  /*
+   * Prevent accidental asset routing errors
+   * caused by malformed paths.
+   */
+  if (
+    cleanPath === "" ||
+    cleanPath === "//"
+  ) {
+    cleanPath = "/";
+  }
+
+  const target =
+    new URL(
+      cleanPath,
+      incoming.origin
+    );
+
+  target.search =
+    incoming.search;
+
+  const isBodyMethod =
+    req.method !== "GET" &&
+    req.method !== "HEAD";
+
+  const assetRequest =
+    new Request(
+      target.toString(),
+      {
+        method:
+          req.method,
+
+        headers:
+          req.headers,
+
+        body:
+          isBodyMethod
+            ? req.body
+            : undefined,
+
+        redirect:
+          "manual",
+      }
+    );
+
+  try {
+    const response =
+      await env.ASSETS.fetch(
+        assetRequest
+      );
+
+    /*
+     * If an admin entry asset is not found,
+     * provide a useful response instead of
+     * allowing confusing routing behavior.
+     */
+    if (
+      response.status === 404 &&
+      cleanPath ===
+        "/admin/index.html"
+    ) {
+      return text(
+        "Admin asset not found: /admin/index.html",
+        404
+      );
+    }
+
+    return response;
+  } catch (error) {
+    console.error(
+      "ASSETS_FETCH_ERROR",
+      error
+    );
+
+    return text(
+      "Asset fetch failed.",
+      500
+    );
+  }
+}
+
+
+/* =========================================================
+   Health
+   ========================================================= */
+
+async function handleHealth(
+  env: Env
+) {
+  let configOk = false;
+  let adminOk = false;
+
+  try {
+    await env.CONFIG_KV.get(
+      CONFIG_KEY
+    );
+
+    configOk = true;
+  } catch (error) {
+    console.error(
+      "CONFIG_KV_HEALTH_ERROR",
+      error
+    );
+  }
+
+  try {
+    await env.ADMIN_KV.get(
+      STATS_KEY
+    );
+
+    adminOk = true;
+  } catch (error) {
+    console.error(
+      "ADMIN_KV_HEALTH_ERROR",
+      error
+    );
+  }
+
+  const assetsOk =
+    !!env.ASSETS &&
+    typeof env.ASSETS.fetch ===
+      "function";
+
+  const ok =
+    configOk &&
+    adminOk &&
+    assetsOk;
+
+  return json(
+    {
+      ok,
+
+      service:
+        "sulan-peptide-worker",
+
+      mode:
+        "development-no-auth",
+
+      timestamp:
+        new Date().toISOString(),
+
+      bindings: {
+        CONFIG_KV:
+          configOk,
+
+        ADMIN_KV:
+          adminOk,
+
+        ASSETS:
+          assetsOk,
+      },
+    },
+
+    ok
+      ? 200
+      : 503
+  );
+}
+
 
 /* =========================================================
    Public API
    ========================================================= */
 
 async function handlePublicApi(
-  request: Request,
-  pathname: string,
+  req: Request,
   env: Env,
-) {
-  if (
-    request.method === "OPTIONS"
-  ) {
-    return noContent();
-  }
+  url: URL
+): Promise<Response | null> {
 
-  if (pathname === "/api/health") {
+  /*
+   * Public config
+   */
+  if (
+    url.pathname ===
+      "/api/public/config" &&
+    req.method === "GET"
+  ) {
+    const config =
+      await getConfig(env);
+
+    const whatsapp =
+      await getWhatsApp(env);
+
     return json({
-      ok: true,
-      service:
-        "sulan-peptide-worker",
-      mode:
-        "development-no-auth",
-      timestamp: now(),
-      bindings: {
-        CONFIG_KV: Boolean(
-          env.CONFIG_KV,
+      form_enabled:
+        config.form_enabled,
+
+      form_fields:
+        config.form_fields,
+
+      routing_mode:
+        config.routing_mode,
+
+      pixels:
+        config.pixels,
+
+      whatsapp:
+        whatsapp.filter(
+          (item) =>
+            item.active
         ),
-        ADMIN_KV: Boolean(
-          env.ADMIN_KV,
-        ),
-        ASSETS: Boolean(
-          env.ASSETS,
-        ),
-      },
+
+      version:
+        config.version,
+
+      updated_at:
+        config.updated_at,
     });
   }
 
-  if (
-    pathname === "/api/public/config"
-  ) {
-    return json(
-      await publicConfig(env),
-    );
-  }
-
-  if (
-    pathname === "/api/public/pixels"
-  ) {
-    const pixels =
-      await getAllPixels(env);
-
-    return json(pixels);
-  }
-
-  if (
-    pathname === "/api/whatsapp"
-  ) {
-    return json(
-      await loadWhatsApp(env),
-    );
-  }
 
   /*
-   * Public event collector.
+   * Public pixels
    */
   if (
-    pathname === "/api/event" &&
-    request.method === "POST"
+    url.pathname ===
+      "/api/public/pixels" &&
+    req.method === "GET"
   ) {
-    const input =
-      await readJson(request);
+    const config =
+      await getConfig(env);
 
-    const event =
-      await addEvent(
-        env,
-        input,
+    return json({
+      meta:
+        config.pixels.meta.filter(
+          (item) =>
+            item.enabled
+        ),
+
+      tiktok:
+        config.pixels.tiktok.filter(
+          (item) =>
+            item.enabled
+        ),
+    });
+  }
+
+
+  /*
+   * Public WhatsApp
+   */
+  if (
+    url.pathname ===
+      "/api/whatsapp" &&
+    req.method === "GET"
+  ) {
+    const config =
+      await getConfig(env);
+
+    const numbers =
+      (
+        await getWhatsApp(env)
+      ).filter(
+        (item) =>
+          item.active
       );
 
-    const type =
-      cleanString(input?.type);
+    const selected =
+      numbers.find(
+        (item) =>
+          item.is_default
+      ) ??
+      numbers[0] ??
+      null;
 
-    if (type === "pageview") {
-      await incrementStat(
-        env,
-        "page_views",
+    return json({
+      routing_mode:
+        config.routing_mode,
+
+      number:
+        selected?.number ??
+        null,
+
+      numbers,
+    });
+  }
+
+
+  /*
+   * =======================================================
+   * IMPORTANT:
+   *
+   * /go/whatsapp is the real public navigation endpoint.
+   *
+   * This fixes the previous 404 problem.
+   * =======================================================
+   */
+  if (
+    url.pathname ===
+      "/go/whatsapp" &&
+    (
+      req.method === "GET" ||
+      req.method === "HEAD"
+    )
+  ) {
+    const config =
+      await getConfig(env);
+
+    const active =
+      (
+        await getWhatsApp(env)
+      ).filter(
+        (item) =>
+          item.active &&
+          !!item.number
       );
+
+    if (!active.length) {
+      return text(
+        "WhatsApp is not configured.",
+        503
+      );
+    }
+
+    let selected:
+      WhatsAppNumber;
+
+    if (
+      config.routing_mode ===
+      "round_robin"
+    ) {
+      const currentIndex =
+        Math.max(
+          0,
+          Number(
+            config.next_index || 0
+          )
+        );
+
+      const index =
+        currentIndex %
+        active.length;
+
+      selected =
+        active[index];
+
+      const nextConfig:
+        AppConfig = {
+        ...config,
+
+        next_index:
+          (index + 1) %
+          active.length,
+      };
+
+      /*
+       * Persist the next index.
+       *
+       * KV is not an atomic counter, but this is
+       * deterministic for normal traffic.
+       */
+      await saveConfig(
+        env,
+        nextConfig
+      );
+    } else {
+      selected =
+        active.find(
+          (item) =>
+            item.is_default
+        ) ??
+        active[0];
+    }
+
+    const message =
+      url.searchParams.get(
+        "text"
+      ) ??
+      url.searchParams.get(
+        "message"
+      ) ??
+      "";
+
+    const eventId =
+      url.searchParams.get(
+        "event_id"
+      ) ??
+      crypto.randomUUID();
+
+    await saveEvent(
+      env,
+      {
+        event_id:
+          eventId,
+
+        type:
+          "whatsapp_click",
+
+        number:
+          selected.number,
+
+        label:
+          selected.label,
+
+        path:
+          url.pathname,
+
+        referrer:
+          req.headers.get(
+            "Referer"
+          ) || "",
+
+        source:
+          url.searchParams.get(
+            "utm_source"
+          ) || "",
+
+        campaign:
+          url.searchParams.get(
+            "utm_campaign"
+          ) || "",
+
+        adset:
+          url.searchParams.get(
+            "utm_adset"
+          ) || "",
+
+        country:
+          req.headers.get(
+            "CF-IPCountry"
+          ) || "",
+
+        user_agent:
+          req.headers.get(
+            "User-Agent"
+          ) || "",
+      }
+    );
+
+    /*
+     * HEAD does not need a body,
+     * but browsers normally use GET.
+     */
+    if (
+      req.method === "HEAD"
+    ) {
+      return new Response(
+        null,
+        {
+          status: 302,
+
+          headers: {
+            Location:
+              waUrl(
+                selected.number,
+                message
+              ),
+
+            "cache-control":
+              "no-store",
+          },
+        }
+      );
+    }
+
+    return new Response(
+      null,
+      {
+        status: 302,
+
+        headers: {
+          Location:
+            waUrl(
+              selected.number,
+              message
+            ),
+
+          "cache-control":
+            "no-store",
+
+          "Referrer-Policy":
+            "no-referrer-when-downgrade",
+        },
+      }
+    );
+  }
+
+
+  /*
+   * Backward-compatible redirect endpoint.
+   */
+  if (
+    url.pathname ===
+      "/api/whatsapp/redirect" &&
+    (
+      req.method === "GET" ||
+      req.method === "POST"
+    )
+  ) {
+    const redirectUrl =
+      new URL(url.toString());
+
+    redirectUrl.pathname =
+      "/go/whatsapp";
+
+    return new Response(
+      null,
+      {
+        status: 302,
+
+        headers: {
+          Location:
+            redirectUrl.toString(),
+
+          "cache-control":
+            "no-store",
+        },
+      }
+    );
+  }
+
+
+  /*
+   * Event endpoints
+   */
+  const eventPaths =
+    new Set([
+      "/api/event",
+      "/api/pageview",
+      "/api/whatsapp-click",
+      "/api/form-submit",
+      "/api/lead",
+    ]);
+
+  if (
+    eventPaths.has(
+      url.pathname
+    ) &&
+    req.method === "POST"
+  ) {
+    const body =
+      await readJson(req);
+
+    let type =
+      String(
+        body.type ??
+          "event"
+      ).toLowerCase();
+
+    if (
+      url.pathname ===
+      "/api/pageview"
+    ) {
+      type =
+        "pageview";
     }
 
     if (
-      type === "whatsapp_click"
+      url.pathname ===
+      "/api/whatsapp-click"
     ) {
-      await incrementStat(
-        env,
-        "whatsapp_clicks",
-      );
+      type =
+        "whatsapp_click";
     }
 
-    return json({
-      ok: true,
-      event_id: event.id,
-    });
-  }
+    if (
+      url.pathname ===
+        "/api/form-submit" ||
+      url.pathname ===
+        "/api/lead"
+    ) {
+      type =
+        "lead";
+    }
 
-  /*
-   * Public lead submission.
-   */
-  if (
-    pathname === "/api/leads" &&
-    request.method === "POST"
-  ) {
-    const config =
-      await loadConfig(env);
+    /*
+     * FORM SWITCH:
+     *
+     * This is now enforced server-side.
+     *
+     * Even if somebody manually POSTs /api/lead,
+     * disabled form means no lead will be created.
+     */
+    if (
+      type === "lead"
+    ) {
+      const config =
+        await getConfig(env);
 
-    if (!config.form_enabled) {
-      return json(
+      if (
+        config.form_enabled ===
+        false
+      ) {
+        return json(
+          {
+            ok: false,
+
+            error:
+              "Form is currently disabled.",
+          },
+
+          403
+        );
+      }
+    }
+
+    const eventId =
+      String(
+        body.event_id ??
+          body.eventId ??
+          ""
+      ).trim() ||
+      crypto.randomUUID();
+
+    const result =
+      await saveEvent(
+        env,
         {
-          ok: false,
-          error:
-            "Form is currently disabled",
-        },
-        403,
+          ...body,
+
+          event_id:
+            eventId,
+
+          type,
+
+          ip:
+            req.headers.get(
+              "CF-Connecting-IP"
+            ) || "",
+
+          country:
+            req.headers.get(
+              "CF-IPCountry"
+            ) || "",
+
+          user_agent:
+            req.headers.get(
+              "User-Agent"
+            ) || "",
+        }
+      );
+
+    if (
+      !result.duplicate &&
+      type === "lead"
+    ) {
+      await saveLead(
+        env,
+        body,
+        eventId
       );
     }
 
-    const input =
-      await readJson(request);
-
-    const lead =
-      await addLead(
-        env,
-        input,
-      );
-
     return json({
       ok: true,
-      id: lead.id,
+
+      duplicate:
+        result.duplicate,
+
+      event_id:
+        eventId,
     });
   }
 
-  return json(
-    {
-      error: "Not Found",
-      path: pathname,
-    },
-    404,
-  );
+  return null;
 }
+
+
+/* =========================================================
+   Admin config update helpers
+   ========================================================= */
+
+function applySettings(
+  config: AppConfig,
+  body: Record<string, any>
+): AppConfig {
+  const formEnabled =
+    body.form_enabled ??
+    body.formEnabled ??
+    body.enabled;
+
+  if (
+    formEnabled !== undefined
+  ) {
+    config.form_enabled =
+      boolValue(
+        formEnabled,
+        config.form_enabled
+      );
+  }
+
+  const routing =
+    body.routing_mode ??
+    body.routingMode;
+
+  if (
+    routing === "single" ||
+    routing === "round_robin"
+  ) {
+    config.routing_mode =
+      routing;
+  }
+
+  const fields =
+    body.form_fields ??
+    body.formFields;
+
+  if (
+    fields &&
+    typeof fields === "object"
+  ) {
+    config.form_fields =
+      normalizeFormFields(
+        fields
+      );
+  }
+
+  return config;
+}
+
 
 /* =========================================================
    Admin API
    ========================================================= */
 
 async function handleAdminApi(
-  request: Request,
-  pathname: string,
+  req: Request,
   env: Env,
-) {
-  if (
-    request.method === "OPTIONS"
-  ) {
-    return noContent();
-  }
+  url: URL
+): Promise<Response> {
 
   /*
-   * IMPORTANT:
-   *
-   * Authentication is intentionally disabled
-   * during development.
+   * =======================================================
+   * CONFIG GET
+   * =======================================================
    */
-
-  /* -----------------------------------------
-     Config
-     ----------------------------------------- */
-
   if (
-    pathname === "/api/admin/config"
+    url.pathname ===
+      "/api/admin/config" &&
+    req.method === "GET"
   ) {
-    if (request.method === "GET") {
-      return json(
-        await loadConfig(env),
-      );
-    }
-
-    if (
-      request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "PATCH"
-    ) {
-      const input =
-        await readJson(request);
-
-      const config =
-        await saveConfig(
-          env,
-          input,
-        );
-
-      return json({
-        ok: true,
-        config,
-      });
-    }
+    return json(
+      await getConfig(env)
+    );
   }
 
-  /* -----------------------------------------
-     Pixels
-     ----------------------------------------- */
-
-  if (
-    pathname === "/api/admin/pixels"
-  ) {
-    if (request.method === "GET") {
-      return json(
-        await getAllPixels(env),
-      );
-    }
-
-    if (
-      request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "PATCH"
-    ) {
-      const input =
-        await readJson(request);
-
-      const current =
-        await getAllPixels(env);
-
-      /*
-       * Accept either:
-       *
-       * {
-       *   "meta": [...]
-       * }
-       *
-       * or:
-       *
-       * {
-       *   "platform": "meta",
-       *   "pixel": {...}
-       * }
-       */
-
-      if (
-        input?.meta ||
-        input?.tiktok
-      ) {
-        const pixels =
-          await saveAllPixels(
-            env,
-            {
-              meta:
-                input.meta ??
-                current.meta,
-
-              tiktok:
-                input.tiktok ??
-                current.tiktok,
-            },
-          );
-
-        return json({
-          ok: true,
-          pixels,
-        });
-      }
-
-      const platform =
-        cleanString(
-          input?.platform,
-        );
-
-      const pixel =
-        normalizePixel(
-          input?.pixel ??
-          input,
-        );
-
-      if (
-        platform !== "meta" &&
-        platform !== "tiktok"
-      ) {
-        return json(
-          {
-            ok: false,
-            error:
-              "platform must be meta or tiktok",
-          },
-          400,
-        );
-      }
-
-      if (!pixel.id) {
-        return json(
-          {
-            ok: false,
-            error:
-              "Pixel ID is required",
-          },
-          400,
-        );
-      }
-
-      const list =
-        Array.isArray(
-          current[platform],
-        )
-          ? current[platform]
-          : [];
-
-      const existing =
-        list.findIndex(
-          (x: any) =>
-            String(x.id) ===
-            String(pixel.id),
-        );
-
-      if (existing >= 0) {
-        list[existing] = pixel;
-      } else {
-        list.push(pixel);
-      }
-
-      const pixels =
-        await saveAllPixels(
-          env,
-          {
-            ...current,
-            [platform]: list,
-          },
-        );
-
-      return json({
-        ok: true,
-        pixel,
-        pixels,
-      });
-    }
-
-    if (
-      request.method === "DELETE"
-    ) {
-      const url =
-        new URL(request.url);
-
-      const platform =
-        cleanString(
-          url.searchParams.get(
-            "platform",
-          ),
-        );
-
-      const id =
-        cleanString(
-          url.searchParams.get("id"),
-        );
-
-      const current =
-        await getAllPixels(env);
-
-      if (
-        platform !== "meta" &&
-        platform !== "tiktok"
-      ) {
-        return json(
-          {
-            ok: false,
-            error:
-              "platform must be meta or tiktok",
-          },
-          400,
-        );
-      }
-
-      current[platform] =
-        current[platform].filter(
-          (x: any) =>
-            String(x.id) !==
-            String(id),
-        );
-
-      const pixels =
-        await saveAllPixels(
-          env,
-          current,
-        );
-
-      return json({
-        ok: true,
-        pixels,
-      });
-    }
-  }
-
-  /* -----------------------------------------
-     WhatsApp
-     ----------------------------------------- */
-
-  if (
-    pathname === "/api/admin/whatsapp"
-  ) {
-    if (request.method === "GET") {
-      return json(
-        await loadWhatsApp(env),
-      );
-    }
-
-    if (
-      request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "PATCH"
-    ) {
-      const input =
-        await readJson(request);
-
-      const current =
-        await loadWhatsApp(env);
-
-      /*
-       * Support:
-       *
-       * {
-       *   "numbers": [...]
-       * }
-       *
-       * and:
-       *
-       * {
-       *   "number": "..."
-       * }
-       *
-       * and:
-       *
-       * {
-       *   "action": "add",
-       *   "number": {...}
-       * }
-       */
-
-      if (
-        input?.action === "add"
-      ) {
-        const numbers =
-          Array.isArray(
-            current.numbers,
-          )
-            ? [...current.numbers]
-            : [];
-
-        const item =
-          normalizeWhatsApp({
-            numbers: [
-              input.number,
-            ],
-          }).numbers[0];
-
-        if (!item) {
-          return json(
-            {
-              ok: false,
-              error:
-                "Invalid WhatsApp number",
-            },
-            400,
-          );
-        }
-
-        numbers.push(item);
-
-        const result =
-          await saveWhatsApp(
-            env,
-            {
-              ...current,
-              numbers,
-            },
-          );
-
-        return json({
-          ok: true,
-          whatsapp: result,
-        });
-      }
-
-      if (
-        input?.action === "delete"
-      ) {
-        const id =
-          input?.id;
-
-        const numbers =
-          current.numbers.filter(
-            (x: any) =>
-              String(x.id) !==
-              String(id),
-          );
-
-        const result =
-          await saveWhatsApp(
-            env,
-            {
-              ...current,
-              numbers,
-            },
-          );
-
-        return json({
-          ok: true,
-          whatsapp: result,
-        });
-      }
-
-      if (
-        input?.action ===
-        "toggle"
-      ) {
-        const id =
-          input?.id;
-
-        const numbers =
-          current.numbers.map(
-            (x: any) =>
-              String(x.id) ===
-              String(id)
-                ? {
-                    ...x,
-                    active:
-                      input.active !==
-                      undefined
-                        ? Boolean(
-                            input.active,
-                          )
-                        : !x.active,
-                  }
-                : x,
-          );
-
-        const result =
-          await saveWhatsApp(
-            env,
-            {
-              ...current,
-              numbers,
-            },
-          );
-
-        return json({
-          ok: true,
-          whatsapp: result,
-        });
-      }
-
-      if (
-        input?.action ===
-        "default"
-      ) {
-        const id =
-          input?.id;
-
-        const numbers =
-          current.numbers.map(
-            (x: any) => ({
-              ...x,
-              is_default:
-                String(x.id) ===
-                String(id),
-            }),
-          );
-
-        const result =
-          await saveWhatsApp(
-            env,
-            {
-              ...current,
-              numbers,
-            },
-          );
-
-        return json({
-          ok: true,
-          whatsapp: result,
-        });
-      }
-
-      const result =
-        await saveWhatsApp(
-          env,
-          {
-            ...current,
-            ...input,
-          },
-        );
-
-      return json({
-        ok: true,
-        whatsapp: result,
-      });
-    }
-
-    if (
-      request.method === "DELETE"
-    ) {
-      const url =
-        new URL(request.url);
-
-      const id =
-        cleanString(
-          url.searchParams.get(
-            "id",
-          ),
-        );
-
-      const current =
-        await loadWhatsApp(env);
-
-      const result =
-        await saveWhatsApp(
-          env,
-          {
-            ...current,
-            numbers:
-              current.numbers.filter(
-                (x: any) =>
-                  String(x.id) !==
-                  String(id),
-              ),
-          },
-        );
-
-      return json({
-        ok: true,
-        whatsapp: result,
-      });
-    }
-  }
-
-  /* -----------------------------------------
-     Stats
-     ----------------------------------------- */
-
-  if (
-    pathname === "/api/admin/stats"
-  ) {
-    if (request.method === "GET") {
-      return json(
-        await loadStats(env),
-      );
-    }
-
-    if (
-      request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "PATCH"
-    ) {
-      const input =
-        await readJson(request);
-
-      const stats =
-        await saveStats(
-          env,
-          input,
-        );
-
-      return json({
-        ok: true,
-        stats,
-      });
-    }
-  }
-
-  /* -----------------------------------------
-     Events
-     ----------------------------------------- */
-
-  if (
-    pathname === "/api/admin/events"
-  ) {
-    if (request.method === "GET") {
-      const events =
-        await loadEvents(env);
-
-      const url =
-        new URL(request.url);
-
-      const limit =
-        Math.min(
-          Math.max(
-            Number(
-              url.searchParams.get(
-                "limit",
-              ) || 100,
-            ),
-            1,
-          ),
-          1000,
-        );
-
-      return json(
-        events.slice(-limit).reverse(),
-      );
-    }
-
-    if (
-      request.method === "DELETE"
-    ) {
-      await putKVJson(
-        env.ADMIN_KV,
-        EVENTS_KEY,
-        [],
-      );
-
-      return json({
-        ok: true,
-        events: [],
-      });
-    }
-
-    if (
-      request.method === "POST"
-    ) {
-      const input =
-        await readJson(request);
-
-      const event =
-        await addEvent(
-          env,
-          input,
-        );
-
-      return json({
-        ok: true,
-        event,
-      });
-    }
-  }
-
-  /* -----------------------------------------
-     Leads
-     ----------------------------------------- */
-
-  if (
-    pathname === "/api/admin/leads"
-  ) {
-    if (request.method === "GET") {
-      const leads =
-        await loadLeads(env);
-
-      const url =
-        new URL(request.url);
-
-      const limit =
-        Math.min(
-          Math.max(
-            Number(
-              url.searchParams.get(
-                "limit",
-              ) || 100,
-            ),
-            1,
-          ),
-          1000,
-        );
-
-      return json(
-        leads.slice(-limit).reverse(),
-      );
-    }
-
-    if (
-      request.method === "POST"
-    ) {
-      const input =
-        await readJson(request);
-
-      const lead =
-        await addLead(
-          env,
-          input,
-        );
-
-      return json({
-        ok: true,
-        lead,
-      });
-    }
-
-    if (
-      request.method === "DELETE"
-    ) {
-      await putKVJson(
-        env.ADMIN_KV,
-        LEADS_KEY,
-        [],
-      );
-
-      return json({
-        ok: true,
-        leads: [],
-      });
-    }
-  }
-
-  return json(
-    {
-      error: "Admin API Not Found",
-      path: pathname,
-    },
-    404,
-  );
-}
-
-/* =========================================================
-   Static asset handling
-   ========================================================= */
-
-async function serveAsset(
-  request: Request,
-  env: Env,
-) {
-  const url =
-    new URL(request.url);
 
   /*
-   * favicon:
+   * CONFIG POST/PATCH
    *
-   * Prevent favicon requests from reaching
-   * application routing and creating noisy errors.
+   * Added for compatibility with
+   * different versions of admin UI.
    */
   if (
-    url.pathname === "/favicon.ico"
+    url.pathname ===
+      "/api/admin/config" &&
+    (
+      req.method === "POST" ||
+      req.method === "PATCH"
+    )
   ) {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        "cache-control":
-          "public, max-age=86400",
-      },
+    const body =
+      await readJson(req);
+
+    const current =
+      await getConfig(env);
+
+    applySettings(
+      current,
+      body
+    );
+
+    /*
+     * Optional complete pixel replacement.
+     */
+    if (
+      body.pixels &&
+      typeof body.pixels ===
+        "object"
+    ) {
+      if (
+        body.pixels.meta !==
+        undefined
+      ) {
+        current.pixels.meta =
+          normalizePixels(
+            body.pixels.meta
+          );
+      }
+
+      if (
+        body.pixels.tiktok !==
+        undefined
+      ) {
+        current.pixels.tiktok =
+          normalizePixels(
+            body.pixels.tiktok
+          );
+      }
+    }
+
+    return json(
+      await saveConfig(
+        env,
+        current
+      )
+    );
+  }
+
+
+  /*
+   * SETTINGS GET
+   */
+  if (
+    url.pathname ===
+      "/api/admin/settings" &&
+    req.method === "GET"
+  ) {
+    const config =
+      await getConfig(env);
+
+    return json({
+      form_enabled:
+        config.form_enabled,
+
+      formEnabled:
+        config.form_enabled,
+
+      routing_mode:
+        config.routing_mode,
+
+      routingMode:
+        config.routing_mode,
+
+      form_fields:
+        config.form_fields,
+
+      formFields:
+        config.form_fields,
+
+      version:
+        config.version,
+
+      updated_at:
+        config.updated_at,
     });
   }
 
-  const response =
-    await env.ASSETS.fetch(
-      request,
+
+  /*
+   * SETTINGS POST/PATCH
+   */
+  if (
+    url.pathname ===
+      "/api/admin/settings" &&
+    (
+      req.method === "POST" ||
+      req.method === "PATCH"
+    )
+  ) {
+    const body =
+      await readJson(req);
+
+    const current =
+      await getConfig(env);
+
+    applySettings(
+      current,
+      body
     );
 
-  if (response.status !== 404) {
-    return response;
+    return json(
+      await saveConfig(
+        env,
+        current
+      )
+    );
   }
 
-  return text(
-    "Not Found",
-    404,
+
+  /*
+   * STATS
+   */
+  if (
+    url.pathname ===
+      "/api/admin/stats" &&
+    req.method === "GET"
+  ) {
+    const stats =
+      await getStats(env);
+
+    const views =
+      stats.page_views;
+
+    return json({
+      ...stats,
+
+      pageViews:
+        stats.page_views,
+
+      whatsappClicks:
+        stats.whatsapp_clicks,
+
+      formSubmissions:
+        stats.form_submissions,
+
+      ctr:
+        views > 0
+          ? Number(
+              (
+                (stats.whatsapp_clicks /
+                  views) *
+                100
+              ).toFixed(2)
+            )
+          : 0,
+    });
+  }
+
+
+  /*
+   * EVENTS
+   */
+  if (
+    url.pathname ===
+      "/api/admin/events" &&
+    req.method === "GET"
+  ) {
+    const limit =
+      Math.min(
+        500,
+
+        Math.max(
+          1,
+
+          Number(
+            url.searchParams.get(
+              "limit"
+            ) || 200
+          )
+        )
+      );
+
+    return json(
+      await listEvents(
+        env,
+        limit
+      )
+    );
+  }
+
+
+  /*
+   * LEADS
+   */
+  if (
+    url.pathname ===
+      "/api/admin/leads" &&
+    req.method === "GET"
+  ) {
+    const limit =
+      Math.min(
+        500,
+
+        Math.max(
+          1,
+
+          Number(
+            url.searchParams.get(
+              "limit"
+            ) || 200
+          )
+        )
+      );
+
+    return json(
+      await listLeads(
+        env,
+        limit
+      )
+    );
+  }
+
+
+  /*
+   * UPDATE LEAD
+   */
+  if (
+    url.pathname.startsWith(
+      "/api/admin/leads/"
+    ) &&
+    req.method === "PATCH"
+  ) {
+    const id =
+      decodeURIComponent(
+        url.pathname.slice(
+          "/api/admin/leads/"
+            .length
+        )
+      );
+
+    const body =
+      await readJson(req);
+
+    const leads =
+      await listLeads(
+        env,
+        500
+      );
+
+    const lead =
+      leads.find(
+        (item) =>
+          String(item.id) ===
+          id
+      );
+
+    if (!lead) {
+      return json(
+        {
+          error:
+            "Lead not found.",
+        },
+        404
+      );
+    }
+
+    const statuses =
+      new Set([
+        "new",
+        "contacted",
+        "qualified",
+        "won",
+        "lost",
+      ]);
+
+    if (
+      body.status !==
+        undefined &&
+      statuses.has(
+        String(body.status)
+      )
+    ) {
+      lead.status =
+        String(
+          body.status
+        );
+    }
+
+    if (
+      body.notes !==
+        undefined
+    ) {
+      lead.notes =
+        String(
+          body.notes
+        );
+    }
+
+    await env.ADMIN_KV.put(
+      `${LEAD_PREFIX}${lead.created_at}:${lead.id}`,
+      JSON.stringify(lead),
+      {
+        expirationTtl:
+          60 * 60 * 24 * 365,
+      }
+    );
+
+    return json(lead);
+  }
+
+
+  /*
+   * CSV
+   */
+  if (
+    url.pathname ===
+      "/api/admin/leads.csv" &&
+    req.method === "GET"
+  ) {
+    const leads =
+      await listLeads(
+        env,
+        500
+      );
+
+    const header = [
+      "id",
+      "created_at",
+      "status",
+      "name",
+      "email",
+      "whatsapp",
+      "company",
+      "country",
+      "message",
+      "source",
+      "campaign",
+      "adset",
+    ];
+
+    const escapeCsv =
+      (value: any) =>
+        `"${String(
+          value ?? ""
+        ).replace(
+          /"/g,
+          '""'
+        )}"`;
+
+    const lines = [
+      header.join(","),
+    ];
+
+    for (
+      const lead of leads
+    ) {
+      lines.push(
+        header
+          .map(
+            (key) =>
+              escapeCsv(
+                lead[key]
+              )
+          )
+          .join(",")
+      );
+    }
+
+    return new Response(
+      lines.join("\n"),
+      {
+        status: 200,
+
+        headers: {
+          "content-type":
+            "text/csv; charset=utf-8",
+
+          "content-disposition":
+            'attachment; filename="sulan-leads.csv"',
+
+          "cache-control":
+            "no-store",
+        },
+      }
+    );
+  }
+
+
+  /* =======================================================
+     WHATSAPP ADMIN
+     ======================================================= */
+
+  if (
+    url.pathname ===
+      "/api/admin/whatsapp" &&
+    req.method === "GET"
+  ) {
+    return json(
+      await getWhatsApp(env)
+    );
+  }
+
+
+  /*
+   * Add / update WhatsApp
+   */
+  if (
+    url.pathname ===
+      "/api/admin/whatsapp" &&
+    (
+      req.method === "POST" ||
+      req.method === "PUT"
+    )
+  ) {
+    const body =
+      await readJson(req);
+
+    const list =
+      await getWhatsApp(env);
+
+    const rawId =
+      body.id ??
+      body.whatsapp_id;
+
+    const id =
+      rawId !== undefined &&
+      rawId !== null &&
+      String(rawId).trim()
+        ? Number(rawId)
+        : Date.now();
+
+    const number =
+      normalizePhone(
+        body.number ??
+          body.phone ??
+          body.whatsapp
+      );
+
+    if (!number) {
+      return json(
+        {
+          error:
+            "WhatsApp number is required.",
+        },
+        400
+      );
+    }
+
+    const item:
+      WhatsAppNumber = {
+      id,
+
+      label:
+        String(
+          body.label ??
+            body.name ??
+            "WhatsApp"
+        ),
+
+      number,
+
+      active:
+        body.active ===
+        undefined
+          ? true
+          : boolValue(
+              body.active,
+              true
+            ),
+
+      is_default:
+        boolValue(
+          body.is_default ??
+            body.isDefault ??
+            false
+        ),
+    };
+
+    const index =
+      list.findIndex(
+        (x) =>
+          x.id === id
+      );
+
+    if (index >= 0) {
+      list[index] = {
+        ...list[index],
+        ...item,
+      };
+    } else {
+      list.push(item);
+    }
+
+    if (
+      item.is_default
+    ) {
+      for (
+        const x of list
+      ) {
+        x.is_default =
+          x.id === id;
+      }
+    }
+
+    const saved =
+      await saveWhatsApp(
+        env,
+        list
+      );
+
+    return json(
+      saved.find(
+        (x) =>
+          x.id === id
+      ) ?? item
+    );
+  }
+
+
+  /*
+   * PATCH WhatsApp
+   */
+  if (
+    url.pathname.startsWith(
+      "/api/admin/whatsapp/"
+    ) &&
+    req.method === "PATCH"
+  ) {
+    const id =
+      Number(
+        decodeURIComponent(
+          url.pathname.slice(
+            "/api/admin/whatsapp/"
+              .length
+          )
+        )
+      );
+
+    const body =
+      await readJson(req);
+
+    const list =
+      await getWhatsApp(env);
+
+    const item =
+      list.find(
+        (x) =>
+          x.id === id
+      );
+
+    if (!item) {
+      return json(
+        {
+          error:
+            "WhatsApp number not found.",
+        },
+        404
+      );
+    }
+
+    const action =
+      String(
+        body.action ??
+          ""
+      ).trim();
+
+    if (
+      action === "delete"
+    ) {
+      await saveWhatsApp(
+        env,
+        list.filter(
+          (x) =>
+            x.id !== id
+        )
+      );
+
+      return noContent();
+    }
+
+    if (
+      action === "enable"
+    ) {
+      item.active = true;
+    }
+
+    if (
+      action === "disable"
+    ) {
+      item.active = false;
+    }
+
+    if (
+      action === "default"
+    ) {
+      for (
+        const x of list
+      ) {
+        x.is_default =
+          x.id === id;
+      }
+
+      item.active = true;
+    }
+
+    if (
+      body.label !==
+        undefined
+    ) {
+      item.label =
+        String(
+          body.label
+        );
+    }
+
+    if (
+      body.number !==
+        undefined
+    ) {
+      item.number =
+        normalizePhone(
+          body.number
+        );
+    }
+
+    if (
+      body.phone !==
+        undefined
+    ) {
+      item.number =
+        normalizePhone(
+          body.phone
+        );
+    }
+
+    if (
+      body.active !==
+        undefined
+    ) {
+      item.active =
+        boolValue(
+          body.active,
+          item.active
+        );
+    }
+
+    if (
+      body.is_default !==
+        undefined ||
+      body.isDefault !==
+        undefined
+    ) {
+      item.is_default =
+        boolValue(
+          body.is_default ??
+            body.isDefault,
+          item.is_default
+        );
+
+      if (
+        item.is_default
+      ) {
+        for (
+          const x of list
+        ) {
+          x.is_default =
+            x.id === id;
+        }
+
+        item.active = true;
+      }
+    }
+
+    const saved =
+      await saveWhatsApp(
+        env,
+        list
+      );
+
+    return json(
+      saved.find(
+        (x) =>
+          x.id === id
+      ) ?? item
+    );
+  }
+
+
+  /* =======================================================
+     PIXELS ADMIN
+     ======================================================= */
+
+  if (
+    url.pathname ===
+      "/api/admin/pixels" &&
+    req.method === "GET"
+  ) {
+    const config =
+      await getConfig(env);
+
+    return json(
+      config.pixels
+    );
+  }
+
+
+  /*
+   * Add Pixel
+   */
+  if (
+    url.pathname ===
+      "/api/admin/pixels" &&
+    (
+      req.method === "POST" ||
+      req.method === "PUT"
+    )
+  ) {
+    const body =
+      await readJson(req);
+
+    const kind =
+      String(
+        body.kind ??
+          body.type ??
+          body.platform ??
+          ""
+      ).toLowerCase() as PixelKind;
+
+    const pixelId =
+      String(
+        body.pixel_id ??
+          body.pixelId ??
+          body.id ??
+          ""
+      ).trim();
+
+    if (
+      kind !== "meta" &&
+      kind !== "tiktok"
+    ) {
+      return json(
+        {
+          error:
+            "kind must be meta or tiktok.",
+        },
+        400
+      );
+    }
+
+    if (!pixelId) {
+      return json(
+        {
+          error:
+            "Pixel ID is required.",
+        },
+        400
+      );
+    }
+
+    const config =
+      await getConfig(env);
+
+    const list =
+      config.pixels[kind];
+
+    if (
+      list.some(
+        (item) =>
+          item.id === pixelId
+      )
+    ) {
+      return json(
+        {
+          error:
+            "This Pixel ID already exists.",
+        },
+        409
+      );
+    }
+
+    const item:
+      PixelConfig = {
+      id: pixelId,
+
+      name:
+        String(
+          body.name ??
+            body.label ??
+            "Pixel"
+        ),
+
+      enabled:
+        body.enabled ===
+        undefined
+          ? true
+          : boolValue(
+              body.enabled,
+              true
+            ),
+
+      events:
+        normalizeEvents(
+          body.events
+        ),
+    };
+
+    list.push(item);
+
+    const saved =
+      await saveConfig(
+        env,
+        config
+      );
+
+    return json(
+      saved.pixels[
+        kind
+      ].find(
+        (x) =>
+          x.id ===
+          pixelId
+      ) ?? item
+    );
+  }
+
+
+  /*
+   * Update / delete Pixel
+   *
+   * Supports:
+   * PATCH /api/admin/pixels/:id
+   *
+   * body.kind = meta/tiktok
+   */
+  if (
+    url.pathname.startsWith(
+      "/api/admin/pixels/"
+    ) &&
+    req.method === "PATCH"
+  ) {
+    const pixelId =
+      decodeURIComponent(
+        url.pathname.slice(
+          "/api/admin/pixels/"
+            .length
+        )
+      );
+
+    const body =
+      await readJson(req);
+
+    let kind =
+      String(
+        body.kind ??
+          body.type ??
+          ""
+      ).toLowerCase() as PixelKind;
+
+    const config =
+      await getConfig(env);
+
+    /*
+     * If kind wasn't supplied,
+     * search both platforms.
+     */
+    if (
+      kind !== "meta" &&
+      kind !== "tiktok"
+    ) {
+      if (
+        config.pixels.meta.some(
+          (x) =>
+            x.id === pixelId
+        )
+      ) {
+        kind = "meta";
+      } else if (
+        config.pixels.tiktok.some(
+          (x) =>
+            x.id === pixelId
+        )
+      ) {
+        kind = "tiktok";
+      } else {
+        return json(
+          {
+            error:
+              "Pixel not found.",
+          },
+          404
+        );
+      }
+    }
+
+    const list =
+      config.pixels[kind];
+
+    const index =
+      list.findIndex(
+        (x) =>
+          x.id === pixelId
+      );
+
+    if (index < 0) {
+      return json(
+        {
+          error:
+            "Pixel not found.",
+        },
+        404
+      );
+    }
+
+    const action =
+      String(
+        body.action ??
+          ""
+      ).trim();
+
+    if (
+      action === "delete"
+    ) {
+      list.splice(
+        index,
+        1
+      );
+
+      await saveConfig(
+        env,
+        config
+      );
+
+      return noContent();
+    }
+
+    if (
+      action === "toggle"
+    ) {
+      list[index].enabled =
+        !list[index].enabled;
+    }
+
+    if (
+      action === "enable"
+    ) {
+      list[index].enabled =
+        true;
+    }
+
+    if (
+      action === "disable"
+    ) {
+      list[index].enabled =
+        false;
+    }
+
+    if (
+      body.enabled !==
+        undefined
+    ) {
+      list[index].enabled =
+        boolValue(
+          body.enabled,
+          list[index].enabled
+        );
+    }
+
+    if (
+      body.name !==
+        undefined
+    ) {
+      list[index].name =
+        String(
+          body.name
+        );
+    }
+
+    if (
+      body.label !==
+        undefined
+    ) {
+      list[index].name =
+        String(
+          body.label
+        );
+    }
+
+    if (
+      body.events !==
+        undefined
+    ) {
+      list[index].events =
+        normalizeEvents(
+          body.events
+        );
+    }
+
+    const saved =
+      await saveConfig(
+        env,
+        config
+      );
+
+    return json(
+      saved.pixels[
+        kind
+      ].find(
+        (x) =>
+          x.id ===
+          pixelId
+      )
+    );
+  }
+
+
+  return json(
+    {
+      error:
+        "Admin API route not found.",
+    },
+    404
   );
 }
 
+
 /* =========================================================
-   Main request handler
+   Pixel tracking JS
    ========================================================= */
 
-export default {
-  async fetch(
-    request: Request,
-    env: Env,
-    ctx: ExecutionContext,
-  ): Promise<Response> {
+function pixelJs(): string {
+  return String.raw`
+(() => {
+  "use strict";
+
+  const state = {
+    meta: [],
+    tiktok: [],
+    config: null,
+    ready: false
+  };
+
+  const EVENT_MAP = {
+    pageview: {
+      meta: "PageView",
+      tiktok: "PageView"
+    },
+
+    view_content: {
+      meta: "ViewContent",
+      tiktok: "ViewContent"
+    },
+
+    lead: {
+      meta: "Lead",
+      tiktok: "SubmitForm"
+    },
+
+    whatsapp_click: {
+      meta: "Contact",
+      tiktok: "ClickButton"
+    }
+  };
+
+
+  function makeEventId() {
     try {
-      const url =
-        new URL(request.url);
-
-      const pathname =
-        url.pathname;
-
-      /*
-       * OPTIONS
-       */
       if (
-        request.method === "OPTIONS"
+        window.crypto &&
+        typeof window.crypto.randomUUID === "function"
       ) {
-        return noContent();
+        return window.crypto.randomUUID();
       }
+    } catch (_) {}
 
-      /* ===================================================
-         ADMIN PAGES
-         =================================================== */
+    return (
+      Date.now() +
+      "-" +
+      Math.random().toString(36).slice(2)
+    );
+  }
 
-      if (
-        pathname === "/admin" ||
-        pathname === "/admin/" ||
-        pathname === "/admin/login" ||
-        pathname === "/admin/login/" ||
-        pathname === "/admin/index.html"
-      ) {
-        return serveAdmin(
-          request,
-          env,
+
+  async function loadConfig() {
+    const response =
+      await fetch(
+        "/api/public/config",
+        {
+          method: "GET",
+          cache: "no-store"
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Unable to load public config."
+      );
+    }
+
+    return response.json();
+  }
+
+
+  function loadScript(src) {
+    return new Promise(
+      (resolve, reject) => {
+        const script =
+          document.createElement(
+            "script"
+          );
+
+        script.async = true;
+        script.src = src;
+
+        script.onload =
+          resolve;
+
+        script.onerror =
+          reject;
+
+        document.head.appendChild(
+          script
         );
       }
+    );
+  }
 
-      /* ===================================================
-         API
-         =================================================== */
 
-      if (
-        pathname.startsWith("/api/")
+  async function initMeta() {
+    if (
+      !state.meta.length
+    ) {
+      return;
+    }
+
+    window.fbq =
+      window.fbq ||
+      function() {
+        window.fbq.callMethod
+          ? window.fbq.callMethod.apply(
+              window.fbq,
+              arguments
+            )
+          : window.fbq.queue.push(
+              arguments
+            );
+      };
+
+    window.fbq.push =
+      window.fbq;
+
+    window.fbq.loaded =
+      true;
+
+    window.fbq.version =
+      "2.0";
+
+    window.fbq.queue =
+      [];
+
+    try {
+      await loadScript(
+        "https://connect.facebook.net/en_US/fbevents.js"
+      );
+    } catch (_) {
+      return;
+    }
+
+    for (
+      const pixel of state.meta
+    ) {
+      try {
+        window.fbq(
+          "init",
+          pixel.id
+        );
+      } catch (_) {}
+    }
+  }
+
+
+  async function initTikTok() {
+    if (
+      !state.tiktok.length
+    ) {
+      return;
+    }
+
+    window.TiktokAnalyticsObject =
+      "ttq";
+
+    window.ttq =
+      window.ttq ||
+      [];
+
+    window.ttq.methods = [
+      "page",
+      "track",
+      "identify",
+      "instances",
+      "debug",
+      "on",
+      "off",
+      "once",
+      "ready",
+      "alias",
+      "group",
+      "enableCookie",
+      "disableCookie",
+      "holdConsent",
+      "revokeConsent",
+      "grantConsent"
+    ];
+
+    window.ttq.setAndDefer =
+      function(
+        target,
+        method
       ) {
-        /*
-         * Admin API first.
-         */
+        target[method] =
+          function() {
+            target.push(
+              [method].concat(
+                Array.prototype.slice.call(
+                  arguments,
+                  0
+                )
+              )
+            );
+          };
+      };
+
+    for (
+      const method of
+        window.ttq.methods
+    ) {
+      window.ttq.setAndDefer(
+        window.ttq,
+        method
+      );
+    }
+
+    window.ttq.instance =
+      function(id) {
+        window.ttq._i =
+          window.ttq._i ||
+          {};
+
+        const instance =
+          window.ttq._i[id] ||
+          [];
+
+        for (
+          const method of
+            window.ttq.methods
+        ) {
+          window.ttq.setAndDefer(
+            instance,
+            method
+          );
+        }
+
+        return instance;
+      };
+
+    window.ttq.load =
+      function(
+        id,
+        options
+      ) {
+        window.ttq._i =
+          window.ttq._i ||
+          {};
+
+        window.ttq._i[id] =
+          [];
+
+        window.ttq._t =
+          window.ttq._t ||
+          {};
+
+        window.ttq._t[id] =
+          +new Date();
+
+        window.ttq._o =
+          window.ttq._o ||
+          {};
+
+        window.ttq._o[id] =
+          options || {};
+
+        const script =
+          document.createElement(
+            "script"
+          );
+
+        script.type =
+          "text/javascript";
+
+        script.async = true;
+
+        script.src =
+          "https://analytics.tiktok.com/i18n/pixel/events.js" +
+          "?sdkid=" +
+          encodeURIComponent(id) +
+          "&lib=ttq";
+
+        const first =
+          document.getElementsByTagName(
+            "script"
+          )[0];
+
         if (
-          pathname.startsWith(
-            "/api/admin/",
+          first &&
+          first.parentNode
+        ) {
+          first.parentNode.insertBefore(
+            script,
+            first
+          );
+        } else {
+          document.head.appendChild(
+            script
+          );
+        }
+      };
+
+    for (
+      const pixel of state.tiktok
+    ) {
+      try {
+        window.ttq.load(
+          pixel.id
+        );
+      } catch (_) {}
+    }
+  }
+
+
+  async function track(
+    type,
+    extra = {}
+  ) {
+    const configEvent =
+      EVENT_MAP[type];
+
+    if (!configEvent) {
+      return;
+    }
+
+    const eventId =
+      extra.event_id ||
+      makeEventId();
+
+    /*
+     * Meta
+     */
+    for (
+      const pixel of state.meta
+    ) {
+      if (
+        pixel.enabled !== false &&
+        Array.isArray(pixel.events) &&
+        pixel.events.includes(type) &&
+        window.fbq
+      ) {
+        try {
+          window.fbq(
+            "trackSingle",
+            pixel.id,
+            configEvent.meta,
+            extra
+          );
+        } catch (_) {}
+      }
+    }
+
+
+    /*
+     * TikTok
+     */
+    for (
+      const pixel of state.tiktok
+    ) {
+      if (
+        pixel.enabled !== false &&
+        Array.isArray(pixel.events) &&
+        pixel.events.includes(type) &&
+        window.ttq
+      ) {
+        try {
+          const instance =
+            typeof window.ttq.instance ===
+            "function"
+              ? window.ttq.instance(
+                  pixel.id
+                )
+              : window.ttq;
+
+          if (
+            type === "pageview"
+          ) {
+            instance.page();
+          } else {
+            instance.track(
+              configEvent.tiktok,
+              extra
+            );
+          }
+        } catch (_) {}
+      }
+    }
+
+
+    /*
+     * Own event API
+     */
+    try {
+      const params =
+        new URLSearchParams(
+          location.search
+        );
+
+      await fetch(
+        "/api/event",
+        {
+          method: "POST",
+
+          headers: {
+            "content-type":
+              "application/json"
+          },
+
+          keepalive: true,
+
+          body:
+            JSON.stringify({
+              ...extra,
+
+              type,
+
+              event_id:
+                eventId,
+
+              path:
+                location.pathname,
+
+              referrer:
+                document.referrer ||
+                "",
+
+              source:
+                params.get(
+                  "utm_source"
+                ) || "",
+
+              campaign:
+                params.get(
+                  "utm_campaign"
+                ) || "",
+
+              adset:
+                params.get(
+                  "utm_adset"
+                ) || ""
+            })
+        }
+      );
+    } catch (_) {}
+  }
+
+
+  function isWhatsAppLink(
+    element
+  ) {
+    if (
+      !element ||
+      !element.closest
+    ) {
+      return false;
+    }
+
+    return !!element.closest(
+      "a[href*='wa.me'],a[href*='whatsapp'],a[href*='/go/whatsapp'],a[href*='/api/whatsapp/redirect'],[data-whatsapp]"
+    );
+  }
+
+
+  function bind() {
+    /*
+     * WhatsApp click tracking
+     */
+    document.addEventListener(
+      "click",
+      (event) => {
+        const target =
+          event.target;
+
+        if (
+          !isWhatsAppLink(
+            target
           )
         ) {
-          return await handleAdminApi(
-            request,
-            pathname,
-            env,
+          return;
+        }
+
+        const element =
+          target.closest(
+            "a[href*='wa.me'],a[href*='whatsapp'],a[href*='/go/whatsapp'],a[href*='/api/whatsapp/redirect'],[data-whatsapp]"
           );
+
+        if (!element) {
+          return;
         }
 
         /*
-         * Public API.
+         * If navigation already goes through
+         * our Worker, do not double-count here.
          */
-        return await handlePublicApi(
-          request,
-          pathname,
-          env,
+        const href =
+          element.getAttribute(
+            "href"
+          ) || "";
+
+        if (
+          href.includes(
+            "/go/whatsapp"
+          ) ||
+          href.includes(
+            "/api/whatsapp/redirect"
+          )
+        ) {
+          return;
+        }
+
+        track(
+          "whatsapp_click",
+          {
+            href:
+              element.href ||
+              "",
+
+            text:
+              (
+                element.textContent ||
+                ""
+              )
+                .trim()
+                .slice(
+                  0,
+                  120
+                )
+          }
         );
+      },
+      true
+    );
+
+
+    /*
+     * Lead form tracking
+     */
+    document.addEventListener(
+      "submit",
+      (event) => {
+        const form =
+          event.target;
+
+        if (
+          !form ||
+          !form.matches
+        ) {
+          return;
+        }
+
+        const isLeadForm =
+          form.matches(
+            "[data-lead-form]"
+          ) ||
+          form.id ===
+            "leadForm";
+
+        if (
+          !isLeadForm
+        ) {
+          return;
+        }
+
+        track(
+          "lead"
+        );
+      },
+      true
+    );
+  }
+
+
+  function applyFormState(
+    config
+  ) {
+    const forms =
+      document.querySelectorAll(
+        "[data-lead-form],#leadForm"
+      );
+
+    if (
+      config.form_enabled ===
+      false
+    ) {
+      forms.forEach(
+        (form) => {
+          form.style.display =
+            "none";
+
+          form.setAttribute(
+            "data-sulan-form-disabled",
+            "true"
+          );
+        }
+      );
+
+      return;
+    }
+
+    forms.forEach(
+      (form) => {
+        if (
+          form.getAttribute(
+            "data-sulan-form-disabled"
+          ) === "true"
+        ) {
+          form.style.display =
+            "";
+
+          form.removeAttribute(
+            "data-sulan-form-disabled"
+          );
+        }
       }
+    );
+  }
 
-      /* ===================================================
-         WHATSAPP REDIRECT
-         =================================================== */
 
+  async function boot() {
+    try {
+      const config =
+        await loadConfig();
+
+      state.config =
+        config;
+
+      state.meta =
+        Array.isArray(
+          config.pixels?.meta
+        )
+          ? config.pixels.meta.filter(
+              (pixel) =>
+                pixel.enabled !==
+                false
+            )
+          : [];
+
+      state.tiktok =
+        Array.isArray(
+          config.pixels?.tiktok
+        )
+          ? config.pixels.tiktok.filter(
+              (pixel) =>
+                pixel.enabled !==
+                false
+            )
+          : [];
+
+
+      await Promise.all([
+        initMeta(),
+        initTikTok()
+      ]);
+
+
+      state.ready =
+        true;
+
+
+      /*
+       * Apply form switch BEFORE
+       * sending pageview.
+       */
+      applyFormState(
+        config
+      );
+
+
+      await track(
+        "pageview"
+      );
+
+
+      bind();
+
+
+      window.SulanPixel = {
+        track,
+
+        refresh: async function() {
+          try {
+            const next =
+              await loadConfig();
+
+            state.config =
+              next;
+
+            state.meta =
+              Array.isArray(
+                next.pixels?.meta
+              )
+                ? next.pixels.meta.filter(
+                    (pixel) =>
+                      pixel.enabled !==
+                      false
+                  )
+                : [];
+
+            state.tiktok =
+              Array.isArray(
+                next.pixels?.tiktok
+              )
+                ? next.pixels.tiktok.filter(
+                    (pixel) =>
+                      pixel.enabled !==
+                      false
+                  )
+                : [];
+
+            applyFormState(
+              next
+            );
+
+            return next;
+          } catch (_) {
+            return null;
+          }
+        }
+      };
+
+    } catch (_) {
+      /*
+       * Tracking must NEVER break
+       * the landing page.
+       */
+    }
+  }
+
+
+  /*
+   * If the DOM is already ready,
+   * start immediately.
+   */
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      boot,
+      {
+        once: true
+      }
+    );
+  } else {
+    boot();
+  }
+})();
+`;
+}
+
+
+/* =========================================================
+   Admin page routing
+   ========================================================= */
+
+async function handleAdminPage(
+  req: Request,
+  env: Env,
+  url: URL
+): Promise<Response | null> {
+
+  /*
+   * Authentication is intentionally disabled.
+   *
+   * /admin
+   * /admin/
+   * /admin/login
+   *
+   * all point to the same dashboard.
+   */
+  if (
+    url.pathname ===
+      "/admin" ||
+    url.pathname ===
+      "/admin/" ||
+    url.pathname ===
+      "/admin/login"
+  ) {
+    return serveAsset(
+      req,
+      env,
+      "/admin/index.html"
+    );
+  }
+
+  if (
+    url.pathname.startsWith(
+      "/admin/"
+    )
+  ) {
+    return serveAsset(
+      req,
+      env,
+      url.pathname
+    );
+  }
+
+  return null;
+}
+
+
+/* =========================================================
+   Worker
+   ========================================================= */
+
+const worker:
+  ExportedHandler<Env> = {
+
+  async fetch(
+    req: Request,
+    env: Env
+  ): Promise<Response> {
+
+    const url =
+      new URL(req.url);
+
+    try {
+
+      /*
+       * -----------------------------------------------------
+       * Health
+       * -----------------------------------------------------
+       */
       if (
-        pathname ===
-        "/go/whatsapp"
+        url.pathname ===
+          "/api/health" &&
+        req.method === "GET"
       ) {
-        const number =
-          await chooseWhatsAppNumber(
-            env,
-          );
-
-        if (!number) {
-          return html(
-            `
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>WhatsApp unavailable</title>
-</head>
-<body>
-<h2>WhatsApp is currently unavailable.</h2>
-</body>
-</html>
-            `,
-            503,
-          );
-        }
-
-        await incrementStat(
-          env,
-          "whatsapp_clicks",
+        return handleHealth(
+          env
         );
-
-        /*
-         * wa.me requires digits only.
-         */
-        const cleanNumber =
-          number.replace(
-            /[^\d]/g,
-            "",
-          );
-
-        const target =
-          "https://wa.me/" +
-          cleanNumber;
-
-        /*
-         * This is the ONLY redirect
-         * intentionally kept in V9.
-         *
-         * Admin has ZERO redirects.
-         */
-        return new Response(null, {
-          status: 302,
-          headers: {
-            Location: target,
-            "Cache-Control":
-              "no-store",
-          },
-        });
       }
 
-      /* ===================================================
-         PIXEL JS
-         =================================================== */
 
+      /*
+       * -----------------------------------------------------
+       * Pixel JS
+       * -----------------------------------------------------
+       */
       if (
-        pathname === "/pixel.js"
+        url.pathname ===
+          "/pixel.js" &&
+        req.method === "GET"
       ) {
         return new Response(
-          PIXEL_JS,
+          pixelJs(),
           {
             status: 200,
+
             headers: {
               "content-type":
                 "application/javascript; charset=utf-8",
 
               "cache-control":
-                "public, max-age=300",
+                "no-store, no-cache, must-revalidate",
+
+              "pragma":
+                "no-cache",
             },
-          },
+          }
         );
       }
 
-      /* ===================================================
-         EVERYTHING ELSE = ASSETS
-         =================================================== */
 
-      return await serveAsset(
-        request,
+      /*
+       * -----------------------------------------------------
+       * Logout compatibility
+       *
+       * No authentication exists now.
+       * -----------------------------------------------------
+       */
+      if (
+        url.pathname ===
+          "/api/logout"
+      ) {
+        return new Response(
+          null,
+          {
+            status: 302,
+
+            headers: {
+              Location:
+                "/admin/",
+
+              "cache-control":
+                "no-store",
+            },
+          }
+        );
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * Public API
+       * -----------------------------------------------------
+       */
+      const publicResponse =
+        await handlePublicApi(
+          req,
+          env,
+          url
+        );
+
+      if (
+        publicResponse
+      ) {
+        return publicResponse;
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * Admin API
+       * -----------------------------------------------------
+       */
+      if (
+        url.pathname.startsWith(
+          "/api/admin/"
+        )
+      ) {
+        return handleAdminApi(
+          req,
+          env,
+          url
+        );
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * Admin pages
+       * -----------------------------------------------------
+       */
+      const adminPage =
+        await handleAdminPage(
+          req,
+          env,
+          url
+        );
+
+      if (
+        adminPage
+      ) {
+        return adminPage;
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * Static assets / landing page
+       * -----------------------------------------------------
+       */
+      return serveAsset(
+        req,
         env,
-      );
-    } catch (error: any) {
-      console.error(
-        "Worker error:",
-        error,
+        url.pathname || "/"
       );
 
-      return json(
-        {
-          error:
-            error?.message ||
-            "Internal server error",
-        },
-        500,
+    } catch (error) {
+
+      console.error(
+        "WORKER_ERROR",
+        error
+      );
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Internal server error";
+
+      if (
+        url.pathname.startsWith(
+          "/api/"
+        )
+      ) {
+        return json(
+          {
+            error:
+              message,
+          },
+          500
+        );
+      }
+
+      return text(
+        "Internal server error",
+        500
       );
     }
   },
 };
+
+export default worker;
