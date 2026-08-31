@@ -1109,24 +1109,17 @@ async function serveAsset(
    * during the current development stage.
    */
   if (
-    cleanPath === "/admin" ||
-    cleanPath === "/admin/" ||
-    cleanPath === "/admin/login"
-  ) {
-    cleanPath =
-      "/admin/index.html";
-  }
+  cleanPath === "/admin" ||
+  cleanPath === "/admin/" ||
+  cleanPath === "/admin/login"
+) {
+  cleanPath = "/admin/";
+}
 
   /*
    * Some deployments keep the admin file directly
    * under /public/admin/.
    */
-  if (
-    cleanPath ===
-    "/admin/index.html"
-  ) {
-    // keep as-is
-  }
 
   /*
    * Prevent accidental asset routing errors
@@ -3674,20 +3667,17 @@ async function handleAdminPage(
    *
    * all point to the same dashboard.
    */
-  if (
-    url.pathname ===
-      "/admin" ||
-    url.pathname ===
-      "/admin/" ||
-    url.pathname ===
-      "/admin/login"
-  ) {
-    return serveAsset(
-      req,
-      env,
-      "/admin/index.html"
-    );
-  }
+if (
+  url.pathname === "/admin" ||
+  url.pathname === "/admin/" ||
+  url.pathname === "/admin/login"
+) {
+  return serveAsset(
+    req,
+    env,
+    "/admin/"
+  );
+}
 
   if (
     url.pathname.startsWith(
