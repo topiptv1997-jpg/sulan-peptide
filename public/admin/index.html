@@ -923,6 +923,639 @@ IMPORTANT:
 
 })();
 </script>
+<!-- SULAN ADMIN V8.2
+     Form + Leads safe enhancement
+     Paste this block BEFORE </body> in public/admin/index.html.
+     Do NOT replace the existing V8/V8.1 scripts.
+-->
+<script>
+(function () {
+  "use strict";
+
+  const $82 = (s, root=document) => root.querySelector(s);
+  const $$82 = (s, root=document) => [...root.querySelectorAll(s)];
+
+  const FIELD_LABELS_82 = {
+    name: ["Name / 姓名", "Name"],
+    email: ["Email / 邮箱", "Email"],
+    whatsapp: ["WhatsApp", "WhatsApp"],
+    company: ["Company / 公司", "Company"],
+    country: ["Country / 国家", "Country"],
+    message: ["Message / 留言", "Message"]
+  };
+
+  const STATUS_LABELS_82 = {
+    new: ["New", "新询盘"],
+    contacted: ["Contacted", "已联系"],
+    qualified: ["Qualified", "已筛选"],
+    won: ["Won", "已成交"],
+    lost: ["Lost", "已失效"]
+  };
+
+  function esc82(v) {
+    if (typeof esc === "function") return esc(v);
+    return String(v ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function toast82(msg) {
+    if (typeof toast === "function") return toast(msg);
+    alert(msg);
+  }
+
+  async function api82(path, options={}) {
+    const r = await fetch(path, {
+      ...options,
+      cache: "no-store",
+      credentials: "same-origin",
+      headers: {
+        "Accept": "application/json",
+        ...(options.headers || {})
+      }
+    });
+    const text = await r.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+    if (!r.ok) {
+      throw new Error(
+        typeof data === "string"
+          ? data
+          : (data?.error || data?.message || `HTTP ${r.status}`)
+      );
+    }
+    return data;
+  }
+
+  function ensureFormPanel82() {
+    const settings = $82("#settings");
+    if (!settings || $82("#v82FormPanel")) return;
+
+    const panel = document.createElement("div");
+    panel.id = "v82FormPanel";
+    panel.className = "card";
+    panel.style.marginTop = "16px";
+    panel.innerHTML = `
+      <div class="sectionhead">
+        <h2>Lead Form / 询盘表单</h2>
+        <span id="v82FormStatus" class="badge">Loading…</span>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+        <div>
+          <b>Form status / 表单状态</b>
+          <div class="muted">Control whether the public inquiry form is available.</div>
+        </div>
+        <button type="button" id="v82FormToggle" class="btn primary">Loading…</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 110px 110px;gap:8px;margin-bottom:8px;font-weight:700">
+        <div>Field / 字段</div><div>Enabled / 开启</div><div>Required / 必填</div>
+      </div>
+
+      <div id="v82FieldRows"></div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:16px">
+        <button type="button" id="v82SaveForm" class="btn primary">
+          Save form settings / 保存表单设置
+        </button>
+      </div>
+    `;
+
+    const anchor =
+      settings.querySelector(".card:last-child") ||
+      settings.lastElementChild;
+    if (anchor) anchor.after(panel);
+    else settings.appendChild(panel);
+
+    renderFormFields82({});
+  }
+
+  function renderFormFields82(fields) {
+    const box = $82("#v82FieldRows");
+    if (!box) return;
+
+    const keys = Object.keys(FIELD_LABELS_82);
+    box.innerHTML = keys.map(key => {
+      const f = fields?.[key] || { enabled:true, required:false };
+      const disabled = !f.enabled;
+      return `
+        <div data-v82-field="${key}"
+          style="display:grid;grid-template-columns:1fr 110px 110px;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#e5e9e7)">
+          <div>
+            <b>${esc82(FIELD_LABELS_82[key][0])}</b>
+            <div class="muted">${esc82(FIELD_LABELS_82[key][1])}</div>
+          </div>
+          <label style="display:flex;justify-content:center">
+            <input type="checkbox" data-v82-enabled ${f.enabled ? "checked" : ""}>
+          </label>
+          <label style="display:flex;justify-content:center">
+            <input type="checkbox" data-v82-required ${f.required ? "checked" : ""} ${disabled ? "disabled" : ""}>
+          </label>
+        </div>
+      `;
+    }).join("");
+
+    $$82("[data-v82-enabled]").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const row = cb.closest("[data-v82-field]");
+        const required = $82("[data-v82-required]", row);
+        if (required) required.disabled = !cb.checked;
+        if (!cb.checked && required) required.checked = false;
+      });
+    });
+  }
+
+  function collectFormFields82() {
+    const out = {};
+    $$82("[data-v82-field]").forEach(row => {
+      const key = row.dataset.v82Field;
+      const enabled = !!$82("[data-v82-enabled]", row)?.checked;
+      const required = enabled && !!$82("[data-v82-required]", row)?.checked;
+      out[key] = { enabled, required };
+    });
+    return out;
+  }
+
+  async function loadFormSettings82() {
+    ensureFormPanel82();
+
+    try {
+      const data = await api82("/api/admin/settings");
+      const enabled = data?.form_enabled !== false;
+      const fields = data?.form_fields || data?.formFields || {};
+
+      renderFormFields82(fields);
+
+      const status = $82("#v82FormStatus");
+      const toggle = $82("#v82FormToggle");
+
+      if (status) {
+        status.textContent = enabled
+          ? "Enabled / 已开启"
+          : "Disabled / 已关闭";
+      }
+
+      if (toggle) {
+        toggle.textContent = enabled
+          ? "Disable form / 关闭表单"
+          : "Enable form / 开启表单";
+        toggle.dataset.enabled = String(enabled);
+      }
+    } catch (err) {
+      console.error(err);
+      const status = $82("#v82FormStatus");
+      if (status) status.textContent = "API error / API 错误";
+      toast82(err.message || "Form settings failed");
+    }
+  }
+
+  async function saveFormSettings82() {
+    const toggle = $82("#v82FormToggle");
+    const enabled = toggle?.dataset.enabled !== "false";
+    const fields = collectFormFields82();
+
+    try {
+      if (toggle) toggle.disabled = true;
+      const saved = await api82("/api/admin/settings", {
+        method: "PATCH",
+        headers: {"content-type":"application/json"},
+        body: JSON.stringify({
+          form_enabled: enabled,
+          form_fields: fields
+        })
+      });
+
+      const config = saved?.config || saved;
+      const actual = config?.form_enabled !== false;
+      if (toggle) {
+        toggle.dataset.enabled = String(actual);
+        toggle.textContent = actual
+          ? "Disable form / 关闭表单"
+          : "Enable form / 开启表单";
+      }
+
+      const status = $82("#v82FormStatus");
+      if (status) status.textContent = actual
+        ? "Enabled / 已开启"
+        : "Disabled / 已关闭";
+
+      toast82("Form settings saved / 表单设置已保存");
+
+      if (typeof load === "function") await load();
+    } catch (err) {
+      console.error(err);
+      toast82(err.message || "Save failed / 保存失败");
+    } finally {
+      if (toggle) toggle.disabled = false;
+    }
+  }
+
+  async function toggleForm82() {
+    const toggle = $82("#v82FormToggle");
+    if (!toggle) return;
+
+    const current = toggle.dataset.enabled === "true";
+    const fields = collectFormFields82();
+
+    try {
+      toggle.disabled = true;
+
+      const saved = await api82("/api/admin/settings", {
+        method: "PATCH",
+        headers: {"content-type":"application/json"},
+        body: JSON.stringify({
+          form_enabled: !current,
+          form_fields: fields
+        })
+      });
+
+      const config = saved?.config || saved;
+      const actual = config?.form_enabled !== false;
+
+      toggle.dataset.enabled = String(actual);
+      toggle.textContent = actual
+        ? "Disable form / 关闭表单"
+        : "Enable form / 开启表单";
+
+      const status = $82("#v82FormStatus");
+      if (status) status.textContent = actual
+        ? "Enabled / 已开启"
+        : "Disabled / 已关闭";
+
+      toast82(
+        actual
+          ? "Form enabled / 表单已开启"
+          : "Form disabled / 表单已关闭"
+      );
+
+      if (typeof load === "function") await load();
+    } catch (err) {
+      console.error(err);
+      toast82(err.message || "Toggle failed / 操作失败");
+    } finally {
+      toggle.disabled = false;
+    }
+  }
+
+  function ensureLeadControls82() {
+    const leads = $82("#leads");
+    if (!leads || $82("#v82LeadControls")) return;
+
+    const controls = document.createElement("div");
+    controls.id = "v82LeadControls";
+    controls.className = "card";
+    controls.style.marginBottom = "16px";
+    controls.innerHTML = `
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input id="v82LeadSearch"
+          placeholder="Search name, WhatsApp, email, company / 搜索"
+          style="flex:1;min-width:220px">
+        <select id="v82LeadStatusFilter" style="min-width:150px">
+          <option value="">All statuses / 全部状态</option>
+          <option value="new">New / 新询盘</option>
+          <option value="contacted">Contacted / 已联系</option>
+          <option value="qualified">Qualified / 已筛选</option>
+          <option value="won">Won / 已成交</option>
+          <option value="lost">Lost / 已失效</option>
+        </select>
+        <button type="button" id="v82LeadRefresh" class="btn secondary">
+          Refresh / 刷新
+        </button>
+      </div>
+    `;
+
+    const first = leads.querySelector(".notice,.sectionhead,.card");
+    if (first) first.before(controls);
+    else leads.prepend(controls);
+
+    $82("#v82LeadSearch").addEventListener("input", renderLeads82);
+    $82("#v82LeadStatusFilter").addEventListener("change", renderLeads82);
+    $82("#v82LeadRefresh").addEventListener("click", loadLeads82);
+  }
+
+  function leadValue82(lead, keys) {
+    for (const key of keys) {
+      if (lead?.[key] !== undefined && lead?.[key] !== null && String(lead[key]).trim() !== "") {
+        return lead[key];
+      }
+    }
+    return "";
+  }
+
+  function renderLeads82() {
+    const rows = $82("#leadRows");
+    if (!rows) return;
+
+    const search = String($82("#v82LeadSearch")?.value || "").trim().toLowerCase();
+    const status = String($82("#v82LeadStatusFilter")?.value || "");
+
+    const filtered = (Array.isArray(state.leads) ? state.leads : []).filter(lead => {
+      const currentStatus = String(lead.status || "new").toLowerCase();
+      if (status && currentStatus !== status) return false;
+      if (!search) return true;
+
+      const haystack = [
+        lead.name,
+        lead.full_name,
+        lead.phone,
+        lead.whatsapp,
+        lead.email,
+        lead.company,
+        lead.country,
+        lead.message,
+        lead.campaign,
+        lead.utm_campaign,
+        lead.source,
+        lead.utm_source
+      ].map(x => String(x || "").toLowerCase()).join(" ");
+
+      return haystack.includes(search);
+    });
+
+    rows.innerHTML = filtered.map((x, i) => {
+      const realIndex = state.leads.indexOf(x);
+      const name = leadValue82(x, ["name","full_name"]);
+      const contact = leadValue82(x, ["whatsapp","phone","email","contact"]);
+      const campaign = leadValue82(x, ["campaign","utm_campaign"]);
+      const currentStatus = String(x.status || "new").toLowerCase();
+      const labels = STATUS_LABELS_82[currentStatus] || [currentStatus, currentStatus];
+
+      return `
+        <tr>
+          <td>${esc82(time(x.created_at || x.createdAt))}</td>
+          <td>${esc82(name || "—")}</td>
+          <td>${esc82(contact || "—")}</td>
+          <td>${esc82(campaign || "—")}</td>
+          <td><span class="badge">${esc82(labels[0])} / ${esc82(labels[1])}</span></td>
+          <td>
+            <button class="btn secondary" type="button"
+              data-v82-view-lead="${realIndex}">
+              View / 查看
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("") || '<tr><td colspan="6" class="empty">No matching leads / 没有匹配的询盘。</td></tr>';
+
+    const total = state.leads.length;
+    const statuses = state.leads.map(x => String(x.status || "new").toLowerCase());
+    if ($82("#leadTotal")) $82("#leadTotal").textContent = fmt(total);
+    if ($82("#leadNew")) $82("#leadNew").textContent = statuses.filter(x => x === "new").length;
+    if ($82("#leadContacted")) $82("#leadContacted").textContent = statuses.filter(x => x === "contacted").length;
+    if ($82("#leadWon")) $82("#leadWon").textContent = statuses.filter(x => x === "won").length;
+  }
+
+  async function loadLeads82() {
+    ensureLeadControls82();
+
+    const rows = $82("#leadRows");
+    if (rows) rows.innerHTML = '<tr><td colspan="6" class="empty">Loading… / 加载中…</td></tr>';
+
+    try {
+      const data = await api82("/api/admin/leads?limit=500");
+      state.leads = Array.isArray(data)
+        ? data
+        : (data?.leads || data?.items || data?.data || []);
+
+      renderLeads82();
+    } catch (err) {
+      console.error(err);
+      if (rows) rows.innerHTML =
+        '<tr><td colspan="6" class="empty">Lead API unavailable / 询盘 API 暂不可用。</td></tr>';
+      toast82(err.message || "Lead API unavailable");
+    }
+  }
+
+  function showLead82(index) {
+    const lead = state.leads[index];
+    if (!lead) return;
+
+    const modal = $82("#leadModal");
+    const detail = $82("#leadDetail");
+    if (!modal || !detail) return;
+
+    const status = String(lead.status || "new").toLowerCase();
+
+    detail.innerHTML = `
+      <div class="v82-lead-edit">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label>Name / 姓名</label>
+            <div class="muted">${esc82(leadValue82(lead,["name","full_name"]) || "—")}</div>
+          </div>
+          <div>
+            <label>WhatsApp</label>
+            <div class="muted">${esc82(leadValue82(lead,["whatsapp","phone"]) || "—")}</div>
+          </div>
+          <div>
+            <label>Email / 邮箱</label>
+            <div class="muted">${esc82(lead.email || "—")}</div>
+          </div>
+          <div>
+            <label>Country / 国家</label>
+            <div class="muted">${esc82(lead.country || lead.utm_country || "—")}</div>
+          </div>
+          <div>
+            <label>Company / 公司</label>
+            <div class="muted">${esc82(lead.company || "—")}</div>
+          </div>
+          <div>
+            <label>Created / 时间</label>
+            <div class="muted">${esc82(time(lead.created_at || lead.createdAt))}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px">
+          <label>Status / 状态</label>
+          <select id="v82LeadStatus" style="width:100%;padding:10px;margin-top:6px">
+            ${Object.keys(STATUS_LABELS_82).map(s =>
+              `<option value="${s}" ${s === status ? "selected" : ""}>
+                ${esc82(STATUS_LABELS_82[s][0])} / ${esc82(STATUS_LABELS_82[s][1])}
+              </option>`
+            ).join("")}
+          </select>
+        </div>
+
+        <div style="margin-top:16px">
+          <label>Notes / 备注</label>
+          <textarea id="v82LeadNotes"
+            style="width:100%;min-height:110px;box-sizing:border-box;margin-top:6px"
+            placeholder="Internal notes / 内部备注">${esc82(lead.notes || "")}</textarea>
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px">
+          <button type="button" class="btn primary" id="v82SaveLead">
+            Save / 保存
+          </button>
+        </div>
+      </div>
+    `;
+
+    $82("#v82SaveLead").addEventListener("click", () => saveLead82(index));
+    modal.classList.add("open");
+  }
+
+  async function saveLead82(index) {
+    const lead = state.leads[index];
+    if (!lead) return;
+
+    const status = $82("#v82LeadStatus")?.value || "new";
+    const notes = $82("#v82LeadNotes")?.value || "";
+
+    try {
+      const saved = await api82(
+        `/api/admin/leads/${encodeURIComponent(String(lead.id))}`,
+        {
+          method: "PATCH",
+          headers: {"content-type":"application/json"},
+          body: JSON.stringify({ status, notes })
+        }
+      );
+
+      state.leads[index] = saved || {...lead, status, notes};
+      renderLeads82();
+
+      toast82("Lead saved / 询盘已保存");
+      $82("#leadModal")?.classList.remove("open");
+    } catch (err) {
+      console.error(err);
+      toast82(err.message || "Lead save failed / 保存失败");
+    }
+  }
+
+  /* Dynamic lead view buttons */
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-v82-view-lead]");
+    if (!button) return;
+    showLead82(Number(button.dataset.v82ViewLead));
+  });
+
+  /* Settings */
+  ensureFormPanel82();
+  $82("#v82FormToggle")?.addEventListener("click", toggleForm82);
+  $82("#v82SaveForm")?.addEventListener("click", saveFormSettings82);
+
+  /* Override V8 lead loader safely. */
+  try { window.loadLeads = loadLeads82; } catch (_) {}
+
+  /* Load once now. */
+  loadFormSettings82();
+  loadLeads82();
+
+  /* Re-load when user opens the Leads/Settings pages. */
+  document.addEventListener("click", event => {
+    const link = event.target.closest("[data-page-link],.nav button[data-page]");
+    if (!link) return;
+    const page = link.dataset.pageLink || link.dataset.page;
+    if (page === "leads") setTimeout(loadLeads82, 50);
+    if (page === "settings") setTimeout(loadFormSettings82, 50);
+  });
+
+})();
+</script>
+<!-- SULAN PUBLIC V8.2
+     Public lead-form runtime control
+     Paste this block BEFORE </body> in public/index.html.
+     Do NOT remove the existing form/pixel code.
+-->
+<script>
+(function () {
+  "use strict";
+
+  const FORM_SELECTOR_83 = "[data-lead-form],#leadForm";
+
+  function applyConfig83(config) {
+    const forms = [...document.querySelectorAll(FORM_SELECTOR_83)];
+    if (!forms.length) return;
+
+    const enabled = config?.form_enabled !== false;
+    const fields = config?.form_fields || config?.formFields || {};
+
+    forms.forEach(form => {
+      if (!enabled) {
+        form.style.display = "none";
+        form.setAttribute("data-sulan-form-disabled", "true");
+        return;
+      }
+
+      if (form.getAttribute("data-sulan-form-disabled") === "true") {
+        form.style.display = "";
+        form.removeAttribute("data-sulan-form-disabled");
+      }
+
+      Object.keys(fields).forEach(name => {
+        const setting = fields[name];
+        if (!setting || typeof setting !== "object") return;
+
+        const controls = form.querySelectorAll(
+          `[name="${CSS.escape(name)}"],#${CSS.escape(name)}`
+        );
+
+        controls.forEach(control => {
+          const wrapper =
+            control.closest(".field,.form-field,.form-group,.input-group,label") ||
+            control.parentElement;
+
+          if (setting.enabled === false) {
+            if (wrapper) wrapper.style.display = "none";
+            control.disabled = true;
+            control.removeAttribute("required");
+            control.setAttribute("data-sulan-field-disabled", "true");
+          } else {
+            if (control.getAttribute("data-sulan-field-disabled") === "true") {
+              control.disabled = false;
+              control.removeAttribute("data-sulan-field-disabled");
+            }
+            if (wrapper && wrapper.style.display === "none") wrapper.style.display = "";
+            if (setting.required === true) control.required = true;
+            else control.removeAttribute("required");
+          }
+        });
+      });
+    });
+  }
+
+  async function boot83() {
+    try {
+      const response = await fetch("/api/public/config", {
+        method: "GET",
+        cache: "no-store"
+      });
+
+      if (!response.ok) return;
+
+      const config = await response.json();
+      applyConfig83(config);
+
+      /* Protect against forms injected after initial page load. */
+      const observer = new MutationObserver(() => applyConfig83(config));
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+
+      /* Keep the server-side form switch authoritative. */
+      document.addEventListener("submit", event => {
+        const form = event.target;
+        if (!form || !form.matches || !form.matches(FORM_SELECTOR_83)) return;
+
+        if (config.form_enabled === false) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          alert("The inquiry form is currently disabled.");
+        }
+      }, true);
+    } catch (_) {}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot83, {once:true});
+  } else {
+    boot83();
+  }
+})();
+</script>
 
 </body>
 </html>
