@@ -394,48 +394,230 @@ if(mobileNav){
 
 <script>
 (function(){
+
   async function loadSulanConfig(){
+
     try{
-      const r=await fetch('/api/config',{credentials:'same-origin',cache:'no-store'});
-      if(!r.ok)return;
-      const cfg=await r.json();
-      const formSection=document.getElementById('lead-form');
-      if(formSection) formSection.style.display=cfg.form_enabled?'':'none';
-      if(cfg.meta_enabled && cfg.meta_id && !window.__sulanMeta){
-        window.__sulanMeta=true;
-        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init',cfg.meta_id); fbq('track','PageView');
+
+      /*
+       * Use the current public config endpoint.
+       *
+       * Pixel initialization is handled exclusively
+       * by /pixel.js.
+       */
+      const r = await fetch(
+        "/api/public/config",
+        {
+          credentials: "same-origin",
+          cache: "no-store"
+        }
+      );
+
+      if (!r.ok) {
+        return;
       }
-      if(cfg.tiktok_enabled && cfg.tiktok_id && !window.__sulanTikTok){
-        window.__sulanTikTok=true;
-        const tt=document.createElement('script');tt.async=true;tt.src='https://analytics.tiktok.com/i18n/pixel/events.js?sdkid='+encodeURIComponent(cfg.tiktok_id)+'&lib=ttq';document.head.appendChild(tt);
-        window.ttq=window.ttq||[]; window.ttq.push(['page']);
+
+      const cfg = await r.json();
+
+
+      /*
+       * Form visibility
+       *
+       * Keep the existing form behavior.
+       */
+      const formSection =
+        document.getElementById(
+          "lead-form"
+        );
+
+      if (formSection) {
+        formSection.style.display =
+          cfg.form_enabled
+            ? ""
+            : "none";
       }
-      document.querySelectorAll('[data-wa]').forEach(function(el){
-        if(el.__sulanBound)return; el.__sulanBound=true;
-        el.addEventListener('click',function(){
-          if(window.fbq) fbq('trackCustom','WhatsAppClick',{location:el.closest('section')?.id||'global'});
-          if(window.ttq) try{ttq.track('Contact',{location:el.closest('section')?.id||'global'})}catch(e){}
-        });
-      });
-      const lead=document.getElementById('leadForm');
-      if(lead && !lead.__sulanBound){
-        lead.__sulanBound=true;
-        lead.addEventListener('submit',async function(e){
-          e.preventDefault();
-          const fd=new FormData(lead), data=Object.fromEntries(fd.entries()); const qp=new URLSearchParams(location.search); data.utm_source=qp.get("utm_source")||"direct"; data.utm_campaign=qp.get("utm_campaign")||""; data.utm_content=qp.get("utm_content")||"";
-          try{await fetch('/api/lead',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)})}catch(e){}
-          if(window.fbq) fbq('track','Lead');
-          if(window.ttq) try{ttq.track('SubmitForm')}catch(e){}
-          const msg='Hello Sulan, I submitted a research inquiry. My name is '+(data.name||'')+'.';
-          location.href='/go/whatsapp?text='+encodeURIComponent(msg);
-        });
+
+
+      /*
+       * IMPORTANT:
+       *
+       * Meta / TikTok Pixel initialization
+       * is intentionally NOT done here.
+       *
+       * /pixel.js is now the single Pixel
+       * initialization system.
+       */
+
+
+      /*
+       * Lead form handling
+       *
+       * Keep the existing submission flow.
+       */
+      const lead =
+        document.getElementById(
+          "leadForm"
+        );
+
+      if (
+        lead &&
+        !lead.__sulanBound
+      ) {
+
+        lead.__sulanBound =
+          true;
+
+        lead.addEventListener(
+          "submit",
+          async function(e){
+
+            e.preventDefault();
+
+
+            const fd =
+              new FormData(
+                lead
+              );
+
+            const data =
+              Object.fromEntries(
+                fd.entries()
+              );
+
+
+            const qp =
+              new URLSearchParams(
+                location.search
+              );
+
+
+            data.utm_source =
+              qp.get(
+                "utm_source"
+              ) || "direct";
+
+            data.utm_campaign =
+              qp.get(
+                "utm_campaign"
+              ) || "";
+
+            data.utm_content =
+              qp.get(
+                "utm_content"
+              ) || "";
+
+
+            /*
+             * Save lead to Worker.
+             */
+            try {
+
+              await fetch(
+                "/api/lead",
+                {
+                  method:
+                    "POST",
+
+                  headers: {
+                    "content-type":
+                      "application/json"
+                  },
+
+                  body:
+                    JSON.stringify(
+                      data
+                    )
+                }
+              );
+
+            } catch (_) {}
+
+
+            /*
+             * Pixel tracking is handled
+             * by /pixel.js.
+             *
+             * Do NOT call fbq / ttq here.
+             */
+
+
+            const msg =
+              "Hello Sulan, I submitted a research inquiry. My name is " +
+              (data.name || "") +
+              ".";
+
+
+            location.href =
+              "/go/whatsapp?text=" +
+              encodeURIComponent(
+                msg
+              );
+
+          }
+        );
+
       }
-    }catch(e){}
+
+    } catch (_) {}
+
   }
-  fetch("/api/pageview",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({path:location.pathname,referrer:document.referrer,source:new URLSearchParams(location.search).get("utm_source")||"direct",campaign:new URLSearchParams(location.search).get("utm_campaign")||"",adset:new URLSearchParams(location.search).get("utm_content")||""})}).catch(()=>{}); loadSulanConfig();
+
+
+  /*
+   * Keep existing pageview recording.
+   */
+  fetch(
+    "/api/pageview",
+    {
+      method:
+        "POST",
+
+      headers: {
+        "content-type":
+          "application/json"
+      },
+
+      body:
+        JSON.stringify({
+          path:
+            location.pathname,
+
+          referrer:
+            document.referrer,
+
+          source:
+            new URLSearchParams(
+              location.search
+            ).get(
+              "utm_source"
+            ) || "direct",
+
+          campaign:
+            new URLSearchParams(
+              location.search
+            ).get(
+              "utm_campaign"
+            ) || "",
+
+          adset:
+            new URLSearchParams(
+              location.search
+            ).get(
+              "utm_content"
+            ) || ""
+        })
+    }
+  ).catch(
+    () => {}
+  );
+
+
+  loadSulanConfig();
+
 })();
 </script>
+
+<script src="/pixel.js"></script>
   <script src="/pixel.js"></script>
 </body>
 </html>
