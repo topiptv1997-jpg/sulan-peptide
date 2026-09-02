@@ -3198,15 +3198,23 @@ function pixelJs(): string {
         }
       };
 
-    for (
-      const pixel of state.tiktok
-    ) {
-      try {
-        window.ttq.load(
-          pixel.id
-        );
-      } catch (_) {}
-    }
+for (
+  const pixel of state.tiktok
+) {
+  if (
+    pixel &&
+    pixel.enabled !== false &&
+    String(
+      pixel.id || ""
+    ).trim()
+  ) {
+    try {
+      window.ttq.load(
+        pixel.id
+      );
+    } catch (_) {}
+  }
+}
   }
 
 
@@ -3533,16 +3541,19 @@ function pixelJs(): string {
             )
           : [];
 
-      state.tiktok =
-        Array.isArray(
-          config.pixels?.tiktok
-        )
-          ? config.pixels.tiktok.filter(
-              (pixel) =>
-                pixel.enabled !==
-                false
-            )
-          : [];
+    state.tiktok =
+  Array.isArray(
+    config.pixels?.tiktok
+  )
+    ? config.pixels.tiktok.filter(
+        (pixel) =>
+          pixel &&
+          pixel.enabled !== false &&
+          String(
+            pixel.id || ""
+          ).trim()
+      )
+    : [];
 
 
       await Promise.all([
@@ -3594,16 +3605,19 @@ function pixelJs(): string {
                   )
                 : [];
 
-            state.tiktok =
-              Array.isArray(
-                next.pixels?.tiktok
-              )
-                ? next.pixels.tiktok.filter(
-                    (pixel) =>
-                      pixel.enabled !==
-                      false
-                  )
-                : [];
+state.tiktok =
+  Array.isArray(
+    next.pixels?.tiktok
+  )
+    ? next.pixels.tiktok.filter(
+        (pixel) =>
+          pixel &&
+          pixel.enabled !== false &&
+          String(
+            pixel.id || ""
+          ).trim()
+      )
+    : [];
 
             applyFormState(
               next
