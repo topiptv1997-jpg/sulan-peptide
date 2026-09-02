@@ -902,14 +902,16 @@ IMPORTANT:
     }
   });
 
-  /* Refresh */
-  $v81("#refresh")?.addEventListener("click", (event) => {
-    event.preventDefault();
-    refreshAllV81();
-  });
+ /* Refresh */
+if ($v81("#refresh")) {
+  $v81("#refresh").onclick = function (event) {
+    if (event) {
+      event.preventDefault();
+    }
 
-  /* If the existing V8 script assigned onclick, this assignment wins. */
-  if ($v81("#refresh")) $v81("#refresh").onclick = refreshAllV81;
+    refreshAllV81();
+  };
+}
 
   /* Correct the old V8 ViewContent checkbox value. */
   const viewContent = $v81("#pixelForm input[value='viewcontent']");
