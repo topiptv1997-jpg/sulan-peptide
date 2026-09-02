@@ -3541,11 +3541,11 @@ for (
             )
           : [];
 
-    state.tiktok =
+ state.tiktok =
   Array.isArray(
-    config.pixels?.tiktok
+    next.pixels?.tiktok
   )
-    ? config.pixels.tiktok.filter(
+    ? next.pixels.tiktok.filter(
         (pixel) =>
           pixel &&
           pixel.enabled !== false &&
