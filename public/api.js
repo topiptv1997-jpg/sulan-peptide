@@ -1,5 +1,5 @@
 // api.js - Config Data Viewer
-// 完整的配置查看器，包含归因数据和状态管理
+// 适配现有项目的接口和数据结构
 
 // ============ Constants ============
 const KEY = "sulan_attribution_v1";
@@ -16,11 +16,7 @@ const state = {
 };
 
 // ============ Attribution ============
-
-/**
- * 从 URL 参数读取归因数据
- */
-function readAttribution() {
+const readAttr = () => {
   const p = new URLSearchParams(location.search);
   const keys = ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","ttclid","gclid"];
   const data = {};
@@ -34,20 +30,30 @@ function readAttribution() {
   } catch (_) {
     return data;
   }
-}
+};
 
-const attribution = readAttribution();
+const attr = readAttr();
+
+// ============ API 请求 ============
+const apiRequest = (path, body) => fetch(path, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  keepalive: true,
+  body: JSON.stringify({ ...attr, ...body })
+}).catch(() => {});
 
 // ============ Core Functions ============
 
 /**
  * 从 /api/config 拉取配置数据
+ * 使用与项目相同的接口路径
  */
 async function fetchConfig() {
   state.loading = true;
   state.error = null;
   
   try {
+    // 使用与项目相同的接口路径
     const response = await fetch("/api/config", { 
       cache: "no-store"
     });
@@ -90,7 +96,7 @@ function getConfig() {
  * 获取归因数据
  */
 function getAttribution() {
-  return { ...attribution };
+  return { ...attr };
 }
 
 /**
@@ -180,7 +186,8 @@ function render(container = '#app') {
   if (state.loading) {
     wrapper.innerHTML = `
       <div style="padding: 40px; text-align: center; color: #666;">
-        ⏳ 加载中...
+        <div style="font-size: 20px; margin-bottom: 12px;">⏳</div>
+        <div>正在加载配置数据...</div>
       </div>
     `;
     return;
@@ -190,13 +197,18 @@ function render(container = '#app') {
   if (state.error) {
     wrapper.innerHTML = `
       <div style="padding: 30px; color: #d32f2f; background: #ffebee; border-radius: 6px; text-align: center;">
-        <div style="font-size: 16px; margin-bottom: 8px;">❌ 加载失败</div>
-        <div style="font-size: 13px;">${state.error}</div>
+        <div style="font-size: 18px; margin-bottom: 8px;">❌ 加载失败</div>
+        <div style="font-size: 13px; background: #fff; padding: 8px 16px; border-radius: 4px; display: inline-block; margin: 8px 0;">
+          ${state.error}
+        </div>
         <br>
         <button onclick="window.api?.fetchConfig?.().then(() => window.api?.render())" 
-                style="padding: 8px 24px; cursor: pointer; background: #1976d2; color: white; border: none; border-radius: 4px;">
+                style="padding: 8px 24px; cursor: pointer; background: #1976d2; color: white; border: none; border-radius: 4px; font-size: 13px; margin-top: 8px;">
           🔄 重试
         </button>
+        <div style="margin-top: 12px; font-size: 12px; color: #999;">
+          💡 提示：请确保 /api/config 接口可访问
+        </div>
       </div>
     `;
     return;
@@ -206,7 +218,7 @@ function render(container = '#app') {
   if (!state.config) {
     wrapper.innerHTML = `
       <div style="padding: 40px; text-align: center;">
-        <p style="color: #999; margin-bottom: 16px;">📭 暂无配置数据</p>
+        <p style="color: #999; margin-bottom: 16px; font-size: 14px;">📭 暂无配置数据</p>
         <button onclick="window.api?.fetchConfig?.().then(() => window.api?.render())" 
                 style="padding: 10px 32px; cursor: pointer; background: #1976d2; color: white; border: none; border-radius: 4px; font-size: 14px;">
           📥 加载配置
@@ -221,7 +233,7 @@ function render(container = '#app') {
   const metaPixels = getMetaPixels();
   const tiktokPixels = getTikTokPixels();
   const rules = getEventRules();
-  const attr = getAttribution();
+  const attribution = getAttribution();
   
   wrapper.innerHTML = `
     <style>
@@ -279,6 +291,7 @@ function render(container = '#app') {
       }
       .config-viewer .status-item .val.green { color: #1e7e34; }
       .config-viewer .status-item .val.red { color: #d93025; }
+      .config-viewer .status-item .val.gray { color: #999; }
       .config-viewer .status-item .label { color: #777; font-size: 11px; margin-top: 2px; }
       
       .config-viewer .stats-grid {
@@ -349,6 +362,7 @@ function render(container = '#app') {
         border-radius: 6px;
         padding: 12px 16px;
         margin-bottom: 8px;
+        transition: background 0.1s;
       }
       .config-viewer .pixel-item:hover { background: #f5f5f5; }
       .config-viewer .pixel-item .row {
@@ -447,14 +461,6 @@ function render(container = '#app') {
         font-size: 12px;
         color: #999;
         text-align: center;
-      }
-      .config-viewer .kv-info {
-        font-size: 12px;
-        color: #777;
-        background: #f1f3f4;
-        padding: 6px 12px;
-        border-radius: 4px;
-        display: inline-block;
       }
     </style>
     
@@ -632,7 +638,7 @@ function printToConsole() {
   console.log("ttReady:", state.ttReady);
   console.log("lastUpdate:", state.lastUpdate);
   console.log("========== Attribution ==========");
-  console.log(attribution);
+  console.log(attr);
   console.log("========== Config ==========");
   console.log(JSON.stringify(state.config, null, 2));
   console.log("================================");
@@ -653,12 +659,12 @@ async function copyToClipboard() {
       ttReady: state.ttReady,
       lastUpdate: state.lastUpdate
     },
-    attribution: attribution,
+    attribution: attr,
     config: state.config
   };
   try {
     await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    alert("✅ 已复制");
+    alert("✅ 已复制到剪贴板");
   } catch (_) {
     const textarea = document.createElement('textarea');
     textarea.value = JSON.stringify(data, null, 2);
@@ -668,7 +674,7 @@ async function copyToClipboard() {
     textarea.select();
     document.execCommand('copy');
     document.body.removeChild(textarea);
-    alert("✅ 已复制");
+    alert("✅ 已复制到剪贴板");
   }
 }
 
@@ -694,7 +700,7 @@ function showLocalStorage() {
 // ============ Export ============
 export default {
   state,
-  attribution,
+  attr,
   KEY,
   fetchConfig,
   getState,
@@ -710,5 +716,6 @@ export default {
   render,
   printToConsole,
   copyToClipboard,
-  showLocalStorage
+  showLocalStorage,
+  apiRequest  // 导出 api 请求函数，方便使用
 };
