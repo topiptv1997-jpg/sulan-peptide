@@ -1637,6 +1637,177 @@
   </script>
   <script src="/pixel.js"></script>
 
+  <script>
+    (function () {
+      'use strict';
+
+      /**
+       * 从 /api/public/config 获取像素配置
+       * 动态生成 Meta 和 TikTok 像素代码
+       */
+      async function loadPixels() {
+        try {
+          const response = await fetch('/api/public/config', {
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (!response.ok) {
+            console.warn('[Pixel] 配置加载失败:', response.status);
+            return;
+          }
+
+          const config = await response.json();
+          const pixels = config.pixels || { meta: [], tiktok: [] };
+
+          // ========== 处理 Meta 像素 ==========
+          const metaPixels = pixels.meta || [];
+          const enabledMeta = metaPixels.filter(p => p.enabled === true);
+
+          if (enabledMeta.length > 0) {
+            console.log('[Pixel] 加载 Meta 像素:', enabledMeta.length + ' 个');
+            generateMetaScript(enabledMeta);
+          } else {
+            console.log('[Pixel] 没有启用的 Meta 像素');
+          }
+
+          // ========== 处理 TikTok 像素 ==========
+          const tiktokPixels = pixels.tiktok || [];
+          const enabledTiktok = tiktokPixels.filter(p => p.enabled === true);
+
+          if (enabledTiktok.length > 0) {
+            console.log('[Pixel] 加载 TikTok 像素:', enabledTiktok.length + ' 个');
+            generateTikTokScript(enabledTiktok);
+          } else {
+            console.log('[Pixel] 没有启用的 TikTok 像素');
+          }
+
+        } catch (error) {
+          console.error('[Pixel] 加载失败:', error);
+        }
+      }
+
+      /**
+       * 生成 Meta 像素脚本
+       * 支持多个像素 ID
+       */
+      function generateMetaScript(pixels) {
+        const pixelIds = pixels.map(p => p.id);
+
+        // 创建 script 标签
+        const script = document.createElement('script');
+        script.id = 'sulan-meta-pixel';
+
+        // 生成代码
+        let code = `
+    !function(f,b,e,v,n,t,s) {
+      if(f.fbq) return;
+      n = f.fbq = function() {
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      if(!f._fbq) f._fbq = n;
+      n.push = n;
+      n.loaded = !0;
+      n.version = '2.0';
+      n.queue = [];
+      t = b.createElement(e);
+      t.async = !0;
+      t.src = v;
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+    }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    `;
+
+        // 循环初始化每个像素
+        pixelIds.forEach(function (id, index) {
+          code += `\n  fbq('init', '${id}'); // Pixel ${index + 1}`;
+        });
+
+        // 发送 PageView
+        code += `\n  fbq('track', 'PageView');`;
+
+        script.textContent = code;
+        document.head.appendChild(script);
+
+        console.log('[Pixel] Meta 像素已注入:', pixelIds.join(', '));
+      }
+
+      /**
+       * 生成 TikTok 像素脚本
+       * 支持多个像素 ID
+       */
+      function generateTikTokScript(pixels) {
+        const pixelIds = pixels.map(p => p.id);
+
+        // 创建 script 标签
+        const script = document.createElement('script');
+        script.id = 'sulan-tiktok-pixel';
+
+        // 生成代码 - 使用标准 TikTok 像素加载方式
+        let code = `
+    !function(w, d, t) {
+      w.TiktokAnalyticsObject = t;
+      var ttq = w[t] = w[t] || [];
+      ttq.methods = ["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];
+      ttq.setAndDefer = function(t, e) {
+        t[e] = function() {
+          t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
+        };
+      };
+      for (var i = 0; i < ttq.methods.length; i++) {
+        ttq.setAndDefer(ttq, ttq.methods[i]);
+      }
+      ttq.instance = function(t) {
+        for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) {
+          ttq.setAndDefer(e, ttq.methods[n]);
+        }
+        return e;
+      };
+      ttq.load = function(e, n) {
+        var r = "https://analytics.tiktok.com/i18n/pixel/events.js";
+        ttq._i = ttq._i || {};
+        ttq._i[e] = [];
+        ttq._i[e]._u = r;
+        ttq._t = ttq._t || {};
+        ttq._t[e] = +new Date();
+        ttq._o = ttq._o || {};
+        ttq._o[e] = n || {};
+        var s = d.createElement("script");
+        s.type = "text/javascript";
+        s.async = !0;
+        s.src = r + "?sdkid=" + e + "&lib=" + t;
+        var first = d.getElementsByTagName("script")[0];
+        first.parentNode.insertBefore(s, first);
+        return ttq.instance(e);
+      };
+    `;
+
+        // 循环加载每个像素
+        pixelIds.forEach(function (id, index) {
+          code += `\n  ttq.load('${id}'); // Pixel ${index + 1}`;
+        });
+
+        // 发送 PageView
+        code += `\n  ttq.page();`;
+        code += `\n}(window, document, 'ttq');`;
+
+        script.textContent = code;
+        document.head.appendChild(script);
+
+        console.log('[Pixel] TikTok 像素已注入:', pixelIds.join(', '));
+      }
+
+      // ========== 页面加载完成后执行 ==========
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadPixels);
+      } else {
+        loadPixels();
+      }
+
+    })();
+  </script>
+
 
   <!-- ============ 数据查看器（嵌入） ============ -->
   <style>
