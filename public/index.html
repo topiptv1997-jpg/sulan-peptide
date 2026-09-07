@@ -1622,6 +1622,8 @@
     })();
   </script>
   <script src="/pixel.js"></script>
+
+
   <!-- ============ 数据查看器（嵌入） ============ -->
   <style>
     /* 数据查看器样式 - 独立命名空间，不影响原页面 */
@@ -1667,7 +1669,7 @@
     #sulan-data-viewer-panel {
       background: #1e1e1e;
       border-radius: 12px;
-      width: min(1100px, calc(100% - 20px));
+      width: min(900px, calc(100% - 20px));
       max-height: 92vh;
       display: flex;
       flex-direction: column;
@@ -1762,44 +1764,43 @@
       font-size: 14px;
     }
 
-    #sulan-data-viewer-body .endpoint-section {
-      margin-bottom: 24px;
-    }
-
-    #sulan-data-viewer-body .endpoint-section .endpoint-name {
+    #sulan-data-viewer-body .section-title {
       color: #4ec9b0;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      margin-bottom: 6px;
-      padding-bottom: 4px;
+      margin: 16px 0 8px 0;
+      padding-bottom: 6px;
       border-bottom: 1px solid #2d2d2d;
     }
 
-    #sulan-data-viewer-body .endpoint-section .endpoint-status {
-      color: #888;
-      font-size: 11px;
+    #sulan-data-viewer-body .section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    #sulan-data-viewer-body .status-ok {
+      color: #6a9955;
       font-weight: 400;
+      font-size: 12px;
       margin-left: 10px;
     }
 
-    #sulan-data-viewer-body .endpoint-section .endpoint-status.ok {
-      color: #6a9955;
-    }
-
-    #sulan-data-viewer-body .endpoint-section .endpoint-status.err {
+    #sulan-data-viewer-body .status-err {
       color: #f87171;
+      font-weight: 400;
+      font-size: 12px;
+      margin-left: 10px;
     }
   </style>
 
   <!-- 触发按钮 -->
-  <button id="sulan-data-viewer-toggle" title="查看原始数据">📊</button>
+  <button id="sulan-data-viewer-toggle" title="查看像素和WhatsApp配置">📊</button>
 
   <!-- 覆盖层 -->
   <div id="sulan-data-viewer-overlay">
     <div id="sulan-data-viewer-panel">
       <div id="sulan-data-viewer-header">
-        <div class="title">📊 原始数据 <span id="sulan-data-viewer-status">加载中...</span></div>
+        <div class="title">📊 像素 & WhatsApp 配置 <span id="sulan-data-viewer-status">加载中...</span></div>
         <div class="actions">
           <button onclick="window._sulanViewer.refresh()">🔄 刷新</button>
           <button onclick="window._sulanViewer.copy()">📄 复制</button>
@@ -1816,18 +1817,6 @@
     (function () {
       'use strict';
 
-      // ============ 配置 ============
-      const ENDPOINTS = [
-        { name: '/api/admin/config', key: 'config' },
-        { name: '/api/admin/stats', key: 'stats' },
-        { name: '/api/admin/events', key: 'events' },
-        { name: '/api/admin/leads', key: 'leads' },
-        { name: '/api/admin/whatsapp', key: 'whatsapp' },
-        { name: '/api/admin/pixels', key: 'pixels' },
-        { name: '/api/admin/settings', key: 'settings' },
-        { name: '/api/public/config', key: 'publicConfig' }
-      ];
-
       // ============ DOM 引用 ============
       const toggleBtn = document.getElementById('sulan-data-viewer-toggle');
       const overlay = document.getElementById('sulan-data-viewer-overlay');
@@ -1836,35 +1825,37 @@
 
       // ============ 状态 ============
       let isOpen = false;
-      let dataCache = {};
+      let dataCache = null;
 
       // ============ 数据获取 ============
-      async function fetchAllData() {
-        const results = {};
+      async function fetchData() {
+        try {
+          const resp = await fetch('/api/public/config', {
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+          });
 
-        for (const ep of ENDPOINTS) {
-          try {
-            const resp = await fetch(ep.name, {
-              cache: 'no-store',
-              credentials: 'same-origin',
-              headers: { 'Accept': 'application/json' }
-            });
-            if (!resp.ok) {
-              results[ep.key] = { error: `HTTP ${resp.status}` };
-              continue;
-            }
-            const text = await resp.text();
-            try {
-              results[ep.key] = JSON.parse(text);
-            } catch {
-              results[ep.key] = text;
-            }
-          } catch (err) {
-            results[ep.key] = { error: err.message };
+          if (!resp.ok) {
+            return { error: `HTTP ${resp.status}` };
           }
-        }
 
-        return results;
+          const text = await resp.text();
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            return { error: 'JSON 解析失败' };
+          }
+
+          // 只提取 pixels 和 whatsapp
+          return {
+            pixels: data.pixels || null,
+            whatsapp: data.whatsapp || null
+          };
+        } catch (err) {
+          return { error: err.message };
+        }
       }
 
       // ============ 渲染 ============
@@ -1875,23 +1866,30 @@
           return;
         }
 
-        // 检查是否有错误
-        const hasError = Object.values(data).some(v => v && typeof v === 'object' && v.error);
-        if (hasError) {
-          statusEl.textContent = '⚠️ 部分接口失败';
-        } else {
-          statusEl.textContent = '✅ 已加载 ' + Object.keys(data).length + ' 个接口';
+        if (data.error) {
+          bodyEl.innerHTML = `<div class="error-text">❌ 加载失败: ${data.error}</div>`;
+          statusEl.textContent = '❌ 加载失败';
+          return;
         }
 
-        let html = '';
-        for (const ep of ENDPOINTS) {
-          const value = data[ep.key];
-          const isError = value && typeof value === 'object' && value.error;
+        statusEl.textContent = '✅ 已加载';
 
-          html += `<div class="endpoint-section">`;
-          html += `<div class="endpoint-name">${ep.name} <span class="endpoint-status ${isError ? 'err' : 'ok'}">${isError ? '❌ ' + value.error : '✅ OK'}</span></div>`;
-          html += `<div class="raw-block">${JSON.stringify(value, null, 2)}</div>`;
-          html += `</div>`;
+        let html = '';
+
+        // Pixels 部分
+        html += `<div class="section-title">📘 像素配置 (Pixels)</div>`;
+        if (data.pixels) {
+          html += `<div class="raw-block">${JSON.stringify(data.pixels, null, 2)}</div>`;
+        } else {
+          html += `<div class="raw-block" style="color:#888;">暂无像素配置</div>`;
+        }
+
+        // WhatsApp 部分
+        html += `<div class="section-title">📱 WhatsApp 号码配置</div>`;
+        if (data.whatsapp) {
+          html += `<div class="raw-block">${JSON.stringify(data.whatsapp, null, 2)}</div>`;
+        } else {
+          html += `<div class="raw-block" style="color:#888;">暂无 WhatsApp 配置</div>`;
         }
 
         bodyEl.innerHTML = html;
@@ -1903,7 +1901,7 @@
         bodyEl.innerHTML = '<div class="loading-text">⏳ 正在加载数据...</div>';
 
         try {
-          dataCache = await fetchAllData();
+          dataCache = await fetchData();
           render(dataCache);
         } catch (err) {
           bodyEl.innerHTML = `<div class="error-text">❌ 加载失败: ${err.message}</div>`;
@@ -1935,6 +1933,12 @@
 
       // ============ 复制 ============
       function copyData() {
+        if (!dataCache) {
+          statusEl.textContent = '⚠️ 暂无数据可复制';
+          setTimeout(() => { statusEl.textContent = '✅ 已加载'; }, 1500);
+          return;
+        }
+
         const text = JSON.stringify(dataCache, null, 2);
         navigator.clipboard.writeText(text).then(() => {
           const orig = statusEl.textContent;
@@ -1968,27 +1972,23 @@
       // ============ 事件绑定 ============
       toggleBtn.addEventListener('click', toggleViewer);
 
-      // 点击遮罩关闭
       overlay.addEventListener('click', function (e) {
         if (e.target === overlay) {
           closeViewer();
         }
       });
 
-      // ESC 键关闭
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && isOpen) {
           closeViewer();
         }
       });
 
-      console.log('📊 数据查看器已加载，点击左下角 📊 按钮查看原始数据');
+      console.log('📊 数据查看器已加载，点击左下角 📊 按钮查看像素和WhatsApp配置');
       console.log('💡 也可在控制台使用: window._sulanViewer.toggle()');
     })();
   </script>
   <!-- ============ 数据查看器结束 ============ -->
-
-
 </body>
 
 </html>
