@@ -1,438 +1,1575 @@
 <!doctype html>
 <html lang="zh-CN">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sulan Peptide — Campaign Center</title>
-<style>
-:root{--green:#00583f;--green2:#087a59;--ink:#102033;--muted:#6d7b86;--bg:#f3f7f5;--card:#fff;--line:#dce7e2;--soft:#e7f3ee;--amber:#fff4cf;--red:#b42318;--shadow:0 10px 35px rgba(0,65,48,.08)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer}
-.app{display:flex;min-height:100vh}.side{width:244px;background:#fff;border-right:1px solid var(--line);padding:24px 16px;position:fixed;inset:0 auto 0 0;z-index:3}.brand{padding:6px 12px 26px}.brand b{display:block;color:var(--green);font-size:17px;letter-spacing:.8px}.brand span{font-size:11px;color:var(--muted);letter-spacing:1.6px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:9px;color:#4e5c65}.nav button.active,.nav button:hover{background:var(--soft);color:var(--green);font-weight:800}.nav small{display:block;color:#9aa6ad;padding:18px 12px 5px;font-size:10px;text-transform:uppercase;letter-spacing:1.2px}
-.main{margin-left:244px;width:calc(100% - 244px);padding:28px 34px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:1.5px}.title{font-size:28px;font-weight:900;margin:2px 0}.sub{color:var(--muted)}.topright{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.status{padding:8px 11px;background:#e8f6ef;border-radius:999px;color:var(--green);font-weight:800;font-size:12px}.status.err{background:#fff0ef;color:var(--red)}.lang{display:flex;background:#eef4f1;border-radius:9px;padding:3px}.langbtn{border:0;background:transparent;color:#62716a;padding:6px 9px;border-radius:7px;font-weight:800;font-size:12px}.langbtn.active{background:#fff;color:var(--green);box-shadow:0 1px 4px #003b2612}
-.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:800}.primary{background:var(--green);color:#fff}.secondary{background:#e8f2ee;color:var(--green)}.danger{background:#fff0ef;color:var(--red)}.btn:disabled{opacity:.5;cursor:not-allowed}
-.page{display:none}.page.active{display:block}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px;box-shadow:var(--shadow)}.metric .label{color:var(--muted);font-weight:700}.metric .num{font-size:30px;font-weight:900;margin:8px 0 2px}.metric .hint{color:var(--green);font-size:12px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:24px 0 12px}.sectionhead h2{font-size:17px;margin:0}.sectionhead span{color:var(--muted);font-size:12px}
-.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);white-space:nowrap}.table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.7px}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--green);font-size:11px;font-weight:800}.badge.off{background:#eef1f0;color:#68736f}.muted{color:var(--muted)}.bar{height:8px;background:#edf2f0;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:99px}.notice{background:var(--amber);border:1px solid #ead79b;padding:12px 14px;border-radius:10px;margin-bottom:16px}.empty{padding:30px;text-align:center;color:var(--muted)}
-.formrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px;margin-bottom:13px}.field label{font-weight:800;font-size:12px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;background:#fff}.field textarea{min-height:90px;resize:vertical}.switch{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.switch:last-child{border-bottom:0}.toggle{width:45px;height:25px;border:0;border-radius:20px;background:#cbd8d3;padding:3px}.toggle i{display:block;width:19px;height:19px;background:#fff;border-radius:50%;transition:.2s}.toggle.on{background:var(--green)}.toggle.on i{transform:translateX(20px)}
-.pixel{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:15px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}.pixel .id{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);word-break:break-all}.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.rulegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
-.modal{position:fixed;inset:0;background:#001b1433;display:none;place-items:center;z-index:9}.modal.open{display:grid}.modalbox{background:#fff;border-radius:16px;width:min(620px,calc(100% - 30px));max-height:90vh;overflow:auto;padding:22px;box-shadow:0 25px 80px #001b1433}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.toast{position:fixed;right:22px;bottom:22px;z-index:20;background:#102033;color:#fff;padding:11px 15px;border-radius:10px;display:none}.toast.show{display:block}.dangertext{color:var(--red)}
-@media(max-width:1100px){.side{width:205px}.main{margin-left:205px;width:calc(100% - 205px);padding:22px}.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
-@media(max-width:700px){.side{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.app{display:block}.main{margin:0;width:100%;padding:18px}.nav{grid-template-columns:repeat(2,1fr)}.grid4,.grid3{grid-template-columns:1fr}.top{align-items:flex-start;gap:15px;flex-direction:column}.formrow{grid-template-columns:1fr}.pixel{flex-direction:column}.actions{justify-content:flex-start}}
-</style>
-</head>
-<body>
-<div class="app">
-<aside class="side">
-  <div class="brand"><b>SULAN PEPTIDE</b><span>CAMPAIGN CENTER</span></div>
-  <nav class="nav">
-    <button class="active" data-page="dashboard">◈ &nbsp;<span data-i18n="Dashboard">控制面板</span></button>
-    <button data-page="analytics">◫ &nbsp;<span data-i18n="Analytics">数据分析</span></button>
-    <button data-page="leads">▣ &nbsp;<span data-i18n="Leads">询盘管理</span></button>
-    <small data-i18n="Operations">运营</small>
-    <button data-page="whatsapp">◉ &nbsp;WhatsApp</button>
-    <button data-page="pixels">◌ &nbsp;<span data-i18n="Pixels">像素管理</span></button>
-    <button data-page="events">≡ &nbsp;<span data-i18n="Events">事件中心</span></button>
-    <small data-i18n="System">系统</small>
-    <button data-page="settings">⚙ &nbsp;<span data-i18n="Settings">系统设置</span></button>
-  </nav>
-  <div style="position:absolute;left:16px;right:16px;bottom:20px"><div class="card" style="padding:13px"><div style="font-weight:800" data-i18n="System status">系统状态</div><div class="muted" style="font-size:12px;margin-top:3px" id="workerState">● Worker 已连接</div></div></div>
-</aside>
-
-<main class="main">
-<header class="top">
-  <div><div class="eyebrow">SULAN PEPTIDE</div><div class="title" id="pageTitle">控制面板</div><div class="sub" id="pageSub">广告与转化概览</div></div>
-  <div class="topright">
-    <div class="lang"><button id="langZh" class="langbtn active">中文</button><button id="langEn" class="langbtn">EN</button></div>
-    <span class="status" id="systemStatus">● 系统正常运行</span>
-    <button class="btn secondary" id="refresh">刷新</button>
-    <button class="btn danger" id="logout">退出登录</button>
-  </div>
-</header>
-
-<section class="page active" id="dashboard">
-  <div class="grid4">
-    <div class="card metric"><div class="label" data-i18n="Page Views">页面访问</div><div class="num" id="mViews">—</div><div class="hint" data-i18n="Tracked landing-page visits">单页访问量</div></div>
-    <div class="card metric"><div class="label">WhatsApp Clicks</div><div class="num" id="mClicks">—</div><div class="hint" data-i18n="Outbound contact actions">外部联系操作</div></div>
-    <div class="card metric"><div class="label" data-i18n="Form submissions">表单提交</div><div class="num" id="mLeads">—</div><div class="hint">form_submit</div></div>
-    <div class="card metric"><div class="label">WhatsApp CTR</div><div class="num" id="mCtr">—</div><div class="hint">Clicks ÷ page views</div></div>
-  </div>
-  <div class="grid2">
-    <div class="card" style="margin-top:18px"><div class="sectionhead"><h2 data-i18n="Conversion funnel">转化漏斗</h2><span data-i18n="All stored events">全部已记录事件</span></div>
-      <div style="display:grid;gap:18px">
-        <div><div style="display:flex;justify-content:space-between"><b data-i18n="Page Views">页面访问</b><span id="fViews">—</span></div><div class="bar"><i style="width:100%"></i></div></div>
-        <div><div style="display:flex;justify-content:space-between"><b>WhatsApp Clicks</b><span id="fClicks">—</span></div><div class="bar"><i id="bClicks" style="width:0%"></i></div></div>
-        <div><div style="display:flex;justify-content:space-between"><b data-i18n="Form submissions">表单提交</b><span id="fLeads">—</span></div><div class="bar"><i id="bLeads" style="width:0%"></i></div></div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:18px"><div class="sectionhead"><h2 data-i18n="Live configuration">当前配置</h2></div>
-      <div class="switch"><div><b data-i18n="Lead Form">询盘表单</b><div class="muted" id="formState">—</div></div><span class="badge" id="routingState">—</span></div>
-      <div class="switch"><div><b>Meta Pixel</b><div class="muted" id="metaState">—</div></div><span class="badge" id="metaBadge">—</span></div>
-      <div class="switch"><div><b>TikTok Pixel</b><div class="muted" id="ttState">—</div></div><span class="badge" id="ttBadge">—</span></div>
-    </div>
-  </div>
-  <div class="sectionhead"><h2 data-i18n="Recent WhatsApp activity">最近 WhatsApp 活动</h2><button class="btn secondary" data-page-link="events" data-i18n="View all events">查看全部事件</button></div>
-  <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Time / 时间</th><th>Number / 号码</th><th>Campaign / 广告系列</th><th>Source / 来源</th></tr></thead><tbody id="recentClicks"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div></div>
-</section>
-
-<section class="page" id="analytics">
-  <div class="notice" data-i18n="AnalyticsNotice">当前 Worker 已记录来源、广告系列和广告组归因。此页面会优先使用现有事件 API，并为后续按日期/广告系列统计预留空间。</div>
-  <div class="grid3">
-    <div class="card metric"><div class="label muted" data-i18n="Traffic sources">流量来源</div><div class="num" id="aSources">—</div></div>
-    <div class="card metric"><div class="label muted" data-i18n="Campaigns">广告系列</div><div class="num" id="aCampaigns">—</div></div>
-    <div class="card metric"><div class="label muted" data-i18n="Ad sets">广告组</div><div class="num" id="aAdsets">—</div></div>
-  </div>
-  <div class="sectionhead"><h2 data-i18n="Attribution table">归因明细</h2><span>Stored events / 已存储事件</span></div>
-  <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Source</th><th>Campaign</th><th>Ad set</th><th>Event</th><th>Count</th></tr></thead><tbody id="analyticsRows"></tbody></table></div></div>
-</section>
-
-<section class="page" id="leads">
-  <div class="sectionhead"><h2 data-i18n="Lead management">询盘管理</h2><button class="btn secondary" id="loadLeads" data-i18n="Refresh">刷新</button></div>
-  <div class="grid4">
-    <div class="card metric"><div class="label" data-i18n="Total Leads">询盘总数</div><div class="num" id="leadTotal">—</div></div>
-    <div class="card metric"><div class="label" data-i18n="New">新询盘</div><div class="num" id="leadNew">—</div></div>
-    <div class="card metric"><div class="label" data-i18n="Contacted">已联系</div><div class="num" id="leadContacted">—</div></div>
-    <div class="card metric"><div class="label" data-i18n="Won">已成交</div><div class="num" id="leadWon">—</div></div>
-  </div>
-  <div class="card" style="margin-top:18px"><div class="tablewrap"><table class="table"><thead><tr><th>Time</th><th>Name</th><th>Contact</th><th>Campaign</th><th>Status</th><th>Action</th></tr></thead><tbody id="leadRows"></tbody></table></div></div>
-</section>
-
-<section class="page" id="whatsapp">
-  <div class="sectionhead"><h2 data-i18n="WhatsApp numbers">WhatsApp 号码</h2><button class="btn primary" id="addWa">+ 添加号码</button></div>
-  <div class="card">
-    <div class="formrow" style="margin-bottom:12px"><div><b data-i18n="Routing mode">流量路由模式</b><div class="muted" data-i18n="Choose how active numbers receive traffic.">选择启用号码如何接收流量。</div></div><select id="routingSelect"><option value="single">Single / Default</option><option value="round_robin">Round Robin</option></select></div>
-    <div id="waList"></div>
-  </div>
-</section>
-
-<section class="page" id="pixels">
-  <div class="notice" data-i18n="PixelNotice">多像素管理已接入后台结构。每个 Pixel 可以独立启用/停用，并选择需要发送的事件；最终是否生效以 Worker API 返回的配置为准。</div>
-  <div class="grid2">
-    <div class="card"><div class="sectionhead"><h2>Meta Pixels</h2><button class="btn primary" id="addMeta">+ Add Meta Pixel</button></div><div id="metaPixelBox"></div></div>
-    <div class="card"><div class="sectionhead"><h2>TikTok Pixels</h2><button class="btn primary" id="addTikTok">+ Add TikTok Pixel</button></div><div id="ttPixelBox"></div></div>
-  </div>
-  <div class="sectionhead"><h2 data-i18n="Event delivery">事件发送规则</h2></div>
-  <div class="card"><div class="grid3">
-    <div class="pixel"><div><b>PageView</b><div class="muted">Landing page traffic</div></div><span class="badge">Ready / 就绪</span></div>
-    <div class="pixel"><div><b>WhatsApp Click</b><div class="muted">Contact intent</div></div><span class="badge">Ready / 就绪</span></div>
-    <div class="pixel"><div><b>Lead</b><div class="muted">Form submission</div></div><span class="badge">Ready / 就绪</span></div>
-  </div></div>
-</section>
-
-<section class="page" id="events">
-  <div class="sectionhead"><h2 data-i18n="Event Center">事件中心</h2><button class="btn secondary" id="loadEvents" data-i18n="Refresh events">刷新事件</button></div>
-  <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Time</th><th>Event</th><th>Source</th><th>Campaign</th><th>Ad set</th><th>Number</th></tr></thead><tbody id="eventRows"></tbody></table></div></div>
-</section>
-
-<section class="page" id="settings">
-  <div class="grid2">
-    <div class="card"><div class="sectionhead"><h2 data-i18n="Landing page">单页</h2></div>
-      <div class="switch"><div><b data-i18n="Lead Form">询盘表单</b><div class="muted" data-i18n="Enable or disable the inquiry form.">启用或关闭询盘表单。</div></div><button class="toggle" id="formToggle"><i></i></button></div>
-      <div class="switch"><div><b data-i18n="Routing mode">流量路由模式</b><div class="muted">Single/default or round robin</div></div><select id="routingSettings"><option value="single">Single</option><option value="round_robin">Round Robin</option></select></div>
-    </div>
-    <div class="card"><div class="sectionhead"><h2 data-i18n="Security">安全</h2></div><div class="empty" data-i18n="SecurityNotice">管理员账号、密码和 Session Secret 继续由 Cloudflare 环境变量管理，不在前端保存。</div></div>
-  </div>
-  <div class="sectionhead"><h2 data-i18n="System">系统</h2></div>
-  <div class="card"><div class="grid3">
-    <div><div class="muted">Worker</div><b id="sysWorker">Connected / 已连接</b></div>
-    <div><div class="muted">Configuration KV</div><b id="sysConfig">Connected / 已连接</b></div>
-    <div><div class="muted">Asset binding</div><b id="sysAssets">Connected / 已连接</b></div>
-  </div></div>
-</section>
-</main>
-</div>
-
-<div class="modal" id="waModal"><div class="modalbox"><div class="modalhead"><h2 id="waModalTitle">添加 WhatsApp 号码</h2><button class="btn secondary" id="closeWa">关闭</button></div>
-<form id="waForm"><input type="hidden" id="waId"><div class="field"><label>Label / 名称</label><input id="waLabel" placeholder="Puerto Rico Main" required></div><div class="field"><label>Phone number / 电话号码</label><input id="waNumber" placeholder="1787..." required></div><button class="btn primary">Save / 保存</button></form></div></div>
-
-<div class="modal" id="pixelModal"><div class="modalbox"><div class="modalhead"><h2 id="pixelModalTitle">Add Pixel</h2><button class="btn secondary" id="closePixel">Close / 关闭</button></div>
-<form id="pixelForm">
-<input type="hidden" id="pixelId"><input type="hidden" id="pixelKind">
-<div class="field"><label>Pixel ID</label><input id="pixelCode" required placeholder="Enter Pixel ID"></div>
-<div class="field"><label>Name / 名称</label><input id="pixelName" placeholder="Primary / Main"></div>
-<div class="field"><label>Events / 事件</label><div class="rulegrid">
-<label class="check"><input type="checkbox" value="pageview" checked> PageView</label>
-<label class="check"><input type="checkbox" value="whatsapp_click" checked> WhatsApp Click</label>
-<label class="check"><input type="checkbox" value="form_submit" checked> Lead</label>
-<label class="check"><input type="checkbox" value="viewcontent"> ViewContent</label>
-</div></div>
-<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn secondary" id="cancelPixel">Cancel</button><button class="btn primary">Save Pixel</button></div>
-</form></div></div>
-
-<div class="modal" id="leadModal"><div class="modalbox"><div class="modalhead"><h2>Lead / 询盘</h2><button class="btn secondary" id="closeLead">Close / 关闭</button></div><div id="leadDetail"></div></div></div>
-<div class="toast" id="toast"></div>
-
-<script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const state={stats:{},config:{},events:[],leads:[],whatsapp:[],pixels:{meta:[],tiktok:[]}};
-const I18N={
-zh:{Dashboard:"控制面板",Analytics:"数据分析",Leads:"询盘管理",Pixels:"像素管理",Events:"事件中心",Settings:"系统设置",Operations:"运营",System:"系统","System status":"系统状态","Page Views":"页面访问","Tracked landing-page visits":"单页访问量","Outbound contact actions":"外部联系操作","Form submissions":"表单提交","Conversion funnel":"转化漏斗","All stored events":"全部已记录事件","Live configuration":"当前配置","Lead Form":"询盘表单","Recent WhatsApp activity":"最近 WhatsApp 活动","View all events":"查看全部事件","Traffic sources":"流量来源","Campaigns":"广告系列","Ad sets":"广告组","Attribution table":"归因明细","Lead management":"询盘管理","Total Leads":"询盘总数","New":"新询盘","Contacted":"已联系","Won":"已成交","WhatsApp numbers":"WhatsApp 号码","Routing mode":"流量路由模式","Choose how active numbers receive traffic.":"选择启用号码如何接收流量。","Event delivery":"事件发送规则","Event Center":"事件中心","Refresh events":"刷新事件","Landing page":"单页","Enable or disable the inquiry form.":"启用或关闭询盘表单。","Security":"安全","System":"系统",AnalyticsNotice:"当前 Worker 已记录来源、广告系列和广告组归因。此页面会优先使用现有事件 API，并为后续按日期/广告系列统计预留空间。",PixelNotice:"多像素管理已接入后台结构。每个 Pixel 可以独立启用/停用，并选择需要发送的事件；最终是否生效以 Worker API 返回的配置为准。",SecurityNotice:"管理员账号、密码和 Session Secret 继续由 Cloudflare 环境变量管理，不在前端保存。"},
-en:{Dashboard:"Dashboard",Analytics:"Analytics",Leads:"Leads",Pixels:"Pixels",Events:"Events",Settings:"Settings",Operations:"Operations",System:"System","System status":"System status","Page Views":"Page Views","Tracked landing-page visits":"Tracked landing-page visits","Outbound contact actions":"Outbound contact actions","Form submissions":"Form submissions","Conversion funnel":"Conversion funnel","All stored events":"All stored events","Live configuration":"Live configuration","Lead Form":"Lead Form","Recent WhatsApp activity":"Recent WhatsApp activity","View all events":"View all events","Traffic sources":"Traffic sources","Campaigns":"Campaigns","Ad sets":"Ad sets","Attribution table":"Attribution table","Lead management":"Lead management","Total Leads":"Total Leads","New":"New","Contacted":"Contacted","Won":"Won","WhatsApp numbers":"WhatsApp numbers","Routing mode":"Routing mode","Choose how active numbers receive traffic.":"Choose how active numbers receive traffic.","Event delivery":"Event delivery","Event Center":"Event Center","Refresh events":"Refresh events","Landing page":"Landing page","Enable or disable the inquiry form.":"Enable or disable the inquiry form.","Security":"Security","System":"System",AnalyticsNotice:"The Worker already records source, campaign and ad-set attribution. This page uses the current event API and leaves room for future date/campaign reporting.",PixelNotice:"Multi-pixel management is connected to the admin structure. Each pixel can be enabled or disabled and assigned event rules; actual delivery follows the Worker API configuration.",SecurityNotice:"Admin credentials and the session secret remain Cloudflare environment variables and are never stored in this UI."}
-};
-let lang=localStorage.getItem("sulan_admin_lang")||"zh";
-const titles={dashboard:["Dashboard","Campaign and conversion overview"],analytics:["Analytics","Attribution and campaign performance"],leads:["Leads","Inquiry management and pipeline"],whatsapp:["WhatsApp","Numbers and routing"],pixels:["Pixels","Tracking configuration and event delivery"],events:["Events","Event Center and diagnostics"],settings:["Settings","Landing page and system configuration"]};
-
-function t(key){return I18N[lang][key]||I18N.en[key]||key}
-function applyLang(){
- document.documentElement.lang=lang==="zh"?"zh-CN":"en";
- $$("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
- const p=$(".page.active")?.id||"dashboard";$("#pageTitle").textContent=lang==="zh"?t(titles[p][0]):titles[p][0];$("#pageSub").textContent=lang==="zh"?t(titles[p][1]):titles[p][1];
- $("#langZh").classList.toggle("active",lang==="zh");$("#langEn").classList.toggle("active",lang==="en");
- localStorage.setItem("sulan_admin_lang",lang);
-}
-function page(p){$$(".page").forEach(x=>x.classList.toggle("active",x.id===p));$$(".nav button[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===p));applyLang();if(p==="events")loadEvents();if(p==="leads")loadLeads();if(p==="pixels")loadPixels();if(p==="whatsapp")loadWa()}
-$$(".nav button[data-page]").forEach(b=>b.onclick=()=>page(b.dataset.page));$$("[data-page-link]").forEach(b=>b.onclick=()=>page(b.dataset.pageLink));
-
-async function api(path,opt={}){
- const r=await fetch(path,{...opt,cache:"no-store",credentials:"same-origin",headers:{"Accept":"application/json",...(opt.headers||{})}});
- const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
- if(!r.ok){throw new Error(typeof data==="string"?data:(data?.error||data?.message||`HTTP ${r.status}`))}
- return data;
-}
-function arr(x){if(Array.isArray(x))return x;return x?.items||x?.data||x?.events||x?.leads||x?.whatsapp||[]}
-function num(...xs){for(const x of xs){if(x!==undefined&&x!==null&&x!=="")return Number(x)||0}return 0}
-function fmt(n){return Number(n||0).toLocaleString()}
-function time(s){return s?new Date(s).toLocaleString():"—"}
-function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function toast(msg){const x=$("#toast");x.textContent=msg;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200)}
-function setError(msg){$("#systemStatus").textContent="● "+msg;$("#systemStatus").classList.add("err");$("#workerState").textContent="● Worker / API error"}
-
-async function load(){
- try{
-   const [stats,config,events]=await Promise.all([api("/api/admin/stats"),api("/api/admin/config"),api("/api/admin/events")]);
-   state.stats=stats||{};state.config=config||{};state.events=arr(events);
-   $("#systemStatus").textContent=lang==="zh"?"● 系统正常运行":"● System operational";$("#systemStatus").classList.remove("err");$("#workerState").textContent=lang==="zh"?"● Worker 已连接":"● Worker connected";
-   render();loadWa();loadPixels();
- }catch(e){console.error(e);setError(lang==="zh"?"API 连接失败":"API error")}
-}
-function render(){
- const s=state.stats||{},c=state.config||{};
- const views=num(s.page_views,s.pageViews,s.views),clicks=num(s.whatsapp_clicks,s.whatsappClicks,s.clicks),leads=num(s.form_submissions,s.formSubmissions,s.leads);
- $("#mViews").textContent=fmt(views);$("#mClicks").textContent=fmt(clicks);$("#mLeads").textContent=fmt(leads);$("#mCtr").textContent=(s.ctr!==undefined?s.ctr:(views?(clicks/views*100).toFixed(2):"0.00"))+"%";
- $("#fViews").textContent=fmt(views);$("#fClicks").textContent=fmt(clicks);$("#fLeads").textContent=fmt(leads);
- $("#bClicks").style.width=Math.min(100,views?clicks/views*100:0)+"%";$("#bLeads").style.width=Math.min(100,views?leads/views*100:0)+"%";
- const form=!!(c.form_enabled??c.formEnabled);const route=c.routing_mode||c.routingMode||"single";const meta=getPixelArray(c,"meta"),tt=getPixelArray(c,"tiktok");
- $("#formState").textContent=form?(lang==="zh"?"已启用":"Enabled"):(lang==="zh"?"已关闭":"Disabled");$("#routingState").textContent=route==="round_robin"?"Round Robin / 轮询":"Single / Default / 单号码";
- $("#metaState").textContent=meta.length?`${meta.filter(x=>x.enabled!==false).length}/${meta.length} active`:"Not configured / 未配置";$("#ttState").textContent=tt.length?`${tt.filter(x=>x.enabled!==false).length}/${tt.length} active`:"Not configured / 未配置";
- $("#metaBadge").textContent=meta.length?`${meta.length} pixels`:"—";$("#ttBadge").textContent=tt.length?`${tt.length} pixels`:"—";
- $("#leadTotal").textContent=fmt(leads);$("#leadNew").textContent="—";$("#leadContacted").textContent="—";$("#leadWon").textContent="—";
- const clicksEvents=state.events.filter(isWa).slice(0,8);
- $("#recentClicks").innerHTML=clicksEvents.map(x=>`<tr><td>${esc(time(x.created_at||x.createdAt))}</td><td>${esc(x.number||x.phone||"—")}</td><td>${esc(x.campaign||x.utm_campaign||"—")}</td><td>${esc(x.source||x.utm_source||"direct")}</td></tr>`).join("")||'<tr><td colspan="4" class="empty">No WhatsApp activity yet.</td></tr>';
- renderAnalytics();renderEvents();
- $("#routingSelect").value=route;$("#routingSettings").value=route;$("#formToggle").classList.toggle("on",form);
-}
-function getPixelArray(c,kind){
- const p=c?.pixels?.[kind]??c?.[kind+"_pixels"]??c?.[kind+"Pixels"]??[];
- if(Array.isArray(p))return p;
- if(p&&typeof p==="object"){return Object.entries(p).map(([id,v])=>typeof v==="object"?{id,...v}:{id,enabled:!!v})}
- const id=c?.[kind+"_id"]||c?.[kind+"Id"];return id?[{id,enabled:c?.[kind+"_enabled"]!==false,name:"Primary"}]:[];
-}
-function isWa(x){const typ=String(x.type||x.event||"").toLowerCase();return typ==="whatsapp_click"||typ==="whatsapp-click"||typ==="whatsapp"}
-function renderAnalytics(){
- const map={};const src=new Set(),cam=new Set(),ads=new Set();
- state.events.forEach(x=>{const source=x.source||x.utm_source||"direct",campaign=x.campaign||x.utm_campaign||"—",adset=x.adset||x.utm_adset||"—";src.add(source);if(campaign!=="—")cam.add(campaign);if(adset!=="—")ads.add(adset);const event=x.type||x.event||"event",k=[source,campaign,adset,event].join("|||");map[k]=(map[k]||0)+1});
- $("#aSources").textContent=src.size;$("#aCampaigns").textContent=cam.size;$("#aAdsets").textContent=ads.size;
- $("#analyticsRows").innerHTML=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,100).map(([k,n])=>{const [a,b,d,e]=k.split("|||");return `<tr><td>${esc(a)}</td><td>${esc(b)}</td><td>${esc(d)}</td><td>${esc(e)}</td><td>${n}</td></tr>`}).join("")||'<tr><td colspan="5" class="empty">No events yet.</td></tr>';
-}
-function renderEvents(){
- $("#eventRows").innerHTML=state.events.slice(0,500).map(x=>`<tr><td>${esc(time(x.created_at||x.createdAt))}</td><td><span class="badge">${esc(x.type||x.event||"event")}</span></td><td>${esc(x.source||x.utm_source||"direct")}</td><td>${esc(x.campaign||x.utm_campaign||"—")}</td><td>${esc(x.adset||x.utm_adset||"—")}</td><td>${esc(x.number||x.phone||"—")}</td></tr>`).join("")||'<tr><td colspan="6" class="empty">No events yet.</td></tr>';
-}
-async function loadEvents(){try{state.events=arr(await api("/api/admin/events"));renderAnalytics();renderEvents()}catch(e){toast(e.message)}}
-async function loadWa(){try{state.whatsapp=arr(await api("/api/admin/whatsapp"));$("#waList").innerHTML=state.whatsapp.map(x=>`<div class="pixel"><div><b>${esc(x.label||"WhatsApp")}</b><div class="id">${esc(x.number||x.phone||"")}</div><div class="muted">${x.is_default||x.isDefault?"Default · ":""}${x.active===false?"Disabled":"Active"}</div></div><div class="actions"><button class="btn secondary" onclick='editWa(${JSON.stringify(x).replace(/'/g,"&#39;")})'>Edit / 编辑</button><button class="btn secondary" onclick="waAction(${Number(x.id)},'${x.active===false?"enable":"disable"}')">${x.active===false?"Enable":"Disable"}</button>${!(x.is_default||x.isDefault)?`<button class="btn secondary" onclick="waAction(${Number(x.id)},'default')">Set default</button>`:""}<button class="btn danger" onclick="waAction(${Number(x.id)},'delete')">Delete</button></div></div>`).join("")||'<div class="empty">No WhatsApp numbers configured.</div>'}catch(e){$("#waList").innerHTML='<div class="empty">Unable to load WhatsApp configuration.</div>'}}
-async function waAction(id,action){try{await api("/api/admin/whatsapp/"+id,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({action})});toast("Saved / 已保存");loadWa()}catch(e){toast(e.message)}}
-function editWa(x){$("#waId").value=x.id??"";$("#waLabel").value=x.label||"";$("#waNumber").value=x.number||x.phone||"";$("#waModalTitle").textContent="Edit WhatsApp number / 编辑号码";$("#waModal").classList.add("open")}
-$("#addWa").onclick=()=>{$("#waId").value="";$("#waLabel").value="";$("#waNumber").value="";$("#waModalTitle").textContent="Add WhatsApp number / 添加号码";$("#waModal").classList.add("open")};
-$("#closeWa").onclick=()=>$("#waModal").classList.remove("open");
-$("#waForm").onsubmit=async e=>{e.preventDefault();try{await api("/api/admin/whatsapp",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:$("#waId").value||undefined,label:$("#waLabel").value,number:$("#waNumber").value})});$("#waModal").classList.remove("open");toast("Saved / 已保存");loadWa()}catch(err){toast(err.message)}};
-
-function normalizePixels(data){
- const c=data||{};return {meta:getPixelArray(c,"meta"),tiktok:getPixelArray(c,"tiktok")};
-}
-async function loadPixels(){
- try{
-  const data=await api("/api/admin/pixels");state.pixels=normalizePixels(data);renderPixels();
- }catch(e){
-  state.pixels={meta:getPixelArray(state.config,"meta"),tiktok:getPixelArray(state.config,"tiktok")};renderPixels();
- }
-}
-function renderPixels(){
- const box=(kind,items)=>items.map((x,i)=>`<div class="pixel"><div style="flex:1"><b>${esc(x.name||`${kind==="meta"?"Meta":"TikTok"} Pixel ${i+1}`)}</b><div class="id">${esc(x.id||x.pixel_id||x.pixelId||"")}</div><div class="muted">${x.enabled===false?"Disabled / 已停用":"Active / 已启用"}</div><div class="rulegrid">${(x.events||x.event_rules||x.rules||["pageview","whatsapp_click","form_submit"]).map(ev=>`<span class="badge">${esc(ev)}</span>`).join("")}</div></div><div class="actions"><button class="btn secondary" onclick='editPixel("${kind}",${JSON.stringify(x).replace(/"/g,"&quot;")})'>Edit</button><button class="btn secondary" onclick="pixelAction('${kind}','${esc(x.id||x.pixel_id||"")}','toggle')">${x.enabled===false?"Enable":"Disable"}</button><button class="btn danger" onclick="pixelAction('${kind}','${esc(x.id||x.pixel_id||"")}','delete')">Delete</button></div></div>`).join("")||'<div class="empty">No pixels configured.</div>';
- $("#metaPixelBox").innerHTML=box("meta",state.pixels.meta);$("#ttPixelBox").innerHTML=box("tiktok",state.pixels.tiktok);
-}
-function openPixel(kind,x=null){$("#pixelId").value=x?.id||x?.pixel_id||"";$("#pixelKind").value=kind;$("#pixelCode").value=x?.id||x?.pixel_id||"";$("#pixelName").value=x?.name||"";$$('#pixelForm input[type="checkbox"]').forEach(c=>c.checked=(x?.events||x?.event_rules||["pageview","whatsapp_click","form_submit"]).includes(c.value));$("#pixelModalTitle").textContent=(x?"Edit ":"Add ")+(kind==="meta"?"Meta":"TikTok")+" Pixel";$("#pixelModal").classList.add("open")}
-function editPixel(kind,x){openPixel(kind,x)}
-$("#addMeta").onclick=()=>openPixel("meta");$("#addTikTok").onclick=()=>openPixel("tiktok");$("#closePixel").onclick=()=>$("#pixelModal").classList.remove("open");$("#cancelPixel").onclick=()=>$("#pixelModal").classList.remove("open");
-$("#pixelForm").onsubmit=async e=>{e.preventDefault();const events=$$('#pixelForm input[type="checkbox"]:checked').map(x=>x.value);const body={id:$("#pixelId").value||undefined,name:$("#pixelName").value,events,enabled:true};const kind=$("#pixelKind").value;try{if($("#pixelId").value){await api("/api/admin/pixels/"+encodeURIComponent($("#pixelId").value),{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind,...body})})}else{await api("/api/admin/pixels",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,...body,pixel_id:$("#pixelCode").value})})}$("#pixelModal").classList.remove("open");toast("Pixel saved / 像素已保存");loadPixels();load()}catch(err){toast(err.message)}};
-async function pixelAction(kind,id,action){try{await api("/api/admin/pixels/"+encodeURIComponent(id),{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind,action})});toast("Saved / 已保存");loadPixels()}catch(e){toast(e.message)}}
-
-async function loadLeads(){
- try{
-  const data=arr(await api("/api/admin/leads"));state.leads=data;
-  $("#leadRows").innerHTML=data.map((x,i)=>`<tr><td>${esc(time(x.created_at||x.createdAt))}</td><td>${esc(x.name||x.full_name||"—")}</td><td>${esc(x.phone||x.email||x.contact||"—")}</td><td>${esc(x.campaign||x.utm_campaign||"—")}</td><td><span class="badge">${esc(x.status||"new")}</span></td><td><button class="btn secondary" onclick="viewLead(${i})">View / 查看</button></td></tr>`).join("")||'<tr><td colspan="6" class="empty">No leads yet.</td></tr>';
-  const statuses=data.map(x=>String(x.status||"new").toLowerCase());$("#leadNew").textContent=statuses.filter(x=>x==="new").length;$("#leadContacted").textContent=statuses.filter(x=>x==="contacted").length;$("#leadWon").textContent=statuses.filter(x=>x==="won").length;$("#leadTotal").textContent=fmt(data.length);
- }catch(e){$("#leadRows").innerHTML='<tr><td colspan="6" class="empty">Lead API unavailable / 询盘 API 暂不可用。</td></tr>'}
-}
-function viewLead(i){const x=state.leads[i]||{};$("#leadDetail").innerHTML=Object.entries(x).map(([k,v])=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>${esc(k)}</b><div class="muted" style="word-break:break-word">${esc(typeof v==="object"?JSON.stringify(v):v)}</div></div>`).join("");$("#leadModal").classList.add("open")}
-$("#closeLead").onclick=()=>$("#leadModal").classList.remove("open");$("#loadLeads").onclick=loadLeads;
-
-async function saveSettings(form_enabled,routing_mode){try{await api("/api/admin/settings",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({form_enabled,routing_mode})});toast("Saved / 已保存");load()}catch(e){toast(e.message)}}
-$("#routingSelect").onchange=()=>saveSettings(state.config?.form_enabled??state.config?.formEnabled,$("#routingSelect").value);
-$("#routingSettings").onchange=()=>saveSettings(state.config?.form_enabled??state.config?.formEnabled,$("#routingSettings").value);
-$("#formToggle").onclick=()=>saveSettings(!(state.config?.form_enabled??state.config?.formEnabled),state.config?.routing_mode||"single");
-$("#refresh").onclick=load;$("#loadEvents").onclick=loadEvents;$("#logout").onclick=()=>location.href="/api/logout";
-$("#langZh").onclick=()=>{lang="zh";applyLang();render()};$("#langEn").onclick=()=>{lang="en";applyLang();render()};
-applyLang();load();
-</script>
-  <!--
-SULAN PEPTIDE ADMIN V8.1
-Phase 1: Pixel + WhatsApp management enhancement
-
-IMPORTANT:
-1. Keep the existing V8 public/admin/index.html intact.
-2. Find the LAST </script> near the bottom of the file.
-3. Paste the following block immediately BEFORE that </script>.
-4. Do NOT replace the existing <script> block.
--->
-
-<script>
-/* =========================================================
-   V8.1 SAFE UI PATCH
-   - Pixel: reliable add/edit/toggle/delete, event normalization
-   - WhatsApp: add/edit/toggle/default/delete/test redirect
-   - Refresh: visible loading + complete reload
-   - Keeps V8 API endpoints unchanged
-========================================================= */
-(function () {
-  "use strict";
-
-  const $v81 = (s) => document.querySelector(s);
-  const $$v81 = (s) => [...document.querySelectorAll(s)];
-
-  function toastV81(message) {
-    if (typeof toast === "function") {
-      toast(message);
-      return;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sulan Peptide — Campaign Center</title>
+  <style>
+    :root {
+      --green: #00583f;
+      --green2: #087a59;
+      --ink: #102033;
+      --muted: #6d7b86;
+      --bg: #f3f7f5;
+      --card: #fff;
+      --line: #dce7e2;
+      --soft: #e7f3ee;
+      --amber: #fff4cf;
+      --red: #b42318;
+      --shadow: 0 10px 35px rgba(0, 65, 48, .08)
     }
-    const el = $v81("#toast");
-    if (!el) return;
-    el.textContent = message;
-    el.classList.add("show");
-    setTimeout(() => el.classList.remove("show"), 2200);
-  }
 
-  function escV81(value) {
-    if (typeof esc === "function") return esc(value);
-    return String(value ?? "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    }[m]));
-  }
-
-  function normalizeEventV81(value) {
-    const map = {
-      pageview: "pageview",
-      "page_view": "pageview",
-      viewcontent: "view_content",
-      "view_content": "view_content",
-      lead: "lead",
-      form_submit: "form_submit",
-      formsubmit: "form_submit",
-      whatsapp_click: "whatsapp_click",
-      "whatsapp-click": "whatsapp_click",
-      whatsappclick: "whatsapp_click"
-    };
-    return map[String(value ?? "").trim().toLowerCase()] || "";
-  }
-
-  function normalizeEventsV81(values) {
-    const defaults = ["pageview", "whatsapp_click", "form_submit"];
-    const raw = Array.isArray(values) ? values : [];
-    const out = [];
-    for (const item of raw) {
-      const event = normalizeEventV81(item);
-      if (event && !out.includes(event)) out.push(event);
+    * {
+      box-sizing: border-box
     }
-    return out.length ? out : defaults;
-  }
 
-  function pixelArrayV81(data, kind) {
-    const source = data?.[kind];
-    if (!Array.isArray(source)) return [];
-    return source
-      .map((x, i) => ({
-        id: String(x?.id ?? x?.pixel_id ?? "").trim(),
-        name: String(x?.name ?? `${kind === "meta" ? "Meta" : "TikTok"} Pixel ${i + 1}`),
-        enabled: x?.enabled !== false,
-        events: normalizeEventsV81(x?.events)
-      }))
-      .filter(x => x.id);
-  }
-
-  function ensurePixelEnabledFieldV81() {
-    let el = $v81("#pixelEnabled");
-    if (!el) {
-      el = document.createElement("input");
-      el.type = "hidden";
-      el.id = "pixelEnabled";
-      const form = $v81("#pixelForm");
-      if (form) form.prepend(el);
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.5 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
     }
-    return el;
-  }
 
-  function ensureWaDefaultFieldV81() {
-    let row = $v81("#waDefaultRow");
-    if (!row) {
-      const form = $v81("#waForm");
-      if (!form) return null;
-
-      row = document.createElement("label");
-      row.id = "waDefaultRow";
-      row.className = "check";
-      row.style.display = "flex";
-      row.style.alignItems = "center";
-      row.style.gap = "8px";
-      row.style.margin = "6px 0 14px";
-      row.innerHTML =
-        '<input type="checkbox" id="waDefault"> ' +
-        'Set as default / 设为默认';
-      const submit = form.querySelector("button[type='submit'],button.btn.primary");
-      if (submit) form.insertBefore(row, submit);
-      else form.appendChild(row);
+    button,
+    input,
+    select {
+      font: inherit
     }
-    return $v81("#waDefault");
-  }
 
-  async function loadPixelsV81() {
-    try {
-      const data = await api("/api/admin/pixels");
-      state.pixels = {
-        meta: pixelArrayV81(data, "meta"),
-        tiktok: pixelArrayV81(data, "tiktok")
-      };
-      renderPixelsV81();
-    } catch (err) {
-      console.error(err);
-      toastV81("Pixel load failed / 像素加载失败");
+    button {
+      cursor: pointer
     }
-  }
 
-  function renderPixelsV81() {
-    const renderOne = (kind, items) => {
-      if (!items.length) {
-        return '<div class="empty">No pixels configured / 暂无已配置像素</div>';
+    .app {
+      display: flex;
+      min-height: 100vh
+    }
+
+    .side {
+      width: 244px;
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 24px 16px;
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 3
+    }
+
+    .brand {
+      padding: 6px 12px 26px
+    }
+
+    .brand b {
+      display: block;
+      color: var(--green);
+      font-size: 17px;
+      letter-spacing: .8px
+    }
+
+    .brand span {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1.6px
+    }
+
+    .nav {
+      display: grid;
+      gap: 5px
+    }
+
+    .nav button {
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 9px;
+      color: #4e5c65
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      background: var(--soft);
+      color: var(--green);
+      font-weight: 800
+    }
+
+    .nav small {
+      display: block;
+      color: #9aa6ad;
+      padding: 18px 12px 5px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px
+    }
+
+    .main {
+      margin-left: 244px;
+      width: calc(100% - 244px);
+      padding: 28px 34px 60px
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px
+    }
+
+    .eyebrow {
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1.5px
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 900;
+      margin: 2px 0
+    }
+
+    .sub {
+      color: var(--muted)
+    }
+
+    .topright {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .status {
+      padding: 8px 11px;
+      background: #e8f6ef;
+      border-radius: 999px;
+      color: var(--green);
+      font-weight: 800;
+      font-size: 12px
+    }
+
+    .status.err {
+      background: #fff0ef;
+      color: var(--red)
+    }
+
+    .lang {
+      display: flex;
+      background: #eef4f1;
+      border-radius: 9px;
+      padding: 3px
+    }
+
+    .langbtn {
+      border: 0;
+      background: transparent;
+      color: #62716a;
+      padding: 6px 9px;
+      border-radius: 7px;
+      font-weight: 800;
+      font-size: 12px
+    }
+
+    .langbtn.active {
+      background: #fff;
+      color: var(--green);
+      box-shadow: 0 1px 4px #003b2612
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      font-weight: 800
+    }
+
+    .primary {
+      background: var(--green);
+      color: #fff
+    }
+
+    .secondary {
+      background: #e8f2ee;
+      color: var(--green)
+    }
+
+    .danger {
+      background: #fff0ef;
+      color: var(--red)
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .page {
+      display: none
+    }
+
+    .page.active {
+      display: block
+    }
+
+    .grid4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 18px
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: var(--shadow)
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-weight: 700
+    }
+
+    .metric .num {
+      font-size: 30px;
+      font-weight: 900;
+      margin: 8px 0 2px
+    }
+
+    .metric .hint {
+      color: var(--green);
+      font-size: 12px
+    }
+
+    .sectionhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0 12px
+    }
+
+    .sectionhead h2 {
+      font-size: 17px;
+      margin: 0
+    }
+
+    .sectionhead span {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .tablewrap {
+      overflow: auto
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .7px
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800
+    }
+
+    .badge.off {
+      background: #eef1f0;
+      color: #68736f
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .bar {
+      height: 8px;
+      background: #edf2f0;
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--green);
+      border-radius: 99px
+    }
+
+    .notice {
+      background: var(--amber);
+      border: 1px solid #ead79b;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 16px
+    }
+
+    .empty {
+      padding: 30px;
+      text-align: center;
+      color: var(--muted)
+    }
+
+    .formrow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 13px
+    }
+
+    .field label {
+      font-weight: 800;
+      font-size: 12px
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px;
+      background: #fff
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical
+    }
+
+    .switch {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .switch:last-child {
+      border-bottom: 0
+    }
+
+    .toggle {
+      width: 45px;
+      height: 25px;
+      border: 0;
+      border-radius: 20px;
+      background: #cbd8d3;
+      padding: 3px
+    }
+
+    .toggle i {
+      display: block;
+      width: 19px;
+      height: 19px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .2s
+    }
+
+    .toggle.on {
+      background: var(--green)
+    }
+
+    .toggle.on i {
+      transform: translateX(20px)
+    }
+
+    .pixel {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 10px
+    }
+
+    .pixel .id {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      word-break: break-all
+    }
+
+    .actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: flex-end
+    }
+
+    .rulegrid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 10px
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: #001b1433;
+      display: none;
+      place-items: center;
+      z-index: 9
+    }
+
+    .modal.open {
+      display: grid
+    }
+
+    .modalbox {
+      background: #fff;
+      border-radius: 16px;
+      width: min(620px, calc(100% - 30px));
+      max-height: 90vh;
+      overflow: auto;
+      padding: 22px;
+      box-shadow: 0 25px 80px #001b1433
+    }
+
+    .modalhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 20;
+      background: #102033;
+      color: #fff;
+      padding: 11px 15px;
+      border-radius: 10px;
+      display: none
+    }
+
+    .toast.show {
+      display: block
+    }
+
+    .dangertext {
+      color: var(--red)
+    }
+
+    @media(max-width:1100px) {
+      .side {
+        width: 205px
       }
 
-      return items.map((x, index) => {
-        const id = escV81(x.id);
-        const name = escV81(
-          x.name || `${kind === "meta" ? "Meta" : "TikTok"} Pixel ${index + 1}`
-        );
-        const enabled = x.enabled !== false;
-        const events = normalizeEventsV81(x.events);
+      .main {
+        margin-left: 205px;
+        width: calc(100% - 205px);
+        padding: 22px
+      }
 
-        return `
+      .grid4 {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .grid3 {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .grid2 {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:700px) {
+      .side {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line)
+      }
+
+      .app {
+        display: block
+      }
+
+      .main {
+        margin: 0;
+        width: 100%;
+        padding: 18px
+      }
+
+      .nav {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .grid4,
+      .grid3 {
+        grid-template-columns: 1fr
+      }
+
+      .top {
+        align-items: flex-start;
+        gap: 15px;
+        flex-direction: column
+      }
+
+      .formrow {
+        grid-template-columns: 1fr
+      }
+
+      .pixel {
+        flex-direction: column
+      }
+
+      .actions {
+        justify-content: flex-start
+      }
+    }
+
+    /* 登录遮罩 - 覆盖整个页面 */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: opacity 0.4s ease;
+    }
+
+    #login-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #login-overlay .login-box {
+      background: #fff;
+      padding: 40px 36px 32px;
+      border-radius: 16px;
+      width: min(400px, calc(100% - 40px));
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      text-align: center;
+    }
+
+    #login-overlay .login-box .logo {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--green, #00583f);
+      letter-spacing: 1.2px;
+      margin-bottom: 4px;
+    }
+
+    #login-overlay .login-box .sub {
+      color: var(--muted, #6d7b86);
+      font-size: 13px;
+      margin-bottom: 28px;
+    }
+
+    #login-overlay .login-box .field {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    #login-overlay .login-box .field label {
+      display: block;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--ink, #102033);
+      margin-bottom: 4px;
+    }
+
+    #login-overlay .login-box .field input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--line, #dce7e2);
+      border-radius: 9px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    #login-overlay .login-box .field input:focus {
+      border-color: var(--green, #00583f);
+      box-shadow: 0 0 0 3px rgba(0, 88, 63, 0.1);
+    }
+
+    #login-overlay .login-box .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--green, #00583f);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #login-overlay .login-box .login-btn:hover {
+      background: var(--green2, #087451);
+    }
+
+    #login-overlay .login-box .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #login-overlay .login-box .error-msg {
+      color: var(--red, #b42318);
+      font-size: 13px;
+      margin-top: 12px;
+      min-height: 20px;
+    }
+
+    #login-overlay .login-box .hint {
+      margin-top: 16px;
+      font-size: 11px;
+      color: #999;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 登录遮罩 -->
+  <div id="login-overlay">
+    <div class="login-box">
+      <div class="logo">SULAN PEPTIDE</div>
+      <div class="sub">Campaign Center · 管理后台</div>
+      <form id="loginForm" autocomplete="off">
+        <div class="field">
+          <label>登录密码</label>
+          <input type="password" id="loginPassword" placeholder="请输入管理密码" required autofocus>
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">登 录</button>
+        <div class="error-msg" id="loginError"></div>
+      </form>
+      <div class="hint">默认密码: admin123</div>
+    </div>
+  </div>
+
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><b>SULAN PEPTIDE</b><span>CAMPAIGN CENTER</span></div>
+      <nav class="nav">
+        <button class="active" data-page="dashboard">◈ &nbsp;<span data-i18n="Dashboard">控制面板</span></button>
+        <button data-page="analytics">◫ &nbsp;<span data-i18n="Analytics">数据分析</span></button>
+        <button data-page="leads">▣ &nbsp;<span data-i18n="Leads">询盘管理</span></button>
+        <small data-i18n="Operations">运营</small>
+        <button data-page="whatsapp">◉ &nbsp;WhatsApp</button>
+        <button data-page="pixels">◌ &nbsp;<span data-i18n="Pixels">像素管理</span></button>
+        <button data-page="events">≡ &nbsp;<span data-i18n="Events">事件中心</span></button>
+        <small data-i18n="System">系统</small>
+        <button data-page="settings">⚙ &nbsp;<span data-i18n="Settings">系统设置</span></button>
+      </nav>
+      <div style="position:absolute;left:16px;right:16px;bottom:20px">
+        <div class="card" style="padding:13px">
+          <div style="font-weight:800" data-i18n="System status">系统状态</div>
+          <div class="muted" style="font-size:12px;margin-top:3px" id="workerState">● Worker 已连接</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div>
+          <div class="eyebrow">SULAN PEPTIDE</div>
+          <div class="title" id="pageTitle">控制面板</div>
+          <div class="sub" id="pageSub">广告与转化概览</div>
+        </div>
+        <div class="topright">
+          <div class="lang"><button id="langZh" class="langbtn active">中文</button><button id="langEn"
+              class="langbtn">EN</button></div>
+          <span class="status" id="systemStatus">● 系统正常运行</span>
+          <button class="btn secondary" id="refresh">刷新</button>
+          <button class="btn danger" id="logout">退出登录</button>
+        </div>
+      </header>
+
+      <section class="page active" id="dashboard">
+        <div class="grid4">
+          <div class="card metric">
+            <div class="label" data-i18n="Page Views">页面访问</div>
+            <div class="num" id="mViews">—</div>
+            <div class="hint" data-i18n="Tracked landing-page visits">单页访问量</div>
+          </div>
+          <div class="card metric">
+            <div class="label">WhatsApp Clicks</div>
+            <div class="num" id="mClicks">—</div>
+            <div class="hint" data-i18n="Outbound contact actions">外部联系操作</div>
+          </div>
+          <div class="card metric">
+            <div class="label" data-i18n="Form submissions">表单提交</div>
+            <div class="num" id="mLeads">—</div>
+            <div class="hint">form_submit</div>
+          </div>
+          <div class="card metric">
+            <div class="label">WhatsApp CTR</div>
+            <div class="num" id="mCtr">—</div>
+            <div class="hint">Clicks ÷ page views</div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="card" style="margin-top:18px">
+            <div class="sectionhead">
+              <h2 data-i18n="Conversion funnel">转化漏斗</h2><span data-i18n="All stored events">全部已记录事件</span>
+            </div>
+            <div style="display:grid;gap:18px">
+              <div>
+                <div style="display:flex;justify-content:space-between"><b data-i18n="Page Views">页面访问</b><span
+                    id="fViews">—</span></div>
+                <div class="bar"><i style="width:100%"></i></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between"><b>WhatsApp Clicks</b><span
+                    id="fClicks">—</span></div>
+                <div class="bar"><i id="bClicks" style="width:0%"></i></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between"><b data-i18n="Form submissions">表单提交</b><span
+                    id="fLeads">—</span></div>
+                <div class="bar"><i id="bLeads" style="width:0%"></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:18px">
+            <div class="sectionhead">
+              <h2 data-i18n="Live configuration">当前配置</h2>
+            </div>
+            <div class="switch">
+              <div><b data-i18n="Lead Form">询盘表单</b>
+                <div class="muted" id="formState">—</div>
+              </div><span class="badge" id="routingState">—</span>
+            </div>
+            <div class="switch">
+              <div><b>Meta Pixel</b>
+                <div class="muted" id="metaState">—</div>
+              </div><span class="badge" id="metaBadge">—</span>
+            </div>
+            <div class="switch">
+              <div><b>TikTok Pixel</b>
+                <div class="muted" id="ttState">—</div>
+              </div><span class="badge" id="ttBadge">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="sectionhead">
+          <h2 data-i18n="Recent WhatsApp activity">最近 WhatsApp 活动</h2><button class="btn secondary"
+            data-page-link="events" data-i18n="View all events">查看全部事件</button>
+        </div>
+        <div class="card">
+          <div class="tablewrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Time / 时间</th>
+                  <th>Number / 号码</th>
+                  <th>Campaign / 广告系列</th>
+                  <th>Source / 来源</th>
+                </tr>
+              </thead>
+              <tbody id="recentClicks">
+                <tr>
+                  <td colspan="4" class="empty">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="analytics">
+        <div class="notice" data-i18n="AnalyticsNotice">当前 Worker 已记录来源、广告系列和广告组归因。此页面会优先使用现有事件 API，并为后续按日期/广告系列统计预留空间。
+        </div>
+        <div class="grid3">
+          <div class="card metric">
+            <div class="label muted" data-i18n="Traffic sources">流量来源</div>
+            <div class="num" id="aSources">—</div>
+          </div>
+          <div class="card metric">
+            <div class="label muted" data-i18n="Campaigns">广告系列</div>
+            <div class="num" id="aCampaigns">—</div>
+          </div>
+          <div class="card metric">
+            <div class="label muted" data-i18n="Ad sets">广告组</div>
+            <div class="num" id="aAdsets">—</div>
+          </div>
+        </div>
+        <div class="sectionhead">
+          <h2 data-i18n="Attribution table">归因明细</h2><span>Stored events / 已存储事件</span>
+        </div>
+        <div class="card">
+          <div class="tablewrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Campaign</th>
+                  <th>Ad set</th>
+                  <th>Event</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody id="analyticsRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="leads">
+        <div class="sectionhead">
+          <h2 data-i18n="Lead management">询盘管理</h2><button class="btn secondary" id="loadLeads"
+            data-i18n="Refresh">刷新</button>
+        </div>
+        <div class="grid4">
+          <div class="card metric">
+            <div class="label" data-i18n="Total Leads">询盘总数</div>
+            <div class="num" id="leadTotal">—</div>
+          </div>
+          <div class="card metric">
+            <div class="label" data-i18n="New">新询盘</div>
+            <div class="num" id="leadNew">—</div>
+          </div>
+          <div class="card metric">
+            <div class="label" data-i18n="Contacted">已联系</div>
+            <div class="num" id="leadContacted">—</div>
+          </div>
+          <div class="card metric">
+            <div class="label" data-i18n="Won">已成交</div>
+            <div class="num" id="leadWon">—</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:18px">
+          <div class="tablewrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Name</th>
+                  <th>Contact</th>
+                  <th>Campaign</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="leadRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="whatsapp">
+        <div class="sectionhead">
+          <h2 data-i18n="WhatsApp numbers">WhatsApp 号码</h2><button class="btn primary" id="addWa">+ 添加号码</button>
+        </div>
+        <div class="card">
+          <div class="formrow" style="margin-bottom:12px">
+            <div><b data-i18n="Routing mode">流量路由模式</b>
+              <div class="muted" data-i18n="Choose how active numbers receive traffic.">选择启用号码如何接收流量。</div>
+            </div><select id="routingSelect">
+              <option value="single">Single / Default</option>
+              <option value="round_robin">Round Robin</option>
+            </select>
+          </div>
+          <div id="waList"></div>
+        </div>
+      </section>
+
+      <section class="page" id="pixels">
+        <div class="notice" data-i18n="PixelNotice">多像素管理已接入后台结构。每个 Pixel 可以独立启用/停用，并选择需要发送的事件；最终是否生效以 Worker API
+          返回的配置为准。</div>
+        <div class="grid2">
+          <div class="card">
+            <div class="sectionhead">
+              <h2>Meta Pixels</h2><button class="btn primary" id="addMeta">+ Add Meta Pixel</button>
+            </div>
+            <div id="metaPixelBox"></div>
+          </div>
+          <div class="card">
+            <div class="sectionhead">
+              <h2>TikTok Pixels</h2><button class="btn primary" id="addTikTok">+ Add TikTok Pixel</button>
+            </div>
+            <div id="ttPixelBox"></div>
+          </div>
+        </div>
+        <div class="sectionhead">
+          <h2 data-i18n="Event delivery">事件发送规则</h2>
+        </div>
+        <div class="card">
+          <div class="grid3">
+            <div class="pixel">
+              <div><b>PageView</b>
+                <div class="muted">Landing page traffic</div>
+              </div><span class="badge">Ready / 就绪</span>
+            </div>
+            <div class="pixel">
+              <div><b>WhatsApp Click</b>
+                <div class="muted">Contact intent</div>
+              </div><span class="badge">Ready / 就绪</span>
+            </div>
+            <div class="pixel">
+              <div><b>Lead</b>
+                <div class="muted">Form submission</div>
+              </div><span class="badge">Ready / 就绪</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="events">
+        <div class="sectionhead">
+          <h2 data-i18n="Event Center">事件中心</h2><button class="btn secondary" id="loadEvents"
+            data-i18n="Refresh events">刷新事件</button>
+        </div>
+        <div class="card">
+          <div class="tablewrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Event</th>
+                  <th>Source</th>
+                  <th>Campaign</th>
+                  <th>Ad set</th>
+                  <th>Number</th>
+                </tr>
+              </thead>
+              <tbody id="eventRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="settings">
+        <div class="grid2">
+          <div class="card">
+            <div class="sectionhead">
+              <h2 data-i18n="Landing page">单页</h2>
+            </div>
+            <div class="switch">
+              <div><b data-i18n="Lead Form">询盘表单</b>
+                <div class="muted" data-i18n="Enable or disable the inquiry form.">启用或关闭询盘表单。</div>
+              </div><button class="toggle" id="formToggle"><i></i></button>
+            </div>
+            <div class="switch">
+              <div><b data-i18n="Routing mode">流量路由模式</b>
+                <div class="muted">Single/default or round robin</div>
+              </div><select id="routingSettings">
+                <option value="single">Single</option>
+                <option value="round_robin">Round Robin</option>
+              </select>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sectionhead">
+              <h2 data-i18n="Security">安全</h2>
+            </div>
+            <div class="empty" data-i18n="SecurityNotice">管理员账号、密码和 Session Secret 继续由 Cloudflare 环境变量管理，不在前端保存。</div>
+          </div>
+        </div>
+        <div class="sectionhead">
+          <h2 data-i18n="System">系统</h2>
+        </div>
+        <div class="card">
+          <div class="grid3">
+            <div>
+              <div class="muted">Worker</div><b id="sysWorker">Connected / 已连接</b>
+            </div>
+            <div>
+              <div class="muted">Configuration KV</div><b id="sysConfig">Connected / 已连接</b>
+            </div>
+            <div>
+              <div class="muted">Asset binding</div><b id="sysAssets">Connected / 已连接</b>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="waModal">
+    <div class="modalbox">
+      <div class="modalhead">
+        <h2 id="waModalTitle">添加 WhatsApp 号码</h2><button class="btn secondary" id="closeWa">关闭</button>
+      </div>
+      <form id="waForm"><input type="hidden" id="waId">
+        <div class="field"><label>Label / 名称</label><input id="waLabel" placeholder="Puerto Rico Main" required></div>
+        <div class="field"><label>Phone number / 电话号码</label><input id="waNumber" placeholder="1787..." required></div>
+        <button class="btn primary">Save / 保存</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="pixelModal">
+    <div class="modalbox">
+      <div class="modalhead">
+        <h2 id="pixelModalTitle">Add Pixel</h2><button class="btn secondary" id="closePixel">Close / 关闭</button>
+      </div>
+      <form id="pixelForm">
+        <input type="hidden" id="pixelId"><input type="hidden" id="pixelKind">
+        <div class="field"><label>Pixel ID</label><input id="pixelCode" required placeholder="Enter Pixel ID"></div>
+        <div class="field"><label>Name / 名称</label><input id="pixelName" placeholder="Primary / Main"></div>
+        <div class="field"><label>Events / 事件</label>
+          <div class="rulegrid">
+            <label class="check"><input type="checkbox" value="pageview" checked> PageView</label>
+            <label class="check"><input type="checkbox" value="whatsapp_click" checked> WhatsApp Click</label>
+            <label class="check"><input type="checkbox" value="form_submit" checked> Lead</label>
+            <label class="check"><input type="checkbox" value="viewcontent"> ViewContent</label>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn secondary"
+            id="cancelPixel">Cancel</button><button class="btn primary">Save Pixel</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="leadModal">
+    <div class="modalbox">
+      <div class="modalhead">
+        <h2>Lead / 询盘</h2><button class="btn secondary" id="closeLead">Close / 关闭</button>
+      </div>
+      <div id="leadDetail"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+    const state = { stats: {}, config: {}, events: [], leads: [], whatsapp: [], pixels: { meta: [], tiktok: [] } };
+    const I18N = {
+      zh: { Dashboard: "控制面板", Analytics: "数据分析", Leads: "询盘管理", Pixels: "像素管理", Events: "事件中心", Settings: "系统设置", Operations: "运营", System: "系统", "System status": "系统状态", "Page Views": "页面访问", "Tracked landing-page visits": "单页访问量", "Outbound contact actions": "外部联系操作", "Form submissions": "表单提交", "Conversion funnel": "转化漏斗", "All stored events": "全部已记录事件", "Live configuration": "当前配置", "Lead Form": "询盘表单", "Recent WhatsApp activity": "最近 WhatsApp 活动", "View all events": "查看全部事件", "Traffic sources": "流量来源", "Campaigns": "广告系列", "Ad sets": "广告组", "Attribution table": "归因明细", "Lead management": "询盘管理", "Total Leads": "询盘总数", "New": "新询盘", "Contacted": "已联系", "Won": "已成交", "WhatsApp numbers": "WhatsApp 号码", "Routing mode": "流量路由模式", "Choose how active numbers receive traffic.": "选择启用号码如何接收流量。", "Event delivery": "事件发送规则", "Event Center": "事件中心", "Refresh events": "刷新事件", "Landing page": "单页", "Enable or disable the inquiry form.": "启用或关闭询盘表单。", "Security": "安全", "System": "系统", AnalyticsNotice: "当前 Worker 已记录来源、广告系列和广告组归因。此页面会优先使用现有事件 API，并为后续按日期/广告系列统计预留空间。", PixelNotice: "多像素管理已接入后台结构。每个 Pixel 可以独立启用/停用，并选择需要发送的事件；最终是否生效以 Worker API 返回的配置为准。", SecurityNotice: "管理员账号、密码和 Session Secret 继续由 Cloudflare 环境变量管理，不在前端保存。" },
+      en: { Dashboard: "Dashboard", Analytics: "Analytics", Leads: "Leads", Pixels: "Pixels", Events: "Events", Settings: "Settings", Operations: "Operations", System: "System", "System status": "System status", "Page Views": "Page Views", "Tracked landing-page visits": "Tracked landing-page visits", "Outbound contact actions": "Outbound contact actions", "Form submissions": "Form submissions", "Conversion funnel": "Conversion funnel", "All stored events": "All stored events", "Live configuration": "Live configuration", "Lead Form": "Lead Form", "Recent WhatsApp activity": "Recent WhatsApp activity", "View all events": "View all events", "Traffic sources": "Traffic sources", "Campaigns": "Campaigns", "Ad sets": "Ad sets", "Attribution table": "Attribution table", "Lead management": "Lead management", "Total Leads": "Total Leads", "New": "New", "Contacted": "Contacted", "Won": "Won", "WhatsApp numbers": "WhatsApp numbers", "Routing mode": "Routing mode", "Choose how active numbers receive traffic.": "Choose how active numbers receive traffic.", "Event delivery": "Event delivery", "Event Center": "Event Center", "Refresh events": "Refresh events", "Landing page": "Landing page", "Enable or disable the inquiry form.": "Enable or disable the inquiry form.", "Security": "Security", "System": "System", AnalyticsNotice: "The Worker already records source, campaign and ad-set attribution. This page uses the current event API and leaves room for future date/campaign reporting.", PixelNotice: "Multi-pixel management is connected to the admin structure. Each pixel can be enabled or disabled and assigned event rules; actual delivery follows the Worker API configuration.", SecurityNotice: "Admin credentials and the session secret remain Cloudflare environment variables and are never stored in this UI." }
+    };
+    let lang = localStorage.getItem("sulan_admin_lang") || "zh";
+    const titles = { dashboard: ["Dashboard", "Campaign and conversion overview"], analytics: ["Analytics", "Attribution and campaign performance"], leads: ["Leads", "Inquiry management and pipeline"], whatsapp: ["WhatsApp", "Numbers and routing"], pixels: ["Pixels", "Tracking configuration and event delivery"], events: ["Events", "Event Center and diagnostics"], settings: ["Settings", "Landing page and system configuration"] };
+
+    function t(key) { return I18N[lang][key] || I18N.en[key] || key }
+    function applyLang() {
+      document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+      $$("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+      const p = $(".page.active")?.id || "dashboard"; $("#pageTitle").textContent = lang === "zh" ? t(titles[p][0]) : titles[p][0]; $("#pageSub").textContent = lang === "zh" ? t(titles[p][1]) : titles[p][1];
+      $("#langZh").classList.toggle("active", lang === "zh"); $("#langEn").classList.toggle("active", lang === "en");
+      localStorage.setItem("sulan_admin_lang", lang);
+    }
+    function page(p) { $$(".page").forEach(x => x.classList.toggle("active", x.id === p)); $$(".nav button[data-page]").forEach(x => x.classList.toggle("active", x.dataset.page === p)); applyLang(); if (p === "events") loadEvents(); if (p === "leads") loadLeads(); if (p === "pixels") loadPixels(); if (p === "whatsapp") loadWa() }
+    $$(".nav button[data-page]").forEach(b => b.onclick = () => page(b.dataset.page)); $$("[data-page-link]").forEach(b => b.onclick = () => page(b.dataset.pageLink));
+
+    async function api(path, opt = {}) {
+      const r = await fetch(path, { ...opt, cache: "no-store", credentials: "same-origin", headers: { "Accept": "application/json", ...(opt.headers || {}) } });
+      const text = await r.text(); let data = null; try { data = text ? JSON.parse(text) : null } catch { data = text }
+      if (!r.ok) { throw new Error(typeof data === "string" ? data : (data?.error || data?.message || `HTTP ${r.status}`)) }
+      return data;
+    }
+    function arr(x) { if (Array.isArray(x)) return x; return x?.items || x?.data || x?.events || x?.leads || x?.whatsapp || [] }
+    function num(...xs) { for (const x of xs) { if (x !== undefined && x !== null && x !== "") return Number(x) || 0 } return 0 }
+    function fmt(n) { return Number(n || 0).toLocaleString() }
+    function time(s) { return s ? new Date(s).toLocaleString() : "—" }
+    function esc(v) { return String(v ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m])) }
+    function toast(msg) { const x = $("#toast"); x.textContent = msg; x.classList.add("show"); setTimeout(() => x.classList.remove("show"), 2200) }
+    function setError(msg) { $("#systemStatus").textContent = "● " + msg; $("#systemStatus").classList.add("err"); $("#workerState").textContent = "● Worker / API error" }
+
+    async function load() {
+      try {
+        const [stats, config, events] = await Promise.all([api("/api/admin/stats"), api("/api/admin/config"), api("/api/admin/events")]);
+        state.stats = stats || {}; state.config = config || {}; state.events = arr(events);
+        $("#systemStatus").textContent = lang === "zh" ? "● 系统正常运行" : "● System operational"; $("#systemStatus").classList.remove("err"); $("#workerState").textContent = lang === "zh" ? "● Worker 已连接" : "● Worker connected";
+        render(); loadWa(); loadPixels();
+      } catch (e) { console.error(e); setError(lang === "zh" ? "API 连接失败" : "API error") }
+    }
+    function render() {
+      const s = state.stats || {}, c = state.config || {};
+      const views = num(s.page_views, s.pageViews, s.views), clicks = num(s.whatsapp_clicks, s.whatsappClicks, s.clicks), leads = num(s.form_submissions, s.formSubmissions, s.leads);
+      $("#mViews").textContent = fmt(views); $("#mClicks").textContent = fmt(clicks); $("#mLeads").textContent = fmt(leads); $("#mCtr").textContent = (s.ctr !== undefined ? s.ctr : (views ? (clicks / views * 100).toFixed(2) : "0.00")) + "%";
+      $("#fViews").textContent = fmt(views); $("#fClicks").textContent = fmt(clicks); $("#fLeads").textContent = fmt(leads);
+      $("#bClicks").style.width = Math.min(100, views ? clicks / views * 100 : 0) + "%"; $("#bLeads").style.width = Math.min(100, views ? leads / views * 100 : 0) + "%";
+      const form = !!(c.form_enabled ?? c.formEnabled); const route = c.routing_mode || c.routingMode || "single"; const meta = getPixelArray(c, "meta"), tt = getPixelArray(c, "tiktok");
+      $("#formState").textContent = form ? (lang === "zh" ? "已启用" : "Enabled") : (lang === "zh" ? "已关闭" : "Disabled"); $("#routingState").textContent = route === "round_robin" ? "Round Robin / 轮询" : "Single / Default / 单号码";
+      $("#metaState").textContent = meta.length ? `${meta.filter(x => x.enabled !== false).length}/${meta.length} active` : "Not configured / 未配置"; $("#ttState").textContent = tt.length ? `${tt.filter(x => x.enabled !== false).length}/${tt.length} active` : "Not configured / 未配置";
+      $("#metaBadge").textContent = meta.length ? `${meta.length} pixels` : "—"; $("#ttBadge").textContent = tt.length ? `${tt.length} pixels` : "—";
+      $("#leadTotal").textContent = fmt(leads); $("#leadNew").textContent = "—"; $("#leadContacted").textContent = "—"; $("#leadWon").textContent = "—";
+      const clicksEvents = state.events.filter(isWa).slice(0, 8);
+      $("#recentClicks").innerHTML = clicksEvents.map(x => `<tr><td>${esc(time(x.created_at || x.createdAt))}</td><td>${esc(x.number || x.phone || "—")}</td><td>${esc(x.campaign || x.utm_campaign || "—")}</td><td>${esc(x.source || x.utm_source || "direct")}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">No WhatsApp activity yet.</td></tr>';
+      renderAnalytics(); renderEvents();
+      $("#routingSelect").value = route; $("#routingSettings").value = route; $("#formToggle").classList.toggle("on", form);
+    }
+    function getPixelArray(c, kind) {
+      const p = c?.pixels?.[kind] ?? c?.[kind + "_pixels"] ?? c?.[kind + "Pixels"] ?? [];
+      if (Array.isArray(p)) return p;
+      if (p && typeof p === "object") { return Object.entries(p).map(([id, v]) => typeof v === "object" ? { id, ...v } : { id, enabled: !!v }) }
+      const id = c?.[kind + "_id"] || c?.[kind + "Id"]; return id ? [{ id, enabled: c?.[kind + "_enabled"] !== false, name: "Primary" }] : [];
+    }
+    function isWa(x) { const typ = String(x.type || x.event || "").toLowerCase(); return typ === "whatsapp_click" || typ === "whatsapp-click" || typ === "whatsapp" }
+    function renderAnalytics() {
+      const map = {}; const src = new Set(), cam = new Set(), ads = new Set();
+      state.events.forEach(x => { const source = x.source || x.utm_source || "direct", campaign = x.campaign || x.utm_campaign || "—", adset = x.adset || x.utm_adset || "—"; src.add(source); if (campaign !== "—") cam.add(campaign); if (adset !== "—") ads.add(adset); const event = x.type || x.event || "event", k = [source, campaign, adset, event].join("|||"); map[k] = (map[k] || 0) + 1 });
+      $("#aSources").textContent = src.size; $("#aCampaigns").textContent = cam.size; $("#aAdsets").textContent = ads.size;
+      $("#analyticsRows").innerHTML = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 100).map(([k, n]) => { const [a, b, d, e] = k.split("|||"); return `<tr><td>${esc(a)}</td><td>${esc(b)}</td><td>${esc(d)}</td><td>${esc(e)}</td><td>${n}</td></tr>` }).join("") || '<tr><td colspan="5" class="empty">No events yet.</td></tr>';
+    }
+    function renderEvents() {
+      $("#eventRows").innerHTML = state.events.slice(0, 500).map(x => `<tr><td>${esc(time(x.created_at || x.createdAt))}</td><td><span class="badge">${esc(x.type || x.event || "event")}</span></td><td>${esc(x.source || x.utm_source || "direct")}</td><td>${esc(x.campaign || x.utm_campaign || "—")}</td><td>${esc(x.adset || x.utm_adset || "—")}</td><td>${esc(x.number || x.phone || "—")}</td></tr>`).join("") || '<tr><td colspan="6" class="empty">No events yet.</td></tr>';
+    }
+    async function loadEvents() { try { state.events = arr(await api("/api/admin/events")); renderAnalytics(); renderEvents() } catch (e) { toast(e.message) } }
+    async function loadWa() { try { state.whatsapp = arr(await api("/api/admin/whatsapp")); $("#waList").innerHTML = state.whatsapp.map(x => `<div class="pixel"><div><b>${esc(x.label || "WhatsApp")}</b><div class="id">${esc(x.number || x.phone || "")}</div><div class="muted">${x.is_default || x.isDefault ? "Default · " : ""}${x.active === false ? "Disabled" : "Active"}</div></div><div class="actions"><button class="btn secondary" onclick='editWa(${JSON.stringify(x).replace(/'/g, "&#39;")})'>Edit / 编辑</button><button class="btn secondary" onclick="waAction(${Number(x.id)},'${x.active === false ? "enable" : "disable"}')">${x.active === false ? "Enable" : "Disable"}</button>${!(x.is_default || x.isDefault) ? `<button class="btn secondary" onclick="waAction(${Number(x.id)},'default')">Set default</button>` : ""}<button class="btn danger" onclick="waAction(${Number(x.id)},'delete')">Delete</button></div></div>`).join("") || '<div class="empty">No WhatsApp numbers configured.</div>' } catch (e) { $("#waList").innerHTML = '<div class="empty">Unable to load WhatsApp configuration.</div>' } }
+    async function waAction(id, action) { try { await api("/api/admin/whatsapp/" + id, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ action }) }); toast("Saved / 已保存"); loadWa() } catch (e) { toast(e.message) } }
+    function editWa(x) { $("#waId").value = x.id ?? ""; $("#waLabel").value = x.label || ""; $("#waNumber").value = x.number || x.phone || ""; $("#waModalTitle").textContent = "Edit WhatsApp number / 编辑号码"; $("#waModal").classList.add("open") }
+    $("#addWa").onclick = () => { $("#waId").value = ""; $("#waLabel").value = ""; $("#waNumber").value = ""; $("#waModalTitle").textContent = "Add WhatsApp number / 添加号码"; $("#waModal").classList.add("open") };
+    $("#closeWa").onclick = () => $("#waModal").classList.remove("open");
+    $("#waForm").onsubmit = async e => { e.preventDefault(); try { await api("/api/admin/whatsapp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: $("#waId").value || undefined, label: $("#waLabel").value, number: $("#waNumber").value }) }); $("#waModal").classList.remove("open"); toast("Saved / 已保存"); loadWa() } catch (err) { toast(err.message) } };
+
+    function normalizePixels(data) {
+      const c = data || {}; return { meta: getPixelArray(c, "meta"), tiktok: getPixelArray(c, "tiktok") };
+    }
+    async function loadPixels() {
+      try {
+        const data = await api("/api/admin/pixels"); state.pixels = normalizePixels(data); renderPixels();
+      } catch (e) {
+        state.pixels = { meta: getPixelArray(state.config, "meta"), tiktok: getPixelArray(state.config, "tiktok") }; renderPixels();
+      }
+    }
+    function renderPixels() {
+      const box = (kind, items) => items.map((x, i) => `<div class="pixel"><div style="flex:1"><b>${esc(x.name || `${kind === "meta" ? "Meta" : "TikTok"} Pixel ${i + 1}`)}</b><div class="id">${esc(x.id || x.pixel_id || x.pixelId || "")}</div><div class="muted">${x.enabled === false ? "Disabled / 已停用" : "Active / 已启用"}</div><div class="rulegrid">${(x.events || x.event_rules || x.rules || ["pageview", "whatsapp_click", "form_submit"]).map(ev => `<span class="badge">${esc(ev)}</span>`).join("")}</div></div><div class="actions"><button class="btn secondary" onclick='editPixel("${kind}",${JSON.stringify(x).replace(/"/g, "&quot;")})'>Edit</button><button class="btn secondary" onclick="pixelAction('${kind}','${esc(x.id || x.pixel_id || "")}','toggle')">${x.enabled === false ? "Enable" : "Disable"}</button><button class="btn danger" onclick="pixelAction('${kind}','${esc(x.id || x.pixel_id || "")}','delete')">Delete</button></div></div>`).join("") || '<div class="empty">No pixels configured.</div>';
+      $("#metaPixelBox").innerHTML = box("meta", state.pixels.meta); $("#ttPixelBox").innerHTML = box("tiktok", state.pixels.tiktok);
+    }
+    function openPixel(kind, x = null) { $("#pixelId").value = x?.id || x?.pixel_id || ""; $("#pixelKind").value = kind; $("#pixelCode").value = x?.id || x?.pixel_id || ""; $("#pixelName").value = x?.name || ""; $$('#pixelForm input[type="checkbox"]').forEach(c => c.checked = (x?.events || x?.event_rules || ["pageview", "whatsapp_click", "form_submit"]).includes(c.value)); $("#pixelModalTitle").textContent = (x ? "Edit " : "Add ") + (kind === "meta" ? "Meta" : "TikTok") + " Pixel"; $("#pixelModal").classList.add("open") }
+    function editPixel(kind, x) { openPixel(kind, x) }
+    $("#addMeta").onclick = () => openPixel("meta"); $("#addTikTok").onclick = () => openPixel("tiktok"); $("#closePixel").onclick = () => $("#pixelModal").classList.remove("open"); $("#cancelPixel").onclick = () => $("#pixelModal").classList.remove("open");
+    $("#pixelForm").onsubmit = async e => { e.preventDefault(); const events = $$('#pixelForm input[type="checkbox"]:checked').map(x => x.value); const body = { id: $("#pixelId").value || undefined, name: $("#pixelName").value, events, enabled: true }; const kind = $("#pixelKind").value; try { if ($("#pixelId").value) { await api("/api/admin/pixels/" + encodeURIComponent($("#pixelId").value), { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind, ...body }) }) } else { await api("/api/admin/pixels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind, ...body, pixel_id: $("#pixelCode").value }) }) } $("#pixelModal").classList.remove("open"); toast("Pixel saved / 像素已保存"); loadPixels(); load() } catch (err) { toast(err.message) } };
+    async function pixelAction(kind, id, action) { try { await api("/api/admin/pixels/" + encodeURIComponent(id), { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind, action }) }); toast("Saved / 已保存"); loadPixels() } catch (e) { toast(e.message) } }
+
+    async function loadLeads() {
+      try {
+        const data = arr(await api("/api/admin/leads")); state.leads = data;
+        $("#leadRows").innerHTML = data.map((x, i) => `<tr><td>${esc(time(x.created_at || x.createdAt))}</td><td>${esc(x.name || x.full_name || "—")}</td><td>${esc(x.phone || x.email || x.contact || "—")}</td><td>${esc(x.campaign || x.utm_campaign || "—")}</td><td><span class="badge">${esc(x.status || "new")}</span></td><td><button class="btn secondary" onclick="viewLead(${i})">View / 查看</button></td></tr>`).join("") || '<tr><td colspan="6" class="empty">No leads yet.</td></tr>';
+        const statuses = data.map(x => String(x.status || "new").toLowerCase()); $("#leadNew").textContent = statuses.filter(x => x === "new").length; $("#leadContacted").textContent = statuses.filter(x => x === "contacted").length; $("#leadWon").textContent = statuses.filter(x => x === "won").length; $("#leadTotal").textContent = fmt(data.length);
+      } catch (e) { $("#leadRows").innerHTML = '<tr><td colspan="6" class="empty">Lead API unavailable / 询盘 API 暂不可用。</td></tr>' }
+    }
+    function viewLead(i) { const x = state.leads[i] || {}; $("#leadDetail").innerHTML = Object.entries(x).map(([k, v]) => `<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>${esc(k)}</b><div class="muted" style="word-break:break-word">${esc(typeof v === "object" ? JSON.stringify(v) : v)}</div></div>`).join(""); $("#leadModal").classList.add("open") }
+    $("#closeLead").onclick = () => $("#leadModal").classList.remove("open"); $("#loadLeads").onclick = loadLeads;
+
+    async function saveSettings(form_enabled, routing_mode) { try { await api("/api/admin/settings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ form_enabled, routing_mode }) }); toast("Saved / 已保存"); load() } catch (e) { toast(e.message) } }
+    $("#routingSelect").onchange = () => saveSettings(state.config?.form_enabled ?? state.config?.formEnabled, $("#routingSelect").value);
+    $("#routingSettings").onchange = () => saveSettings(state.config?.form_enabled ?? state.config?.formEnabled, $("#routingSettings").value);
+    $("#formToggle").onclick = () => saveSettings(!(state.config?.form_enabled ?? state.config?.formEnabled), state.config?.routing_mode || "single");
+    $("#refresh").onclick = load; $("#loadEvents").onclick = loadEvents; $("#logout").onclick = () => location.href = "/api/logout";
+    $("#langZh").onclick = () => { lang = "zh"; applyLang(); render() }; $("#langEn").onclick = () => { lang = "en"; applyLang(); render() };
+    applyLang(); load();
+  </script>
+  <!-- ============ 登录认证脚本 ============ -->
+  <script>
+    (function () {
+      "use strict";
+      // ========== 配置 ==========
+      // 默认密码，实际使用时可修改
+      const DEFAULT_PASSWORD = 'admin123';
+      // 存储登录状态的 key
+      const SESSION_KEY = 'sulan_admin_session';
+
+      // ========== DOM 引用 ==========
+      const overlay = document.getElementById('login-overlay');
+      const loginForm = document.getElementById('loginForm');
+      const passwordInput = document.getElementById('loginPassword');
+      const loginBtn = document.getElementById('loginBtn');
+      const errorMsg = document.getElementById('loginError');
+
+      // ========== 检查登录状态 ==========
+      function isLoggedIn() {
+        try {
+          const session = localStorage.getItem(SESSION_KEY);
+          if (!session) return false;
+          const data = JSON.parse(session);
+          // 检查是否过期（24小时）
+          if (Date.now() - data.timestamp > 24 * 60 * 60 * 1000) {
+            localStorage.removeItem(SESSION_KEY);
+            return false;
+          }
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      // ========== 设置登录状态 ==========
+      function setLoggedIn() {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+          loggedIn: true,
+          timestamp: Date.now()
+        }));
+      }
+
+      // ========== 清除登录状态 ==========
+      function clearLoggedIn() {
+        localStorage.removeItem(SESSION_KEY);
+      }
+
+      // ========== 显示登录界面 ==========
+      function showLogin() {
+        overlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        if (passwordInput) {
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
+      }
+
+      // ========== 隐藏登录界面 ==========
+      function hideLogin() {
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+
+      // ========== 登录处理 ==========
+      function handleLogin(event) {
+        event.preventDefault();
+
+        const password = passwordInput.value.trim();
+        errorMsg.textContent = '';
+
+        if (!password) {
+          errorMsg.textContent = '请输入密码';
+          passwordInput.focus();
+          return;
+        }
+
+        if (password !== DEFAULT_PASSWORD) {
+          errorMsg.textContent = '密码错误，请重试';
+          passwordInput.value = '';
+          passwordInput.focus();
+          return;
+        }
+
+        // 登录成功
+        setLoggedIn();
+        hideLogin();
+        // 重新加载数据（如果有 load 函数）
+        if (typeof load === 'function') {
+          load();
+        }
+      }
+
+      // ========== 退出登录 ==========
+      function doLogout() {
+        clearLoggedIn();
+        // 如果页面有刷新功能，刷新页面回到登录状态
+        showLogin();
+        // 重置页面数据
+        if (typeof load === 'function') {
+          // 清空显示数据
+          const state = window.state || {};
+          state.stats = {};
+          state.config = {};
+          state.events = [];
+          state.leads = [];
+          state.whatsapp = [];
+          state.pixels = { meta: [], tiktok: [] };
+          if (typeof render === 'function') render();
+        }
+        // 重置系统状态显示
+        const systemStatus = document.getElementById('systemStatus');
+        if (systemStatus) {
+          systemStatus.textContent = '● 未登录';
+          systemStatus.classList.add('err');
+        }
+        const workerState = document.getElementById('workerState');
+        if (workerState) {
+          workerState.textContent = '● 请登录';
+        }
+        // 清空各个面板数据
+        document.querySelectorAll('.num').forEach(el => el.textContent = '—');
+        document.querySelectorAll('.badge').forEach(el => {
+          if (el.id !== 'metaBadge' && el.id !== 'ttBadge') {
+            el.textContent = '—';
+          }
+        });
+        document.getElementById('metaBadge').textContent = '—';
+        document.getElementById('ttBadge').textContent = '—';
+        document.getElementById('metaState').textContent = 'Not configured / 未配置';
+        document.getElementById('ttState').textContent = 'Not configured / 未配置';
+        document.getElementById('recentClicks').innerHTML = '<tr><td colspan="4" class="empty">请登录后查看</td></tr>';
+        document.getElementById('eventRows').innerHTML = '<tr><td colspan="6" class="empty">请登录后查看</td></tr>';
+        document.getElementById('leadRows').innerHTML = '<tr><td colspan="6" class="empty">请登录后查看</td></tr>';
+        document.getElementById('metaPixelBox').innerHTML = '<div class="empty">请登录后查看</div>';
+        document.getElementById('ttPixelBox').innerHTML = '<div class="empty">请登录后查看</div>';
+        document.getElementById('waList').innerHTML = '<div class="empty">请登录后查看</div>';
+
+        toast('已退出登录');
+      }
+
+      // ========== 绑定登录表单事件 ==========
+      if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+      }
+
+      // 回车键触发登录
+      if (passwordInput) {
+        passwordInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            loginForm.dispatchEvent(new Event('submit'));
+          }
+        });
+      }
+
+      // ========== 劫持退出登录按钮 ==========
+      const logoutBtn = document.getElementById('logout');
+      if (logoutBtn) {
+        // 保存原有的点击事件
+        const originalLogout = logoutBtn.onclick;
+        logoutBtn.onclick = function (e) {
+          if (e) e.preventDefault();
+          doLogout();
+          if (typeof originalLogout === 'function') {
+            // 不执行原有的 location.href 跳转
+          }
+        };
+      }
+
+      // ========== 劫持刷新按钮 - 检查登录状态 ==========
+      const refreshBtn = document.getElementById('refresh');
+      if (refreshBtn) {
+        const originalRefresh = refreshBtn.onclick;
+        refreshBtn.onclick = function (e) {
+          if (!isLoggedIn()) {
+            showLogin();
+            toast('请先登录');
+            return;
+          }
+          if (typeof originalRefresh === 'function') {
+            originalRefresh.call(this, e);
+          }
+        };
+      }
+
+      // ========== 劫持各个页面的数据加载 ==========
+      // 在加载数据前检查登录状态
+      const originalLoad = window.load;
+      if (typeof window.load === 'function') {
+        window.load = function () {
+          if (!isLoggedIn()) {
+            showLogin();
+            return;
+          }
+          return originalLoad.call(this);
+        };
+      }
+
+      // ========== 初始化 ==========
+      // 检查登录状态，如果已登录则隐藏登录界面
+      if (isLoggedIn()) {
+        hideLogin();
+        // 延迟加载数据
+        setTimeout(function () {
+          if (typeof load === 'function') {
+            load();
+          }
+        }, 100);
+      } else {
+        showLogin();
+        // 隐藏后台内容（通过遮罩覆盖）
+      }
+
+      // 暴露退出方法到全局，方便调试
+      window.sulanLogout = doLogout;
+
+      console.log('🔐 登录保护已启用');
+      // console.log('💡 默认密码: admin123');
+      // console.log('💡 控制台执行 sulanLogout() 可退出登录');
+
+    })();
+  </script>
+  <!-- ============ 登录认证脚本结束 ============ -->
+
+  <script>
+    /* =========================================================
+       V8.1 SAFE UI PATCH
+       - Pixel: reliable add/edit/toggle/delete, event normalization
+       - WhatsApp: add/edit/toggle/default/delete/test redirect
+       - Refresh: visible loading + complete reload
+       - Keeps V8 API endpoints unchanged
+    ========================================================= */
+    (function () {
+      "use strict";
+
+      const $v81 = (s) => document.querySelector(s);
+      const $$v81 = (s) => [...document.querySelectorAll(s)];
+
+      function toastV81(message) {
+        if (typeof toast === "function") {
+          toast(message);
+          return;
+        }
+        const el = $v81("#toast");
+        if (!el) return;
+        el.textContent = message;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 2200);
+      }
+
+      function escV81(value) {
+        if (typeof esc === "function") return esc(value);
+        return String(value ?? "").replace(/[&<>"']/g, (m) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[m]));
+      }
+
+      function normalizeEventV81(value) {
+        const map = {
+          pageview: "pageview",
+          "page_view": "pageview",
+          viewcontent: "view_content",
+          "view_content": "view_content",
+          lead: "lead",
+          form_submit: "form_submit",
+          formsubmit: "form_submit",
+          whatsapp_click: "whatsapp_click",
+          "whatsapp-click": "whatsapp_click",
+          whatsappclick: "whatsapp_click"
+        };
+        return map[String(value ?? "").trim().toLowerCase()] || "";
+      }
+
+      function normalizeEventsV81(values) {
+        const defaults = ["pageview", "whatsapp_click", "form_submit"];
+        const raw = Array.isArray(values) ? values : [];
+        const out = [];
+        for (const item of raw) {
+          const event = normalizeEventV81(item);
+          if (event && !out.includes(event)) out.push(event);
+        }
+        return out.length ? out : defaults;
+      }
+
+      function pixelArrayV81(data, kind) {
+        const source = data?.[kind];
+        if (!Array.isArray(source)) return [];
+        return source
+          .map((x, i) => ({
+            id: String(x?.id ?? x?.pixel_id ?? "").trim(),
+            name: String(x?.name ?? `${kind === "meta" ? "Meta" : "TikTok"} Pixel ${i + 1}`),
+            enabled: x?.enabled !== false,
+            events: normalizeEventsV81(x?.events)
+          }))
+          .filter(x => x.id);
+      }
+
+      function ensurePixelEnabledFieldV81() {
+        let el = $v81("#pixelEnabled");
+        if (!el) {
+          el = document.createElement("input");
+          el.type = "hidden";
+          el.id = "pixelEnabled";
+          const form = $v81("#pixelForm");
+          if (form) form.prepend(el);
+        }
+        return el;
+      }
+
+      function ensureWaDefaultFieldV81() {
+        let row = $v81("#waDefaultRow");
+        if (!row) {
+          const form = $v81("#waForm");
+          if (!form) return null;
+
+          row = document.createElement("label");
+          row.id = "waDefaultRow";
+          row.className = "check";
+          row.style.display = "flex";
+          row.style.alignItems = "center";
+          row.style.gap = "8px";
+          row.style.margin = "6px 0 14px";
+          row.innerHTML =
+            '<input type="checkbox" id="waDefault"> ' +
+            'Set as default / 设为默认';
+          const submit = form.querySelector("button[type='submit'],button.btn.primary");
+          if (submit) form.insertBefore(row, submit);
+          else form.appendChild(row);
+        }
+        return $v81("#waDefault");
+      }
+
+      async function loadPixelsV81() {
+        try {
+          const data = await api("/api/admin/pixels");
+          state.pixels = {
+            meta: pixelArrayV81(data, "meta"),
+            tiktok: pixelArrayV81(data, "tiktok")
+          };
+          renderPixelsV81();
+        } catch (err) {
+          console.error(err);
+          toastV81("Pixel load failed / 像素加载失败");
+        }
+      }
+
+      function renderPixelsV81() {
+        const renderOne = (kind, items) => {
+          if (!items.length) {
+            return '<div class="empty">No pixels configured / 暂无已配置像素</div>';
+          }
+
+          return items.map((x, index) => {
+            const id = escV81(x.id);
+            const name = escV81(
+              x.name || `${kind === "meta" ? "Meta" : "TikTok"} Pixel ${index + 1}`
+            );
+            const enabled = x.enabled !== false;
+            const events = normalizeEventsV81(x.events);
+
+            return `
           <div class="pixel" data-v81-pixel-kind="${kind}" data-v81-pixel-id="${id}">
             <div style="flex:1;min-width:220px">
               <b>${name}</b>
@@ -442,8 +1579,8 @@ IMPORTANT:
               </div>
               <div class="rulegrid">
                 ${events.map(ev =>
-                  `<span class="badge">${escV81(ev)}</span>`
-                ).join("")}
+              `<span class="badge">${escV81(ev)}</span>`
+            ).join("")}
               </div>
             </div>
             <div class="actions" style="display:flex;gap:7px;flex-wrap:wrap">
@@ -468,173 +1605,173 @@ IMPORTANT:
             </div>
           </div>
         `;
-      }).join("");
-    };
+          }).join("");
+        };
 
-    const meta = state.pixels?.meta || [];
-    const tiktok = state.pixels?.tiktok || [];
+        const meta = state.pixels?.meta || [];
+        const tiktok = state.pixels?.tiktok || [];
 
-    const metaBox = $v81("#metaPixelBox");
-    const ttBox = $v81("#ttPixelBox");
+        const metaBox = $v81("#metaPixelBox");
+        const ttBox = $v81("#ttPixelBox");
 
-    if (metaBox) metaBox.innerHTML = renderOne("meta", meta);
-    if (ttBox) ttBox.innerHTML = renderOne("tiktok", tiktok);
-  }
-
-  function openPixelV81(kind, item) {
-    const modal = $v81("#pixelModal");
-    if (!modal) return;
-
-    const id = item?.id || item?.pixel_id || "";
-    const events = normalizeEventsV81(item?.events);
-
-    $v81("#pixelId").value = id;
-    $v81("#pixelKind").value = kind;
-    $v81("#pixelCode").value = id;
-    $v81("#pixelName").value = item?.name || "";
-    ensurePixelEnabledFieldV81().value =
-      item ? (item.enabled !== false ? "true" : "false") : "true";
-
-    $v81("#pixelForm")
-      ?.querySelectorAll("input[type='checkbox']")
-      .forEach((checkbox) => {
-        const normalized = normalizeEventV81(checkbox.value);
-        checkbox.checked = events.includes(normalized);
-      });
-
-    const title = $v81("#pixelModalTitle");
-    if (title) {
-      title.textContent =
-        `${item ? "Edit" : "Add"} ${kind === "meta" ? "Meta" : "TikTok"} Pixel`;
-    }
-
-    modal.classList.add("open");
-  }
-
-  async function pixelActionV81(kind, id, action) {
-    if (!id) return;
-
-    if (action === "delete") {
-      if (!confirm("Delete this Pixel? / 确定删除此 Pixel？")) return;
-    }
-
-    try {
-      await api(`/api/admin/pixels/${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ kind, action })
-      });
-
-      toastV81(
-        action === "delete"
-          ? "Pixel deleted / 像素已删除"
-          : action === "toggle"
-            ? "Pixel status updated / 像素状态已更新"
-            : "Pixel saved / 像素已保存"
-      );
-
-      await loadPixelsV81();
-      if (typeof load === "function") await load();
-    } catch (err) {
-      console.error(err);
-      toastV81(err.message || "Pixel operation failed / 像素操作失败");
-    }
-  }
-
-  async function savePixelV81(event) {
-    event.preventDefault();
-
-    const form = $v81("#pixelForm");
-    if (!form) return;
-
-    const kind = $v81("#pixelKind").value;
-    const currentId = $v81("#pixelId").value.trim();
-    const code = $v81("#pixelCode").value.trim();
-    const name = $v81("#pixelName").value.trim();
-    const id = currentId || code;
-
-    if (!id) {
-      toastV81("Pixel ID is required / 请输入 Pixel ID");
-      return;
-    }
-
-    const events = normalizeEventsV81(
-      $$v81("#pixelForm input[type='checkbox']:checked")
-        .map(x => x.value)
-    );
-
-    const enabledField = ensurePixelEnabledFieldV81();
-    const enabled = enabledField.value !== "false";
-
-    try {
-      if (currentId) {
-        await api(`/api/admin/pixels/${encodeURIComponent(currentId)}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            kind,
-            name,
-            enabled,
-            events
-          })
-        });
-      } else {
-        await api("/api/admin/pixels", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            kind,
-            pixel_id: id,
-            name: name || "Pixel",
-            enabled: true,
-            events
-          })
-        });
+        if (metaBox) metaBox.innerHTML = renderOne("meta", meta);
+        if (ttBox) ttBox.innerHTML = renderOne("tiktok", tiktok);
       }
 
-      $v81("#pixelModal")?.classList.remove("open");
-      toastV81("Pixel saved / 像素已保存");
-      await loadPixelsV81();
-      if (typeof load === "function") await load();
-    } catch (err) {
-      console.error(err);
-      toastV81(err.message || "Pixel save failed / 像素保存失败");
-    }
-  }
+      function openPixelV81(kind, item) {
+        const modal = $v81("#pixelModal");
+        if (!modal) return;
 
-  async function loadWhatsAppV81() {
-    try {
-      const data = await api("/api/admin/whatsapp");
-      state.whatsapp = Array.isArray(data) ? data : [];
-      renderWhatsAppV81();
-    } catch (err) {
-      console.error(err);
-      const box = $v81("#waList");
-      if (box) {
-        box.innerHTML =
-          '<div class="empty">Unable to load WhatsApp configuration / 无法加载 WhatsApp 配置</div>';
+        const id = item?.id || item?.pixel_id || "";
+        const events = normalizeEventsV81(item?.events);
+
+        $v81("#pixelId").value = id;
+        $v81("#pixelKind").value = kind;
+        $v81("#pixelCode").value = id;
+        $v81("#pixelName").value = item?.name || "";
+        ensurePixelEnabledFieldV81().value =
+          item ? (item.enabled !== false ? "true" : "false") : "true";
+
+        $v81("#pixelForm")
+          ?.querySelectorAll("input[type='checkbox']")
+          .forEach((checkbox) => {
+            const normalized = normalizeEventV81(checkbox.value);
+            checkbox.checked = events.includes(normalized);
+          });
+
+        const title = $v81("#pixelModalTitle");
+        if (title) {
+          title.textContent =
+            `${item ? "Edit" : "Add"} ${kind === "meta" ? "Meta" : "TikTok"} Pixel`;
+        }
+
+        modal.classList.add("open");
       }
-    }
-  }
 
-  function renderWhatsAppV81() {
-    const box = $v81("#waList");
-    if (!box) return;
+      async function pixelActionV81(kind, id, action) {
+        if (!id) return;
 
-    const list = Array.isArray(state.whatsapp) ? state.whatsapp : [];
+        if (action === "delete") {
+          if (!confirm("Delete this Pixel? / 确定删除此 Pixel？")) return;
+        }
 
-    if (!list.length) {
-      box.innerHTML =
-        '<div class="empty">No WhatsApp numbers configured / 尚未配置 WhatsApp 号码</div>';
-      return;
-    }
+        try {
+          await api(`/api/admin/pixels/${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ kind, action })
+          });
 
-    box.innerHTML = list.map((x) => {
-      const id = Number(x.id);
-      const active = x.active !== false;
-      const isDefault = x.is_default === true;
+          toastV81(
+            action === "delete"
+              ? "Pixel deleted / 像素已删除"
+              : action === "toggle"
+                ? "Pixel status updated / 像素状态已更新"
+                : "Pixel saved / 像素已保存"
+          );
 
-      return `
+          await loadPixelsV81();
+          if (typeof load === "function") await load();
+        } catch (err) {
+          console.error(err);
+          toastV81(err.message || "Pixel operation failed / 像素操作失败");
+        }
+      }
+
+      async function savePixelV81(event) {
+        event.preventDefault();
+
+        const form = $v81("#pixelForm");
+        if (!form) return;
+
+        const kind = $v81("#pixelKind").value;
+        const currentId = $v81("#pixelId").value.trim();
+        const code = $v81("#pixelCode").value.trim();
+        const name = $v81("#pixelName").value.trim();
+        const id = currentId || code;
+
+        if (!id) {
+          toastV81("Pixel ID is required / 请输入 Pixel ID");
+          return;
+        }
+
+        const events = normalizeEventsV81(
+          $$v81("#pixelForm input[type='checkbox']:checked")
+            .map(x => x.value)
+        );
+
+        const enabledField = ensurePixelEnabledFieldV81();
+        const enabled = enabledField.value !== "false";
+
+        try {
+          if (currentId) {
+            await api(`/api/admin/pixels/${encodeURIComponent(currentId)}`, {
+              method: "PATCH",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                kind,
+                name,
+                enabled,
+                events
+              })
+            });
+          } else {
+            await api("/api/admin/pixels", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                kind,
+                pixel_id: id,
+                name: name || "Pixel",
+                enabled: true,
+                events
+              })
+            });
+          }
+
+          $v81("#pixelModal")?.classList.remove("open");
+          toastV81("Pixel saved / 像素已保存");
+          await loadPixelsV81();
+          if (typeof load === "function") await load();
+        } catch (err) {
+          console.error(err);
+          toastV81(err.message || "Pixel save failed / 像素保存失败");
+        }
+      }
+
+      async function loadWhatsAppV81() {
+        try {
+          const data = await api("/api/admin/whatsapp");
+          state.whatsapp = Array.isArray(data) ? data : [];
+          renderWhatsAppV81();
+        } catch (err) {
+          console.error(err);
+          const box = $v81("#waList");
+          if (box) {
+            box.innerHTML =
+              '<div class="empty">Unable to load WhatsApp configuration / 无法加载 WhatsApp 配置</div>';
+          }
+        }
+      }
+
+      function renderWhatsAppV81() {
+        const box = $v81("#waList");
+        if (!box) return;
+
+        const list = Array.isArray(state.whatsapp) ? state.whatsapp : [];
+
+        if (!list.length) {
+          box.innerHTML =
+            '<div class="empty">No WhatsApp numbers configured / 尚未配置 WhatsApp 号码</div>';
+          return;
+        }
+
+        box.innerHTML = list.map((x) => {
+          const id = Number(x.id);
+          const active = x.active !== false;
+          const isDefault = x.is_default === true;
+
+          return `
         <div class="pixel" data-v81-wa-id="${id}">
           <div style="flex:1;min-width:240px">
             <b>${escV81(x.label || "WhatsApp")}</b>
@@ -658,14 +1795,13 @@ IMPORTANT:
               ${active ? "Disable / 停用" : "Enable / 启用"}
             </button>
 
-            ${
-              !isDefault
-                ? `<button type="button" class="btn secondary"
+            ${!isDefault
+              ? `<button type="button" class="btn secondary"
                     data-v81-action="wa-default"
                     data-id="${id}">
                     Set default / 设为默认
                    </button>`
-                : ""
+              : ""
             }
 
             <button type="button" class="btn secondary"
@@ -682,322 +1818,322 @@ IMPORTANT:
           </div>
         </div>
       `;
-    }).join("");
-  }
-
-  function openWhatsAppV81(item) {
-    ensureWaDefaultFieldV81();
-
-    $v81("#waId").value = item?.id ?? "";
-    $v81("#waLabel").value = item?.label || "";
-    $v81("#waNumber").value = item?.number || item?.phone || "";
-
-    const defaultBox = $v81("#waDefault");
-    if (defaultBox) defaultBox.checked = !!item?.is_default;
-
-    const title = $v81("#waModalTitle");
-    if (title) {
-      title.textContent =
-        `${item ? "Edit" : "Add"} WhatsApp number / ${item ? "编辑号码" : "添加号码"}`;
-    }
-
-    $v81("#waModal")?.classList.add("open");
-  }
-
-  async function waActionV81(id, action) {
-    if (!id) return;
-
-    if (action === "delete") {
-      if (!confirm("Delete this WhatsApp number? / 确定删除此号码？")) return;
-    }
-
-    try {
-      await api(`/api/admin/whatsapp/${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action })
-      });
-
-      toastV81(
-        action === "delete"
-          ? "WhatsApp deleted / 号码已删除"
-          : action === "default"
-            ? "Default number updated / 默认号码已更新"
-            : "WhatsApp status updated / 号码状态已更新"
-      );
-
-      await loadWhatsAppV81();
-      if (typeof load === "function") await load();
-    } catch (err) {
-      console.error(err);
-      toastV81(err.message || "WhatsApp operation failed / WhatsApp 操作失败");
-    }
-  }
-
-  async function saveWhatsAppV81(event) {
-    event.preventDefault();
-
-    const id = $v81("#waId").value.trim();
-    const label = $v81("#waLabel").value.trim();
-    const number = $v81("#waNumber").value.trim();
-    const defaultBox = ensureWaDefaultFieldV81();
-    const isDefault = !!defaultBox?.checked;
-
-    if (!number) {
-      toastV81("Phone number is required / 请输入电话号码");
-      return;
-    }
-
-    try {
-      await api("/api/admin/whatsapp", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          id: id || undefined,
-          label: label || "WhatsApp",
-          number,
-          active: true,
-          is_default: isDefault
-        })
-      });
-
-      $v81("#waModal")?.classList.remove("open");
-      toastV81("WhatsApp saved / WhatsApp 已保存");
-      await loadWhatsAppV81();
-      if (typeof load === "function") await load();
-    } catch (err) {
-      console.error(err);
-      toastV81(err.message || "WhatsApp save failed / WhatsApp 保存失败");
-    }
-  }
-
-  function testWhatsAppV81(id) {
-    const item = (state.whatsapp || []).find(x => Number(x.id) === Number(id));
-    if (!item) {
-      toastV81("WhatsApp number not found / 找不到号码");
-      return;
-    }
-
-    if (item.active === false) {
-      toastV81("This number is disabled / 此号码已停用");
-      return;
-    }
-
-    const url =
-      "/go/whatsapp?utm_source=admin_test&utm_campaign=whatsapp_test&utm_content=" +
-      encodeURIComponent(String(item.label || id));
-
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  async function refreshAllV81() {
-    const button = $v81("#refresh");
-    const oldText = button?.textContent || "";
-
-    try {
-      if (button) {
-        button.disabled = true;
-        button.textContent = "Refreshing… / 刷新中…";
+        }).join("");
       }
 
-      await Promise.all([
+      function openWhatsAppV81(item) {
+        ensureWaDefaultFieldV81();
+
+        $v81("#waId").value = item?.id ?? "";
+        $v81("#waLabel").value = item?.label || "";
+        $v81("#waNumber").value = item?.number || item?.phone || "";
+
+        const defaultBox = $v81("#waDefault");
+        if (defaultBox) defaultBox.checked = !!item?.is_default;
+
+        const title = $v81("#waModalTitle");
+        if (title) {
+          title.textContent =
+            `${item ? "Edit" : "Add"} WhatsApp number / ${item ? "编辑号码" : "添加号码"}`;
+        }
+
+        $v81("#waModal")?.classList.add("open");
+      }
+
+      async function waActionV81(id, action) {
+        if (!id) return;
+
+        if (action === "delete") {
+          if (!confirm("Delete this WhatsApp number? / 确定删除此号码？")) return;
+        }
+
+        try {
+          await api(`/api/admin/whatsapp/${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action })
+          });
+
+          toastV81(
+            action === "delete"
+              ? "WhatsApp deleted / 号码已删除"
+              : action === "default"
+                ? "Default number updated / 默认号码已更新"
+                : "WhatsApp status updated / 号码状态已更新"
+          );
+
+          await loadWhatsAppV81();
+          if (typeof load === "function") await load();
+        } catch (err) {
+          console.error(err);
+          toastV81(err.message || "WhatsApp operation failed / WhatsApp 操作失败");
+        }
+      }
+
+      async function saveWhatsAppV81(event) {
+        event.preventDefault();
+
+        const id = $v81("#waId").value.trim();
+        const label = $v81("#waLabel").value.trim();
+        const number = $v81("#waNumber").value.trim();
+        const defaultBox = ensureWaDefaultFieldV81();
+        const isDefault = !!defaultBox?.checked;
+
+        if (!number) {
+          toastV81("Phone number is required / 请输入电话号码");
+          return;
+        }
+
+        try {
+          await api("/api/admin/whatsapp", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              id: id || undefined,
+              label: label || "WhatsApp",
+              number,
+              active: true,
+              is_default: isDefault
+            })
+          });
+
+          $v81("#waModal")?.classList.remove("open");
+          toastV81("WhatsApp saved / WhatsApp 已保存");
+          await loadWhatsAppV81();
+          if (typeof load === "function") await load();
+        } catch (err) {
+          console.error(err);
+          toastV81(err.message || "WhatsApp save failed / WhatsApp 保存失败");
+        }
+      }
+
+      function testWhatsAppV81(id) {
+        const item = (state.whatsapp || []).find(x => Number(x.id) === Number(id));
+        if (!item) {
+          toastV81("WhatsApp number not found / 找不到号码");
+          return;
+        }
+
+        if (item.active === false) {
+          toastV81("This number is disabled / 此号码已停用");
+          return;
+        }
+
+        const url =
+          "/go/whatsapp?utm_source=admin_test&utm_campaign=whatsapp_test&utm_content=" +
+          encodeURIComponent(String(item.label || id));
+
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+
+      async function refreshAllV81() {
+        const button = $v81("#refresh");
+        const oldText = button?.textContent || "";
+
+        try {
+          if (button) {
+            button.disabled = true;
+            button.textContent = "Refreshing… / 刷新中…";
+          }
+
+          await Promise.all([
+            loadPixelsV81(),
+            loadWhatsAppV81(),
+            typeof load === "function" ? load() : Promise.resolve()
+          ]);
+
+          toastV81("Refreshed / 已刷新");
+        } catch (err) {
+          console.error(err);
+          toastV81("Refresh failed / 刷新失败");
+        } finally {
+          if (button) {
+            button.disabled = false;
+            button.textContent = oldText || "Refresh / 刷新";
+          }
+        }
+      }
+
+      /* Replace the V8 loader bindings without changing the API layer. */
+      try {
+        loadPixels = loadPixelsV81;
+      } catch (_) { }
+
+      try {
+        loadWa = loadWhatsAppV81;
+      } catch (_) { }
+
+      /* Pixel buttons */
+      $v81("#addMeta")?.addEventListener("click", () => openPixelV81("meta"));
+      $v81("#addTikTok")?.addEventListener("click", () => openPixelV81("tiktok"));
+
+      $v81("#closePixel")?.addEventListener("click", () => {
+        $v81("#pixelModal")?.classList.remove("open");
+      });
+
+      $v81("#cancelPixel")?.addEventListener("click", () => {
+        $v81("#pixelModal")?.classList.remove("open");
+      });
+
+      $v81("#pixelForm")?.addEventListener("submit", savePixelV81);
+
+      /* WhatsApp buttons */
+      $v81("#addWa")?.addEventListener("click", () => openWhatsAppV81());
+
+      $v81("#closeWa")?.addEventListener("click", () => {
+        $v81("#waModal")?.classList.remove("open");
+      });
+
+      $v81("#waForm")?.addEventListener("submit", saveWhatsAppV81);
+
+      /* Dynamic Pixel + WhatsApp actions */
+      document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-v81-action]");
+        if (!button) return;
+
+        const action = button.dataset.v81Action;
+        const id = button.dataset.id;
+        const kind = button.dataset.kind;
+
+        if (action === "pixel-edit") {
+          const item = (state.pixels?.[kind] || []).find(x => String(x.id) === String(id));
+          if (item) openPixelV81(kind, item);
+          return;
+        }
+
+        if (action === "pixel-toggle") {
+          pixelActionV81(kind, id, "toggle");
+          return;
+        }
+
+        if (action === "pixel-delete") {
+          pixelActionV81(kind, id, "delete");
+          return;
+        }
+
+        if (action === "wa-edit") {
+          const item = (state.whatsapp || []).find(x => Number(x.id) === Number(id));
+          if (item) openWhatsAppV81(item);
+          return;
+        }
+
+        if (action === "wa-toggle") {
+          waActionV81(id, "toggle");
+          return;
+        }
+
+        if (action === "wa-default") {
+          waActionV81(id, "default");
+          return;
+        }
+
+        if (action === "wa-delete") {
+          waActionV81(id, "delete");
+          return;
+        }
+
+        if (action === "wa-test") {
+          testWhatsAppV81(id);
+          return;
+        }
+      });
+
+      /* Refresh */
+      if ($v81("#refresh")) {
+        $v81("#refresh").onclick = function (event) {
+          if (event) {
+            event.preventDefault();
+          }
+
+          refreshAllV81();
+        };
+      }
+
+      /* Correct the old V8 ViewContent checkbox value. */
+      const viewContent = $v81("#pixelForm input[value='viewcontent']");
+      if (viewContent) viewContent.value = "view_content";
+
+      /* Initial load of the enhanced modules. */
+      Promise.all([
         loadPixelsV81(),
-        loadWhatsAppV81(),
-        typeof load === "function" ? load() : Promise.resolve()
-      ]);
+        loadWhatsAppV81()
+      ]).catch(console.error);
 
-      toastV81("Refreshed / 已刷新");
-    } catch (err) {
-      console.error(err);
-      toastV81("Refresh failed / 刷新失败");
-    } finally {
-      if (button) {
-        button.disabled = false;
-        button.textContent = oldText || "Refresh / 刷新";
-      }
-    }
-  }
-
-  /* Replace the V8 loader bindings without changing the API layer. */
-  try {
-    loadPixels = loadPixelsV81;
-  } catch (_) {}
-
-  try {
-    loadWa = loadWhatsAppV81;
-  } catch (_) {}
-
-  /* Pixel buttons */
-  $v81("#addMeta")?.addEventListener("click", () => openPixelV81("meta"));
-  $v81("#addTikTok")?.addEventListener("click", () => openPixelV81("tiktok"));
-
-  $v81("#closePixel")?.addEventListener("click", () => {
-    $v81("#pixelModal")?.classList.remove("open");
-  });
-
-  $v81("#cancelPixel")?.addEventListener("click", () => {
-    $v81("#pixelModal")?.classList.remove("open");
-  });
-
-  $v81("#pixelForm")?.addEventListener("submit", savePixelV81);
-
-  /* WhatsApp buttons */
-  $v81("#addWa")?.addEventListener("click", () => openWhatsAppV81());
-
-  $v81("#closeWa")?.addEventListener("click", () => {
-    $v81("#waModal")?.classList.remove("open");
-  });
-
-  $v81("#waForm")?.addEventListener("submit", saveWhatsAppV81);
-
-  /* Dynamic Pixel + WhatsApp actions */
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-v81-action]");
-    if (!button) return;
-
-    const action = button.dataset.v81Action;
-    const id = button.dataset.id;
-    const kind = button.dataset.kind;
-
-    if (action === "pixel-edit") {
-      const item = (state.pixels?.[kind] || []).find(x => String(x.id) === String(id));
-      if (item) openPixelV81(kind, item);
-      return;
-    }
-
-    if (action === "pixel-toggle") {
-      pixelActionV81(kind, id, "toggle");
-      return;
-    }
-
-    if (action === "pixel-delete") {
-      pixelActionV81(kind, id, "delete");
-      return;
-    }
-
-    if (action === "wa-edit") {
-      const item = (state.whatsapp || []).find(x => Number(x.id) === Number(id));
-      if (item) openWhatsAppV81(item);
-      return;
-    }
-
-    if (action === "wa-toggle") {
-      waActionV81(id, "toggle");
-      return;
-    }
-
-    if (action === "wa-default") {
-      waActionV81(id, "default");
-      return;
-    }
-
-    if (action === "wa-delete") {
-      waActionV81(id, "delete");
-      return;
-    }
-
-    if (action === "wa-test") {
-      testWhatsAppV81(id);
-      return;
-    }
-  });
-
- /* Refresh */
-if ($v81("#refresh")) {
-  $v81("#refresh").onclick = function (event) {
-    if (event) {
-      event.preventDefault();
-    }
-
-    refreshAllV81();
-  };
-}
-
-  /* Correct the old V8 ViewContent checkbox value. */
-  const viewContent = $v81("#pixelForm input[value='viewcontent']");
-  if (viewContent) viewContent.value = "view_content";
-
-  /* Initial load of the enhanced modules. */
-  Promise.all([
-    loadPixelsV81(),
-    loadWhatsAppV81()
-  ]).catch(console.error);
-
-})();
-</script>
-<!-- SULAN ADMIN V8.2
+    })();
+  </script>
+  <!-- SULAN ADMIN V8.2
      Form + Leads safe enhancement
      Paste this block BEFORE </body> in public/admin/index.html.
      Do NOT replace the existing V8/V8.1 scripts.
 -->
-<script>
-(function () {
-  "use strict";
+  <script>
+    (function () {
+      "use strict";
 
-  const $82 = (s, root=document) => root.querySelector(s);
-  const $$82 = (s, root=document) => [...root.querySelectorAll(s)];
+      const $82 = (s, root = document) => root.querySelector(s);
+      const $$82 = (s, root = document) => [...root.querySelectorAll(s)];
 
-  const FIELD_LABELS_82 = {
-    name: ["Name / 姓名", "Name"],
-    email: ["Email / 邮箱", "Email"],
-    whatsapp: ["WhatsApp", "WhatsApp"],
-    company: ["Company / 公司", "Company"],
-    country: ["Country / 国家", "Country"],
-    message: ["Message / 留言", "Message"]
-  };
+      const FIELD_LABELS_82 = {
+        name: ["Name / 姓名", "Name"],
+        email: ["Email / 邮箱", "Email"],
+        whatsapp: ["WhatsApp", "WhatsApp"],
+        company: ["Company / 公司", "Company"],
+        country: ["Country / 国家", "Country"],
+        message: ["Message / 留言", "Message"]
+      };
 
-  const STATUS_LABELS_82 = {
-    new: ["New", "新询盘"],
-    contacted: ["Contacted", "已联系"],
-    qualified: ["Qualified", "已筛选"],
-    won: ["Won", "已成交"],
-    lost: ["Lost", "已失效"]
-  };
+      const STATUS_LABELS_82 = {
+        new: ["New", "新询盘"],
+        contacted: ["Contacted", "已联系"],
+        qualified: ["Qualified", "已筛选"],
+        won: ["Won", "已成交"],
+        lost: ["Lost", "已失效"]
+      };
 
-  function esc82(v) {
-    if (typeof esc === "function") return esc(v);
-    return String(v ?? "").replace(/[&<>"']/g, m => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
-  }
-
-  function toast82(msg) {
-    if (typeof toast === "function") return toast(msg);
-    alert(msg);
-  }
-
-  async function api82(path, options={}) {
-    const r = await fetch(path, {
-      ...options,
-      cache: "no-store",
-      credentials: "same-origin",
-      headers: {
-        "Accept": "application/json",
-        ...(options.headers || {})
+      function esc82(v) {
+        if (typeof esc === "function") return esc(v);
+        return String(v ?? "").replace(/[&<>"']/g, m => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+        }[m]));
       }
-    });
-    const text = await r.text();
-    let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-    if (!r.ok) {
-      throw new Error(
-        typeof data === "string"
-          ? data
-          : (data?.error || data?.message || `HTTP ${r.status}`)
-      );
-    }
-    return data;
-  }
 
-  function ensureFormPanel82() {
-    const settings = $82("#settings");
-    if (!settings || $82("#v82FormPanel")) return;
+      function toast82(msg) {
+        if (typeof toast === "function") return toast(msg);
+        alert(msg);
+      }
 
-    const panel = document.createElement("div");
-    panel.id = "v82FormPanel";
-    panel.className = "card";
-    panel.style.marginTop = "16px";
-    panel.innerHTML = `
+      async function api82(path, options = {}) {
+        const r = await fetch(path, {
+          ...options,
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            "Accept": "application/json",
+            ...(options.headers || {})
+          }
+        });
+        const text = await r.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+        if (!r.ok) {
+          throw new Error(
+            typeof data === "string"
+              ? data
+              : (data?.error || data?.message || `HTTP ${r.status}`)
+          );
+        }
+        return data;
+      }
+
+      function ensureFormPanel82() {
+        const settings = $82("#settings");
+        if (!settings || $82("#v82FormPanel")) return;
+
+        const panel = document.createElement("div");
+        panel.id = "v82FormPanel";
+        panel.className = "card";
+        panel.style.marginTop = "16px";
+        panel.innerHTML = `
       <div class="sectionhead">
         <h2>Lead Form / 询盘表单</h2>
         <span id="v82FormStatus" class="badge">Loading…</span>
@@ -1024,24 +2160,24 @@ if ($v81("#refresh")) {
       </div>
     `;
 
-    const anchor =
-      settings.querySelector(".card:last-child") ||
-      settings.lastElementChild;
-    if (anchor) anchor.after(panel);
-    else settings.appendChild(panel);
+        const anchor =
+          settings.querySelector(".card:last-child") ||
+          settings.lastElementChild;
+        if (anchor) anchor.after(panel);
+        else settings.appendChild(panel);
 
-    renderFormFields82({});
-  }
+        renderFormFields82({});
+      }
 
-  function renderFormFields82(fields) {
-    const box = $82("#v82FieldRows");
-    if (!box) return;
+      function renderFormFields82(fields) {
+        const box = $82("#v82FieldRows");
+        if (!box) return;
 
-    const keys = Object.keys(FIELD_LABELS_82);
-    box.innerHTML = keys.map(key => {
-      const f = fields?.[key] || { enabled:true, required:false };
-      const disabled = !f.enabled;
-      return `
+        const keys = Object.keys(FIELD_LABELS_82);
+        box.innerHTML = keys.map(key => {
+          const f = fields?.[key] || { enabled: true, required: false };
+          const disabled = !f.enabled;
+          return `
         <div data-v82-field="${key}"
           style="display:grid;grid-template-columns:1fr 110px 110px;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#e5e9e7)">
           <div>
@@ -1056,159 +2192,159 @@ if ($v81("#refresh")) {
           </label>
         </div>
       `;
-    }).join("");
+        }).join("");
 
-    $$82("[data-v82-enabled]").forEach(cb => {
-      cb.addEventListener("change", () => {
-        const row = cb.closest("[data-v82-field]");
-        const required = $82("[data-v82-required]", row);
-        if (required) required.disabled = !cb.checked;
-        if (!cb.checked && required) required.checked = false;
-      });
-    });
-  }
-
-  function collectFormFields82() {
-    const out = {};
-    $$82("[data-v82-field]").forEach(row => {
-      const key = row.dataset.v82Field;
-      const enabled = !!$82("[data-v82-enabled]", row)?.checked;
-      const required = enabled && !!$82("[data-v82-required]", row)?.checked;
-      out[key] = { enabled, required };
-    });
-    return out;
-  }
-
-  async function loadFormSettings82() {
-    ensureFormPanel82();
-
-    try {
-      const data = await api82("/api/admin/settings");
-      const enabled = data?.form_enabled !== false;
-      const fields = data?.form_fields || data?.formFields || {};
-
-      renderFormFields82(fields);
-
-      const status = $82("#v82FormStatus");
-      const toggle = $82("#v82FormToggle");
-
-      if (status) {
-        status.textContent = enabled
-          ? "Enabled / 已开启"
-          : "Disabled / 已关闭";
+        $$82("[data-v82-enabled]").forEach(cb => {
+          cb.addEventListener("change", () => {
+            const row = cb.closest("[data-v82-field]");
+            const required = $82("[data-v82-required]", row);
+            if (required) required.disabled = !cb.checked;
+            if (!cb.checked && required) required.checked = false;
+          });
+        });
       }
 
-      if (toggle) {
-        toggle.textContent = enabled
-          ? "Disable form / 关闭表单"
-          : "Enable form / 开启表单";
-        toggle.dataset.enabled = String(enabled);
-      }
-    } catch (err) {
-      console.error(err);
-      const status = $82("#v82FormStatus");
-      if (status) status.textContent = "API error / API 错误";
-      toast82(err.message || "Form settings failed");
-    }
-  }
-
-  async function saveFormSettings82() {
-    const toggle = $82("#v82FormToggle");
-    const enabled = toggle?.dataset.enabled !== "false";
-    const fields = collectFormFields82();
-
-    try {
-      if (toggle) toggle.disabled = true;
-      const saved = await api82("/api/admin/settings", {
-        method: "POST",
-        headers: {"content-type":"application/json"},
-        body: JSON.stringify({
-          form_enabled: enabled,
-          form_fields: fields
-        })
-      });
-
-      const config = saved?.config || saved;
-      const actual = config?.form_enabled !== false;
-      if (toggle) {
-        toggle.dataset.enabled = String(actual);
-        toggle.textContent = actual
-          ? "Disable form / 关闭表单"
-          : "Enable form / 开启表单";
+      function collectFormFields82() {
+        const out = {};
+        $$82("[data-v82-field]").forEach(row => {
+          const key = row.dataset.v82Field;
+          const enabled = !!$82("[data-v82-enabled]", row)?.checked;
+          const required = enabled && !!$82("[data-v82-required]", row)?.checked;
+          out[key] = { enabled, required };
+        });
+        return out;
       }
 
-      const status = $82("#v82FormStatus");
-      if (status) status.textContent = actual
-        ? "Enabled / 已开启"
-        : "Disabled / 已关闭";
+      async function loadFormSettings82() {
+        ensureFormPanel82();
 
-      toast82("Form settings saved / 表单设置已保存");
+        try {
+          const data = await api82("/api/admin/settings");
+          const enabled = data?.form_enabled !== false;
+          const fields = data?.form_fields || data?.formFields || {};
 
-      if (typeof load === "function") await load();
-    } catch (err) {
-      console.error(err);
-      toast82(err.message || "Save failed / 保存失败");
-    } finally {
-      if (toggle) toggle.disabled = false;
-    }
-  }
+          renderFormFields82(fields);
 
-  async function toggleForm82() {
-    const toggle = $82("#v82FormToggle");
-    if (!toggle) return;
+          const status = $82("#v82FormStatus");
+          const toggle = $82("#v82FormToggle");
 
-    const current = toggle.dataset.enabled === "true";
-    const fields = collectFormFields82();
+          if (status) {
+            status.textContent = enabled
+              ? "Enabled / 已开启"
+              : "Disabled / 已关闭";
+          }
 
-    try {
-      toggle.disabled = true;
+          if (toggle) {
+            toggle.textContent = enabled
+              ? "Disable form / 关闭表单"
+              : "Enable form / 开启表单";
+            toggle.dataset.enabled = String(enabled);
+          }
+        } catch (err) {
+          console.error(err);
+          const status = $82("#v82FormStatus");
+          if (status) status.textContent = "API error / API 错误";
+          toast82(err.message || "Form settings failed");
+        }
+      }
 
-      const saved = await api82("/api/admin/settings", {
-        method: "POST",
-        headers: {"content-type":"application/json"},
-        body: JSON.stringify({
-          form_enabled: !current,
-          form_fields: fields
-        })
-      });
+      async function saveFormSettings82() {
+        const toggle = $82("#v82FormToggle");
+        const enabled = toggle?.dataset.enabled !== "false";
+        const fields = collectFormFields82();
 
-      const config = saved?.config || saved;
-      const actual = config?.form_enabled !== false;
+        try {
+          if (toggle) toggle.disabled = true;
+          const saved = await api82("/api/admin/settings", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              form_enabled: enabled,
+              form_fields: fields
+            })
+          });
 
-      toggle.dataset.enabled = String(actual);
-      toggle.textContent = actual
-        ? "Disable form / 关闭表单"
-        : "Enable form / 开启表单";
+          const config = saved?.config || saved;
+          const actual = config?.form_enabled !== false;
+          if (toggle) {
+            toggle.dataset.enabled = String(actual);
+            toggle.textContent = actual
+              ? "Disable form / 关闭表单"
+              : "Enable form / 开启表单";
+          }
 
-      const status = $82("#v82FormStatus");
-      if (status) status.textContent = actual
-        ? "Enabled / 已开启"
-        : "Disabled / 已关闭";
+          const status = $82("#v82FormStatus");
+          if (status) status.textContent = actual
+            ? "Enabled / 已开启"
+            : "Disabled / 已关闭";
 
-      toast82(
-        actual
-          ? "Form enabled / 表单已开启"
-          : "Form disabled / 表单已关闭"
-      );
+          toast82("Form settings saved / 表单设置已保存");
 
-      if (typeof load === "function") await load();
-    } catch (err) {
-      console.error(err);
-      toast82(err.message || "Toggle failed / 操作失败");
-    } finally {
-      toggle.disabled = false;
-    }
-  }
+          if (typeof load === "function") await load();
+        } catch (err) {
+          console.error(err);
+          toast82(err.message || "Save failed / 保存失败");
+        } finally {
+          if (toggle) toggle.disabled = false;
+        }
+      }
 
-  function ensureLeadControls82() {
-    const leads = $82("#leads");
-    if (!leads || $82("#v82LeadControls")) return;
+      async function toggleForm82() {
+        const toggle = $82("#v82FormToggle");
+        if (!toggle) return;
 
-    const controls = document.createElement("div");
-    controls.id = "v82LeadControls";
-    controls.className = "card";
-    controls.style.marginBottom = "16px";
-    controls.innerHTML = `
+        const current = toggle.dataset.enabled === "true";
+        const fields = collectFormFields82();
+
+        try {
+          toggle.disabled = true;
+
+          const saved = await api82("/api/admin/settings", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              form_enabled: !current,
+              form_fields: fields
+            })
+          });
+
+          const config = saved?.config || saved;
+          const actual = config?.form_enabled !== false;
+
+          toggle.dataset.enabled = String(actual);
+          toggle.textContent = actual
+            ? "Disable form / 关闭表单"
+            : "Enable form / 开启表单";
+
+          const status = $82("#v82FormStatus");
+          if (status) status.textContent = actual
+            ? "Enabled / 已开启"
+            : "Disabled / 已关闭";
+
+          toast82(
+            actual
+              ? "Form enabled / 表单已开启"
+              : "Form disabled / 表单已关闭"
+          );
+
+          if (typeof load === "function") await load();
+        } catch (err) {
+          console.error(err);
+          toast82(err.message || "Toggle failed / 操作失败");
+        } finally {
+          toggle.disabled = false;
+        }
+      }
+
+      function ensureLeadControls82() {
+        const leads = $82("#leads");
+        if (!leads || $82("#v82LeadControls")) return;
+
+        const controls = document.createElement("div");
+        controls.id = "v82LeadControls";
+        controls.className = "card";
+        controls.style.marginBottom = "16px";
+        controls.innerHTML = `
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <input id="v82LeadSearch"
           placeholder="Search name, WhatsApp, email, company / 搜索"
@@ -1227,63 +2363,63 @@ if ($v81("#refresh")) {
       </div>
     `;
 
-    const first = leads.querySelector(".notice,.sectionhead,.card");
-    if (first) first.before(controls);
-    else leads.prepend(controls);
+        const first = leads.querySelector(".notice,.sectionhead,.card");
+        if (first) first.before(controls);
+        else leads.prepend(controls);
 
-    $82("#v82LeadSearch").addEventListener("input", renderLeads82);
-    $82("#v82LeadStatusFilter").addEventListener("change", renderLeads82);
-    $82("#v82LeadRefresh").addEventListener("click", loadLeads82);
-  }
-
-  function leadValue82(lead, keys) {
-    for (const key of keys) {
-      if (lead?.[key] !== undefined && lead?.[key] !== null && String(lead[key]).trim() !== "") {
-        return lead[key];
+        $82("#v82LeadSearch").addEventListener("input", renderLeads82);
+        $82("#v82LeadStatusFilter").addEventListener("change", renderLeads82);
+        $82("#v82LeadRefresh").addEventListener("click", loadLeads82);
       }
-    }
-    return "";
-  }
 
-  function renderLeads82() {
-    const rows = $82("#leadRows");
-    if (!rows) return;
+      function leadValue82(lead, keys) {
+        for (const key of keys) {
+          if (lead?.[key] !== undefined && lead?.[key] !== null && String(lead[key]).trim() !== "") {
+            return lead[key];
+          }
+        }
+        return "";
+      }
 
-    const search = String($82("#v82LeadSearch")?.value || "").trim().toLowerCase();
-    const status = String($82("#v82LeadStatusFilter")?.value || "");
+      function renderLeads82() {
+        const rows = $82("#leadRows");
+        if (!rows) return;
 
-    const filtered = (Array.isArray(state.leads) ? state.leads : []).filter(lead => {
-      const currentStatus = String(lead.status || "new").toLowerCase();
-      if (status && currentStatus !== status) return false;
-      if (!search) return true;
+        const search = String($82("#v82LeadSearch")?.value || "").trim().toLowerCase();
+        const status = String($82("#v82LeadStatusFilter")?.value || "");
 
-      const haystack = [
-        lead.name,
-        lead.full_name,
-        lead.phone,
-        lead.whatsapp,
-        lead.email,
-        lead.company,
-        lead.country,
-        lead.message,
-        lead.campaign,
-        lead.utm_campaign,
-        lead.source,
-        lead.utm_source
-      ].map(x => String(x || "").toLowerCase()).join(" ");
+        const filtered = (Array.isArray(state.leads) ? state.leads : []).filter(lead => {
+          const currentStatus = String(lead.status || "new").toLowerCase();
+          if (status && currentStatus !== status) return false;
+          if (!search) return true;
 
-      return haystack.includes(search);
-    });
+          const haystack = [
+            lead.name,
+            lead.full_name,
+            lead.phone,
+            lead.whatsapp,
+            lead.email,
+            lead.company,
+            lead.country,
+            lead.message,
+            lead.campaign,
+            lead.utm_campaign,
+            lead.source,
+            lead.utm_source
+          ].map(x => String(x || "").toLowerCase()).join(" ");
 
-    rows.innerHTML = filtered.map((x, i) => {
-      const realIndex = state.leads.indexOf(x);
-      const name = leadValue82(x, ["name","full_name"]);
-      const contact = leadValue82(x, ["whatsapp","phone","email","contact"]);
-      const campaign = leadValue82(x, ["campaign","utm_campaign"]);
-      const currentStatus = String(x.status || "new").toLowerCase();
-      const labels = STATUS_LABELS_82[currentStatus] || [currentStatus, currentStatus];
+          return haystack.includes(search);
+        });
 
-      return `
+        rows.innerHTML = filtered.map((x, i) => {
+          const realIndex = state.leads.indexOf(x);
+          const name = leadValue82(x, ["name", "full_name"]);
+          const contact = leadValue82(x, ["whatsapp", "phone", "email", "contact"]);
+          const campaign = leadValue82(x, ["campaign", "utm_campaign"]);
+          const currentStatus = String(x.status || "new").toLowerCase();
+          const labels = STATUS_LABELS_82[currentStatus] || [currentStatus, currentStatus];
+
+          return `
         <tr>
           <td>${esc82(time(x.created_at || x.createdAt))}</td>
           <td>${esc82(name || "—")}</td>
@@ -1298,57 +2434,57 @@ if ($v81("#refresh")) {
           </td>
         </tr>
       `;
-    }).join("") || '<tr><td colspan="6" class="empty">No matching leads / 没有匹配的询盘。</td></tr>';
+        }).join("") || '<tr><td colspan="6" class="empty">No matching leads / 没有匹配的询盘。</td></tr>';
 
-    const total = state.leads.length;
-    const statuses = state.leads.map(x => String(x.status || "new").toLowerCase());
-    if ($82("#leadTotal")) $82("#leadTotal").textContent = fmt(total);
-    if ($82("#leadNew")) $82("#leadNew").textContent = statuses.filter(x => x === "new").length;
-    if ($82("#leadContacted")) $82("#leadContacted").textContent = statuses.filter(x => x === "contacted").length;
-    if ($82("#leadWon")) $82("#leadWon").textContent = statuses.filter(x => x === "won").length;
-  }
+        const total = state.leads.length;
+        const statuses = state.leads.map(x => String(x.status || "new").toLowerCase());
+        if ($82("#leadTotal")) $82("#leadTotal").textContent = fmt(total);
+        if ($82("#leadNew")) $82("#leadNew").textContent = statuses.filter(x => x === "new").length;
+        if ($82("#leadContacted")) $82("#leadContacted").textContent = statuses.filter(x => x === "contacted").length;
+        if ($82("#leadWon")) $82("#leadWon").textContent = statuses.filter(x => x === "won").length;
+      }
 
-  async function loadLeads82() {
-    ensureLeadControls82();
+      async function loadLeads82() {
+        ensureLeadControls82();
 
-    const rows = $82("#leadRows");
-    if (rows) rows.innerHTML = '<tr><td colspan="6" class="empty">Loading… / 加载中…</td></tr>';
+        const rows = $82("#leadRows");
+        if (rows) rows.innerHTML = '<tr><td colspan="6" class="empty">Loading… / 加载中…</td></tr>';
 
-    try {
-      const data = await api82("/api/admin/leads?limit=500");
-      state.leads = Array.isArray(data)
-        ? data
-        : (data?.leads || data?.items || data?.data || []);
+        try {
+          const data = await api82("/api/admin/leads?limit=500");
+          state.leads = Array.isArray(data)
+            ? data
+            : (data?.leads || data?.items || data?.data || []);
 
-      renderLeads82();
-    } catch (err) {
-      console.error(err);
-      if (rows) rows.innerHTML =
-        '<tr><td colspan="6" class="empty">Lead API unavailable / 询盘 API 暂不可用。</td></tr>';
-      toast82(err.message || "Lead API unavailable");
-    }
-  }
+          renderLeads82();
+        } catch (err) {
+          console.error(err);
+          if (rows) rows.innerHTML =
+            '<tr><td colspan="6" class="empty">Lead API unavailable / 询盘 API 暂不可用。</td></tr>';
+          toast82(err.message || "Lead API unavailable");
+        }
+      }
 
-  function showLead82(index) {
-    const lead = state.leads[index];
-    if (!lead) return;
+      function showLead82(index) {
+        const lead = state.leads[index];
+        if (!lead) return;
 
-    const modal = $82("#leadModal");
-    const detail = $82("#leadDetail");
-    if (!modal || !detail) return;
+        const modal = $82("#leadModal");
+        const detail = $82("#leadDetail");
+        if (!modal || !detail) return;
 
-    const status = String(lead.status || "new").toLowerCase();
+        const status = String(lead.status || "new").toLowerCase();
 
-    detail.innerHTML = `
+        detail.innerHTML = `
       <div class="v82-lead-edit">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div>
             <label>Name / 姓名</label>
-            <div class="muted">${esc82(leadValue82(lead,["name","full_name"]) || "—")}</div>
+            <div class="muted">${esc82(leadValue82(lead, ["name", "full_name"]) || "—")}</div>
           </div>
           <div>
             <label>WhatsApp</label>
-            <div class="muted">${esc82(leadValue82(lead,["whatsapp","phone"]) || "—")}</div>
+            <div class="muted">${esc82(leadValue82(lead, ["whatsapp", "phone"]) || "—")}</div>
           </div>
           <div>
             <label>Email / 邮箱</label>
@@ -1372,10 +2508,10 @@ if ($v81("#refresh")) {
           <label>Status / 状态</label>
           <select id="v82LeadStatus" style="width:100%;padding:10px;margin-top:6px">
             ${Object.keys(STATUS_LABELS_82).map(s =>
-              `<option value="${s}" ${s === status ? "selected" : ""}>
+          `<option value="${s}" ${s === status ? "selected" : ""}>
                 ${esc82(STATUS_LABELS_82[s][0])} / ${esc82(STATUS_LABELS_82[s][1])}
               </option>`
-            ).join("")}
+        ).join("")}
           </select>
         </div>
 
@@ -1394,170 +2530,171 @@ if ($v81("#refresh")) {
       </div>
     `;
 
-    $82("#v82SaveLead").addEventListener("click", () => saveLead82(index));
-    modal.classList.add("open");
-  }
+        $82("#v82SaveLead").addEventListener("click", () => saveLead82(index));
+        modal.classList.add("open");
+      }
 
-  async function saveLead82(index) {
-    const lead = state.leads[index];
-    if (!lead) return;
+      async function saveLead82(index) {
+        const lead = state.leads[index];
+        if (!lead) return;
 
-    const status = $82("#v82LeadStatus")?.value || "new";
-    const notes = $82("#v82LeadNotes")?.value || "";
+        const status = $82("#v82LeadStatus")?.value || "new";
+        const notes = $82("#v82LeadNotes")?.value || "";
 
-    try {
-      const saved = await api82(
-        `/api/admin/leads/${encodeURIComponent(String(lead.id))}`,
-        {
-          method: "PATCH",
-          headers: {"content-type":"application/json"},
-          body: JSON.stringify({ status, notes })
+        try {
+          const saved = await api82(
+            `/api/admin/leads/${encodeURIComponent(String(lead.id))}`,
+            {
+              method: "PATCH",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ status, notes })
+            }
+          );
+
+          state.leads[index] = saved || { ...lead, status, notes };
+          renderLeads82();
+
+          toast82("Lead saved / 询盘已保存");
+          $82("#leadModal")?.classList.remove("open");
+        } catch (err) {
+          console.error(err);
+          toast82(err.message || "Lead save failed / 保存失败");
         }
-      );
+      }
 
-      state.leads[index] = saved || {...lead, status, notes};
-      renderLeads82();
+      /* Dynamic lead view buttons */
+      document.addEventListener("click", event => {
+        const button = event.target.closest("[data-v82-view-lead]");
+        if (!button) return;
+        showLead82(Number(button.dataset.v82ViewLead));
+      });
 
-      toast82("Lead saved / 询盘已保存");
-      $82("#leadModal")?.classList.remove("open");
-    } catch (err) {
-      console.error(err);
-      toast82(err.message || "Lead save failed / 保存失败");
-    }
-  }
+      /* Settings */
+      ensureFormPanel82();
+      $82("#v82FormToggle")?.addEventListener("click", toggleForm82);
+      $82("#v82SaveForm")?.addEventListener("click", saveFormSettings82);
 
-  /* Dynamic lead view buttons */
-  document.addEventListener("click", event => {
-    const button = event.target.closest("[data-v82-view-lead]");
-    if (!button) return;
-    showLead82(Number(button.dataset.v82ViewLead));
-  });
+      /* Override V8 lead loader safely. */
+      try { window.loadLeads = loadLeads82; } catch (_) { }
 
-  /* Settings */
-  ensureFormPanel82();
-  $82("#v82FormToggle")?.addEventListener("click", toggleForm82);
-  $82("#v82SaveForm")?.addEventListener("click", saveFormSettings82);
+      /* Load once now. */
+      loadFormSettings82();
+      loadLeads82();
 
-  /* Override V8 lead loader safely. */
-  try { window.loadLeads = loadLeads82; } catch (_) {}
+      /* Re-load when user opens the Leads/Settings pages. */
+      document.addEventListener("click", event => {
+        const link = event.target.closest("[data-page-link],.nav button[data-page]");
+        if (!link) return;
+        const page = link.dataset.pageLink || link.dataset.page;
+        if (page === "leads") setTimeout(loadLeads82, 50);
+        if (page === "settings") setTimeout(loadFormSettings82, 50);
+      });
 
-  /* Load once now. */
-  loadFormSettings82();
-  loadLeads82();
-
-  /* Re-load when user opens the Leads/Settings pages. */
-  document.addEventListener("click", event => {
-    const link = event.target.closest("[data-page-link],.nav button[data-page]");
-    if (!link) return;
-    const page = link.dataset.pageLink || link.dataset.page;
-    if (page === "leads") setTimeout(loadLeads82, 50);
-    if (page === "settings") setTimeout(loadFormSettings82, 50);
-  });
-
-})();
-</script>
-<!-- SULAN PUBLIC V8.2
+    })();
+  </script>
+  <!-- SULAN PUBLIC V8.2
      Public lead-form runtime control
      Paste this block BEFORE </body> in public/index.html.
      Do NOT remove the existing form/pixel code.
 -->
-<script>
-(function () {
-  "use strict";
+  <script>
+    (function () {
+      "use strict";
 
-  const FORM_SELECTOR_83 = "[data-lead-form],#leadForm";
+      const FORM_SELECTOR_83 = "[data-lead-form],#leadForm";
 
-  function applyConfig83(config) {
-    const forms = [...document.querySelectorAll(FORM_SELECTOR_83)];
-    if (!forms.length) return;
+      function applyConfig83(config) {
+        const forms = [...document.querySelectorAll(FORM_SELECTOR_83)];
+        if (!forms.length) return;
 
-    const enabled = config?.form_enabled !== false;
-    const fields = config?.form_fields || config?.formFields || {};
+        const enabled = config?.form_enabled !== false;
+        const fields = config?.form_fields || config?.formFields || {};
 
-    forms.forEach(form => {
-      if (!enabled) {
-        form.style.display = "none";
-        form.setAttribute("data-sulan-form-disabled", "true");
-        return;
-      }
-
-      if (form.getAttribute("data-sulan-form-disabled") === "true") {
-        form.style.display = "";
-        form.removeAttribute("data-sulan-form-disabled");
-      }
-
-      Object.keys(fields).forEach(name => {
-        const setting = fields[name];
-        if (!setting || typeof setting !== "object") return;
-
-        const controls = form.querySelectorAll(
-          `[name="${CSS.escape(name)}"],#${CSS.escape(name)}`
-        );
-
-        controls.forEach(control => {
-          const wrapper =
-            control.closest(".field,.form-field,.form-group,.input-group,label") ||
-            control.parentElement;
-
-          if (setting.enabled === false) {
-            if (wrapper) wrapper.style.display = "none";
-            control.disabled = true;
-            control.removeAttribute("required");
-            control.setAttribute("data-sulan-field-disabled", "true");
-          } else {
-            if (control.getAttribute("data-sulan-field-disabled") === "true") {
-              control.disabled = false;
-              control.removeAttribute("data-sulan-field-disabled");
-            }
-            if (wrapper && wrapper.style.display === "none") wrapper.style.display = "";
-            if (setting.required === true) control.required = true;
-            else control.removeAttribute("required");
+        forms.forEach(form => {
+          if (!enabled) {
+            form.style.display = "none";
+            form.setAttribute("data-sulan-form-disabled", "true");
+            return;
           }
+
+          if (form.getAttribute("data-sulan-form-disabled") === "true") {
+            form.style.display = "";
+            form.removeAttribute("data-sulan-form-disabled");
+          }
+
+          Object.keys(fields).forEach(name => {
+            const setting = fields[name];
+            if (!setting || typeof setting !== "object") return;
+
+            const controls = form.querySelectorAll(
+              `[name="${CSS.escape(name)}"],#${CSS.escape(name)}`
+            );
+
+            controls.forEach(control => {
+              const wrapper =
+                control.closest(".field,.form-field,.form-group,.input-group,label") ||
+                control.parentElement;
+
+              if (setting.enabled === false) {
+                if (wrapper) wrapper.style.display = "none";
+                control.disabled = true;
+                control.removeAttribute("required");
+                control.setAttribute("data-sulan-field-disabled", "true");
+              } else {
+                if (control.getAttribute("data-sulan-field-disabled") === "true") {
+                  control.disabled = false;
+                  control.removeAttribute("data-sulan-field-disabled");
+                }
+                if (wrapper && wrapper.style.display === "none") wrapper.style.display = "";
+                if (setting.required === true) control.required = true;
+                else control.removeAttribute("required");
+              }
+            });
+          });
         });
-      });
-    });
-  }
+      }
 
-  async function boot83() {
-    try {
-      const response = await fetch("/api/public/config", {
-        method: "GET",
-        cache: "no-store"
-      });
+      async function boot83() {
+        try {
+          const response = await fetch("/api/public/config", {
+            method: "GET",
+            cache: "no-store"
+          });
 
-      if (!response.ok) return;
+          if (!response.ok) return;
 
-      const config = await response.json();
-      applyConfig83(config);
+          const config = await response.json();
+          applyConfig83(config);
 
-      /* Protect against forms injected after initial page load. */
-      const observer = new MutationObserver(() => applyConfig83(config));
-      observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true
-      });
+          /* Protect against forms injected after initial page load. */
+          const observer = new MutationObserver(() => applyConfig83(config));
+          observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+          });
 
-      /* Keep the server-side form switch authoritative. */
-      document.addEventListener("submit", event => {
-        const form = event.target;
-        if (!form || !form.matches || !form.matches(FORM_SELECTOR_83)) return;
+          /* Keep the server-side form switch authoritative. */
+          document.addEventListener("submit", event => {
+            const form = event.target;
+            if (!form || !form.matches || !form.matches(FORM_SELECTOR_83)) return;
 
-        if (config.form_enabled === false) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          alert("The inquiry form is currently disabled.");
-        }
-      }, true);
-    } catch (_) {}
-  }
+            if (config.form_enabled === false) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              alert("The inquiry form is currently disabled.");
+            }
+          }, true);
+        } catch (_) { }
+      }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot83, {once:true});
-  } else {
-    boot83();
-  }
-})();
-</script>
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot83, { once: true });
+      } else {
+        boot83();
+      }
+    })();
+  </script>
 
 </body>
+
 </html>
