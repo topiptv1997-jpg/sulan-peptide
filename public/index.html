@@ -993,7 +993,8 @@
     <div class="container">
       <div class="toplinks"><span>✦ HIGH PURITY PEPTIDES</span><span>|</span><span>RELIABLE
           QUALITY</span><span>|</span><span>GLOBAL SUPPLY</span></div>
-      <div>info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp</div>
+      <!-- <div>info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp</div> -->
+      <div id="topbar-contact">info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp</div>
     </div>
   </div>
 
@@ -1438,6 +1439,19 @@
           }
 
           const cfg = await r.json();
+
+          // ============ 更新顶部栏 WhatsApp 号码 ============
+          const whatsappNumbers = cfg.whatsapp || [];
+          const activeNumber = whatsappNumbers.find(w => w.active === true);
+          const topbarContact = document.getElementById('topbar-contact');
+          if (topbarContact && activeNumber) {
+            topbarContact.innerHTML = 'info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp ' + activeNumber.id;
+          } else if (topbarContact) {
+            topbarContact.innerHTML = 'info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp';
+          }
+
+          // ============ 原有的表单逻辑保持不变 ============    
+
 
 
           /*
