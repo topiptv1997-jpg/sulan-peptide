@@ -7,9 +7,9 @@ directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/admin*", "/api/*", "/go/*"]
 
-[[kv_namespaces]]
-binding = "ADMIN_KV"
-id = "3f028eee62c44e3584e798a6db40b0dd"
+# [[kv_namespaces]]
+# binding = "ADMIN_KV"
+# id = "3f028eee62c44e3584e798a6db40b0dd"
 
 [[kv_namespaces]]
 binding = "CONFIG_KV"
