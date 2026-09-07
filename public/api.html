@@ -1,18 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>配置查看器</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置查看器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        #app {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* 加载状态提示 */
+        .loading-tip {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        .loading-tip .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e8e8e8;
+            border-top: 4px solid #1967d2;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  <div id="app"></div>
-  
-  <script type="module">
-    import api from './api.js';
-    window.api = api;
-    
-    await api.fetchConfig();
-    api.render('#app');
-  </script>
+    <div id="app">
+        <div class="loading-tip">
+            <div class="spinner"></div>
+            <div>正在加载配置数据...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入 api 模块
+        import api from './api.js';
+        
+        // 暴露到全局 window 对象，方便控制台调试
+        window.api = api;
+        
+        // 自动加载配置并渲染
+        try {
+            await api.fetchConfig();
+            api.render('#app');
+            console.log('✅ 配置查看器已启动');
+            console.log('💡 在控制台输入 api 可查看所有可用命令');
+        } catch (error) {
+            console.error('❌ 启动失败:', error);
+            document.getElementById('app').innerHTML = `
+                <div style="padding:40px;text-align:center;color:#d32f2f;background:#ffebee;border-radius:8px;">
+                    <h3>❌ 加载失败</h3>
+                    <p style="margin:12px 0;">${error.message}</p>
+                    <button onclick="window.api?.fetchConfig?.().then(() => window.api?.render())" 
+                            style="padding:8px 24px;cursor:pointer;background:#1976d2;color:white;border:none;border-radius:4px;font-size:14px;">
+                        🔄 重试
+                    </button>
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>
