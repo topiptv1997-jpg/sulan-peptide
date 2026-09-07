@@ -43,21 +43,52 @@
     });
   }
 
-  async function initMeta(ids) {
-    if (!ids.length) return;
-    window.fbq = window.fbq || function() {
-      window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments);
-    };
-    if (!window.fbq.loaded) {
-      window.fbq.loaded = true;
-      window.fbq.queue = [];
-      window.fbq.version = "2.0";
-      await loadScript("https://connect.facebook.net/en_US/fbevents.js");
-    }
-    ids.forEach(p => window.fbq("init", p.id));
-    ids.filter(p => p.events.includes("PageView")).forEach(() => window.fbq("track", "PageView"));
-    state.metaReady = true;
+async function initMeta(ids) {
+  if (!ids.length) return;
+  
+  // 输出要初始化的 Meta 像素信息
+  console.log('[Meta] 准备初始化 ' + ids.length + ' 个像素:');
+  ids.forEach((p, i) => {
+    console.log('  [' + (i + 1) + '] ID: ' + p.id + ', Name: ' + (p.name || '未命名') + ', Enabled: ' + p.enabled + ', Events: ' + (p.events || []).join(', '));
+  });
+  
+  // 过滤出 enabled 的像素
+  const enabledIds = ids.filter(p => p.enabled !== false);
+  if (enabledIds.length === 0) {
+    console.log('[Meta] 没有启用的像素，跳过初始化');
+    return;
   }
+  
+  console.log('[Meta] 实际启用的像素: ' + enabledIds.length + ' 个');
+  
+  window.fbq = window.fbq || function() {
+    window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments);
+  };
+  if (!window.fbq.loaded) {
+    window.fbq.loaded = true;
+    window.fbq.queue = [];
+    window.fbq.version = "2.0";
+    await loadScript("https://connect.facebook.net/en_US/fbevents.js");
+  }
+  
+  // 初始化每个像素
+  enabledIds.forEach(p => {
+    console.log('[Meta] 初始化像素: ' + p.id + ' (' + (p.name || '未命名') + ')');
+    window.fbq("init", p.id);
+  });
+  
+  // 检查是否需要发送 PageView
+  const hasPageView = enabledIds.some(p => p.events && p.events.includes('pageview'));
+  if (hasPageView) {
+    console.log('[Meta] 发送 PageView 事件');
+    window.fbq("track", "PageView");
+  } else {
+    console.log('[Meta] 没有像素配置 pageview 事件，跳过 PageView');
+  }
+  
+  state.metaReady = true;
+  console.log('[Meta] 初始化完成，共 ' + enabledIds.length + ' 个像素已加载');
+}
 
   async function initTikTok(ids) {
     if (!ids.length) return;
