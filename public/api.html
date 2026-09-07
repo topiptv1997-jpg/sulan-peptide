@@ -3,73 +3,485 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>配置查看器</title>
+    <title>Sulan 数据查看器</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #f0f2f5;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
         }
         #app {
-            max-width: 960px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        .loading-tip {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-            font-size: 14px;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .loading-tip .spinner {
+        .header .title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .header .status {
+            font-size: 13px;
+            color: #666;
+        }
+        .header .status .ok { color: #1e7e34; }
+        .header .status .err { color: #d93025; }
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            padding: 8px 16px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.15s;
+        }
+        .toolbar button:hover { background: #f1f3f4; }
+        .toolbar button.primary {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+        .toolbar button.primary:hover { background: #1557b0; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 14px 16px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .stat-card .label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .stat-card .number.green { color: #1e7e34; }
+        .stat-card .number.red { color: #d93025; }
+        .stat-card .number.purple { color: #7c3aed; }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .section .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section .section-title .count {
+            font-size: 12px;
+            font-weight: 400;
+            color: #666;
+        }
+        .raw-data {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+            font-size: 12px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            max-height: 400px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .loading .spinner {
             display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e8e8e8;
-            border-top: 4px solid #1967d2;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e8e8e8;
+            border-top: 3px solid #1a73e8;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        .error-box {
+            padding: 20px;
+            color: #d32f2f;
+            background: #ffebee;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .tabs button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .tabs button.active {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .pixel-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .pixel-item:last-child { border-bottom: none; }
+        .pixel-item .id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+        .pixel-item .tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .pixel-item .tag.meta { background: #e8f0fe; color: #1967d2; }
+        .pixel-item .tag.tiktok { background: #fce8e6; color: #d93025; }
+        .pixel-item .tag.on { background: #e6f4ea; color: #1e7e34; }
+        .pixel-item .tag.off { background: #fce8e6; color: #d93025; }
+        .pixel-item .events {
+            font-size: 12px;
+            color: #555;
+        }
+        .pixel-item .events .ev {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 0 8px;
+            border-radius: 8px;
+            margin-right: 4px;
+            font-size: 11px;
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <div class="loading-tip">
+        <div class="loading">
             <div class="spinner"></div>
-            <div>正在加载配置数据...</div>
+            <div>正在加载数据...</div>
         </div>
     </div>
 
     <script type="module">
         import api from './api.js';
         window.api = api;
-        
+
+        const app = document.getElementById('app');
+
+        // ============ 渲染函数 ============
+
+        function renderStats() {
+            const stats = api.getDataStats();
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number ${stats.config === '✅' ? 'green' : 'red'}">${stats.config}</div>
+                        <div class="label">Config</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number ${stats.stats === '✅' ? 'green' : 'red'}">${stats.stats}</div>
+                        <div class="label">Stats</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${stats.events}</div>
+                        <div class="label">Events</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${stats.leads}</div>
+                        <div class="label">Leads</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${stats.whatsapp}</div>
+                        <div class="label">WhatsApp</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${stats.pixels.meta + stats.pixels.tiktok}</div>
+                        <div class="label">Pixels (M:${stats.pixels.metaEnabled}/${stats.pixels.meta} T:${stats.pixels.tiktokEnabled}/${stats.pixels.tiktok})</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPixels() {
+            const meta = api.getMetaPixels();
+            const tiktok = api.getTikTokPixels();
+
+            let html = '';
+
+            if (meta.length) {
+                html += `<div style="margin-bottom:12px;"><b>📘 Meta Pixels (${meta.length})</b></div>`;
+                meta.forEach((p, i) => {
+                    html += `
+                        <div class="pixel-item">
+                            <div>
+                                <span>${p.name || p.id || 'Pixel ' + (i+1)}</span>
+                                <span class="id">${p.pixel_id || p.id || '-'}</span>
+                            </div>
+                            <div>
+                                <span class="tag ${p.enabled !== false ? 'on' : 'off'}">${p.enabled !== false ? '●启用' : '●禁用'}</span>
+                                <span class="tag meta">Meta</span>
+                                ${p.events ? `<span class="events">${p.events.map(e => `<span class="ev">${e}</span>`).join('')}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (tiktok.length) {
+                html += `<div style="margin:12px 0 8px;"><b>📙 TikTok Pixels (${tiktok.length})</b></div>`;
+                tiktok.forEach((p, i) => {
+                    html += `
+                        <div class="pixel-item">
+                            <div>
+                                <span>${p.name || p.id || 'Pixel ' + (i+1)}</span>
+                                <span class="id">${p.pixel_id || p.id || '-'}</span>
+                            </div>
+                            <div>
+                                <span class="tag ${p.enabled !== false ? 'on' : 'off'}">${p.enabled !== false ? '●启用' : '●禁用'}</span>
+                                <span class="tag tiktok">TikTok</span>
+                                ${p.events ? `<span class="events">${p.events.map(e => `<span class="ev">${e}</span>`).join('')}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (!meta.length && !tiktok.length) {
+                html = '<div style="color:#999;padding:12px;">暂无像素配置</div>';
+            }
+
+            return html;
+        }
+
+        function renderRawData(label, data) {
+            if (!data) return '<div style="color:#999;padding:8px;">暂无数据</div>';
+            return `<div class="raw-data">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        function render() {
+            const state = api.getState();
+            const stats = api.getDataStats();
+
+            let errorHtml = '';
+            if (state.error) {
+                errorHtml = `
+                    <div class="error-box">
+                        ❌ ${state.error}
+                        <br><br>
+                        <button onclick="location.reload()" style="padding:8px 20px;cursor:pointer;background:#1a73e8;color:white;border:none;border-radius:4px;">重试</button>
+                    </div>
+                `;
+            }
+
+            if (state.loading) {
+                app.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>正在加载数据...</div>
+                    </div>
+                `;
+                return;
+            }
+
+            app.innerHTML = `
+                <div class="header">
+                    <div>
+                        <span class="title">📊 Sulan 数据查看器</span>
+                        <span style="font-size:12px;color:#999;margin-left:12px;">
+                            ${state.lastUpdate ? '🕐 ' + state.lastUpdate : ''}
+                        </span>
+                    </div>
+                    <div class="toolbar">
+                        <button class="primary" onclick="window.refreshAll()">🔄 刷新所有</button>
+                        <button onclick="window.api.printAll()">📋 打印到控制台</button>
+                    </div>
+                </div>
+
+                ${errorHtml}
+
+                ${!state.error ? `
+                    ${renderStats()}
+
+                    <div class="tabs">
+                        <button class="active" data-tab="config">⚙️ Config</button>
+                        <button data-tab="pixels">🖼️ Pixels</button>
+                        <button data-tab="events">📋 Events (${state.events.length})</button>
+                        <button data-tab="leads">📝 Leads (${state.leads.length})</button>
+                        <button data-tab="whatsapp">📱 WhatsApp (${state.whatsapp.length})</button>
+                        <button data-tab="stats">📈 Stats</button>
+                        <button data-tab="settings">🔧 Settings</button>
+                        <button data-tab="public">🌐 Public</button>
+                    </div>
+
+                    <div id="tab-config" class="tab-content active">
+                        <div class="section">
+                            <div class="section-title">完整配置数据</div>
+                            ${renderRawData('config', state.config)}
+                        </div>
+                    </div>
+
+                    <div id="tab-pixels" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">像素配置</div>
+                            ${renderPixels()}
+                            <div style="margin-top:12px;">
+                                <div style="font-size:13px;font-weight:600;margin-bottom:8px;">原始数据</div>
+                                ${renderRawData('pixels', state.pixels)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-events" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">事件列表 (${state.events.length})</div>
+                            ${renderRawData('events', state.events)}
+                        </div>
+                    </div>
+
+                    <div id="tab-leads" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">询盘列表 (${state.leads.length})</div>
+                            ${renderRawData('leads', state.leads)}
+                        </div>
+                    </div>
+
+                    <div id="tab-whatsapp" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">WhatsApp 配置 (${state.whatsapp.length})</div>
+                            ${renderRawData('whatsapp', state.whatsapp)}
+                        </div>
+                    </div>
+
+                    <div id="tab-stats" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">统计数据</div>
+                            ${renderRawData('stats', state.stats)}
+                        </div>
+                    </div>
+
+                    <div id="tab-settings" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">系统设置</div>
+                            ${renderRawData('settings', state.settings)}
+                        </div>
+                    </div>
+
+                    <div id="tab-public" class="tab-content">
+                        <div class="section">
+                            <div class="section-title">公共配置 (公开接口)</div>
+                            ${renderRawData('publicConfig', state.publicConfig)}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            // Tabs
+            document.querySelectorAll('.tabs button').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                    const target = document.getElementById('tab-' + btn.dataset.tab);
+                    if (target) target.classList.add('active');
+                };
+            });
+        }
+
+        // ============ 刷新函数 ============
+        window.refreshAll = async function() {
+            app.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>正在刷新数据...</div>
+                </div>
+            `;
+
+            try {
+                await api.fetchAll();
+                render();
+                console.log('✅ 刷新完成');
+            } catch (error) {
+                console.error('❌ 刷新失败:', error);
+                render();
+            }
+        };
+
+        // ============ 启动 ============
         try {
-            await api.fetchConfig();
-            api.render('#app');
-            console.log('✅ 配置查看器已启动');
-            console.log('💡 使用命令: api.getState(), api.getConfig(), api.getAttribution() 等');
+            await api.fetchAll();
+            render();
+            console.log('✅ Sulan 数据查看器已启动');
+            console.log('💡 可用命令:');
+            console.log('  api.getState()      - 查看所有状态');
+            console.log('  api.getConfig()     - 查看配置');
+            console.log('  api.getEvents()     - 查看事件');
+            console.log('  api.getLeads()      - 查看询盘');
+            console.log('  api.getMetaPixels() - 查看 Meta 像素');
+            console.log('  api.getTikTokPixels()- 查看 TikTok 像素');
+            console.log('  api.printAll()      - 打印所有数据到控制台');
+            console.log('  window.refreshAll() - 刷新数据');
         } catch (error) {
             console.error('❌ 启动失败:', error);
-            document.getElementById('app').innerHTML = `
-                <div style="padding:40px;text-align:center;color:#d32f2f;background:#ffebee;border-radius:8px;">
-                    <h3>❌ 加载失败</h3>
-                    <p style="margin:12px 0;font-size:14px;">${error.message}</p>
-                    <p style="font-size:12px;color:#999;">请确保 /api/config 接口可访问</p>
-                    <br>
-                    <button onclick="window.api?.fetchConfig?.().then(() => window.api?.render())" 
-                            style="padding:8px 24px;cursor:pointer;background:#1976d2;color:white;border:none;border-radius:4px;font-size:14px;">
-                        🔄 重试
-                    </button>
+            app.innerHTML = `
+                <div class="error-box">
+                    ❌ 启动失败: ${error.message}
+                    <br><br>
+                    <button onclick="location.reload()" style="padding:8px 20px;cursor:pointer;background:#1a73e8;color:white;border:none;border-radius:4px;">重试</button>
                 </div>
             `;
         }
