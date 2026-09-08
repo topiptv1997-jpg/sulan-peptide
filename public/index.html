@@ -1555,7 +1555,7 @@
             // 1. 按钮变为"正在提交..."状态
             // ========================================
             const originalText = btn.textContent;
-            btn.textContent = '⏳ 正在提交...';
+            btn.textContent = 'Saving....';
             btn.style.background = '#1a3a5c';
             btn.disabled = true;
 
@@ -1574,17 +1574,18 @@
             // ========================================
             // 3. 10秒倒计时，然后显示"✅ 已发送"
             // ========================================
-            let countdown = 10;
-            btn.textContent = `⏳ 正在提交... (${countdown}s)`;
+            
+          let countdown = Math.floor(Math.random() * 4) + 2; 
+            btn.textContent = `Saving...`;
 
             const timer = setInterval(() => {
                 countdown--;
                 if (countdown > 0) {
-                    btn.textContent = `⏳ 正在提交... (${countdown}s)`;
+                    btn.textContent = `Saving...`;
                 } else {
                     clearInterval(timer);
                     // 显示成功状态
-                    btn.textContent = '✅ 已发送';
+                    btn.textContent = 'Success';
                     btn.style.background = '#1f8b4c';
                     btn.disabled = false;
 
@@ -1592,7 +1593,7 @@
                     setTimeout(() => {
                         btn.textContent = originalText;
                         btn.style.background = '#087451';
-                    }, 5000);
+                    }, 1500);
                 }
             }, 1000);
         });
