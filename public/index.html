@@ -1537,8 +1537,7 @@
             }
 
             form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
+                e.preventDefault();                
                 const btn = this.querySelector('.btn-send');
                 const originalText = btn.textContent;
                 btn.textContent = '⏳ Sending...';
@@ -1588,7 +1587,7 @@
             if (enabled === true) {
                 inquiryEl.classList.remove('hidden');
                 console.log('✅ 表单已显示 (form_enabled = true)');
-                setupFormSubmit();
+                // setupFormSubmit();
             } else {
                 inquiryEl.classList.add('hidden');
                 console.log('🔒 表单已隐藏 (form_enabled = false)');
