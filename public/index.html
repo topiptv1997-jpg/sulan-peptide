@@ -9,6 +9,7 @@
   <title>Sulan Peptide | Research Peptides for B2B Buyers</title>
   <link rel="icon" type="image/png" sizes="48x48" href="https://sulanpeptide.net//favicon-48x48.png">
 
+
   <style>
     :root {
       --green: #00583f;
@@ -1514,7 +1515,7 @@
         // ========================================
         async function getFormEnabledFromAPI() {
             try {
-                const response = await fetch('/api/config');
+                const response = await fetch('/api/public/config');
                 const data = await response.json();
                 return data.form_enabled === true;
             } catch (error) {
@@ -1537,7 +1538,7 @@
             const enabled = getFormEnabledFromAPI();
             
             console.log('📋 form_enabled 值:', enabled);
-            console.log('📋 APP_CONFIG:', window.APP_CONFIG);
+            // console.log('📋 APP_CONFIG:', window.APP_CONFIG);
 
             // 根据 enabled 显示或隐藏
             if (enabled === true) {
