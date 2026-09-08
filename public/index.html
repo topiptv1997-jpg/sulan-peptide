@@ -1569,12 +1569,12 @@
         async function initQuickInquiry() {
             console.log('🔄 开始初始化...');
             
-            const inquiryEl = document.getElementById('quickInquiry');
-            if (!inquiryEl) {
-                console.error('❌ 未找到 #quickInquiry 元素');
-                return;
-            }
-            console.log('✅ 找到 #quickInquiry 元素');
+            // const inquiryEl = document.getElementById('quickInquiry');
+            // if (!inquiryEl) {
+            //     console.error('❌ 未找到 #quickInquiry 元素');
+            //     return;
+            // }
+            // console.log('✅ 找到 #quickInquiry 元素');
 
             // ✅ 关键：使用 await 等待 API 返回结果
             const enabled = await getFormEnabledFromAPI();
@@ -2472,7 +2472,7 @@
       };
 
       // ============ 事件绑定 ============
-      toggleBtn.addEventListener('click', toggleViewer);
+      // toggleBtn.addEventListener('click', toggleViewer);
 
       overlay.addEventListener('click', function (e) {
         if (e.target === overlay) {
