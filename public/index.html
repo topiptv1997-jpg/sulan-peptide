@@ -1530,11 +1530,11 @@
         // 表单提交功能
         // ========================================
         function setupFormSubmit() {
-            const form = document.getElementById('inquiryForm');
-            if (!form) {
-                console.warn('⚠️ 未找到表单元素');
-                return;
-            }
+            // const form = document.getElementById('inquiryForm');
+            // if (!form) {
+            //     console.warn('⚠️ 未找到表单元素');
+            //     return;
+            // }
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();                
@@ -1587,7 +1587,7 @@
             if (enabled === true) {
                 inquiryEl.classList.remove('hidden');
                 console.log('✅ 表单已显示 (form_enabled = true)');
-                // setupFormSubmit();
+                setupFormSubmit();
             } else {
                 inquiryEl.classList.add('hidden');
                 console.log('🔒 表单已隐藏 (form_enabled = false)');
