@@ -1589,6 +1589,12 @@
                     btn.style.background = '#1f8b4c';
                     btn.disabled = false;
 
+                                  // ✅ 清空表单数据
+                document.getElementById('inq_name').value = '';
+                document.getElementById('inq_contact').value = '';
+                document.getElementById('inq_message').value = '';
+                console.log('🗑️ 表单数据已清空');
+
                     // 5秒后恢复原始状态
                     setTimeout(() => {
                         btn.textContent = originalText;
