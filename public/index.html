@@ -1584,15 +1584,22 @@
             console.log('📋 类型:', typeof enabled);
 
             // 根据配置显示或隐藏
+            // if (enabled === true) {
+            //     inquiryEl.classList.remove('hidden');
+            //     console.log('✅ 表单已显示 (form_enabled = true)');
+            //     setupFormSubmit();
+            // } else {
+            //     inquiryEl.classList.add('hidden');
+            //     console.log('🔒 表单已隐藏 (form_enabled = false)');
+            // }
             if (enabled === true) {
-                inquiryEl.classList.remove('hidden');
-                console.log('✅ 表单已显示 (form_enabled = true)');
-                setupFormSubmit();
-            } else {
-                inquiryEl.classList.add('hidden');
-                console.log('🔒 表单已隐藏 (form_enabled = false)');
-            }
-            
+    inquiryEl.style.display = 'flex';
+    console.log('✅ 表单已显示');
+    setupFormSubmit();
+} else {
+    inquiryEl.style.display = 'none';
+    console.log('🔒 表单已隐藏');
+}
             console.log('✅ 初始化完成');
         }
 
