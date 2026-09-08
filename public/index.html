@@ -1495,60 +1495,34 @@
           </div>
 
 <!-- ===== JavaScript：从配置读取 form_enabled ===== -->
-<script>
-    (function() {
-        // ========================================
-        // 方式1：从全局配置对象读取（推荐）
-        // ========================================
-        // function getFormEnabled() {
-        //     // 检查 window.APP_CONFIG 是否存在
-        //     if (window.APP_CONFIG && typeof window.APP_CONFIG.form_enabled !== 'undefined') {
-        //         return window.APP_CONFIG.form_enabled === true;
-        //     }
-            
-        //     // 如果 APP_CONFIG 不存在，默认返回 false
-        //     return false;
-        // }
+    <!-- ===== JavaScript ===== -->
+    <script>
+        console.log('✅ 脚本开始执行');
 
         // ========================================
-        // 方式2：从 API 接口读取（如需要）
+        // 从 API 获取配置
         // ========================================
         async function getFormEnabledFromAPI() {
             try {
+                console.log('🔄 正在请求 API...');
                 const response = await fetch('/api/public/config');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
-                return data.form_enabled === true;
+                console.log('✅ API 返回数据:', data);
+                
+                // 获取 form_enabled 值
+                const enabled = data.form_enabled === true;
+                console.log('📋 form_enabled 原始值:', data.form_enabled);
+                console.log('📋 form_enabled 布尔值:', enabled);
+                
+                return enabled;
             } catch (error) {
-                console.error('获取配置失败:', error);
+                console.error('❌ 获取配置失败:', error);
                 return false; // 默认隐藏
-            }
-        }
-
-        // ========================================
-        // 初始化函数
-        // ========================================
-        function initQuickInquiry() {
-            // const inquiryEl = document.getElementById('quickInquiry');
-            // if (!inquiryEl) {
-            //     console.error('❌ 未找到 quickInquiry 元素');
-            //     return;
-            // }
-
-            // 获取 form_enabled 的值
-            const enabled = getFormEnabledFromAPI();
-            
-            console.log('📋 form_enabled 值:', enabled);
-            // console.log('📋 APP_CONFIG:', window.APP_CONFIG);
-
-            // 根据 enabled 显示或隐藏
-            if (enabled === true) {
-                inquiryEl.classList.remove('hidden');
-                console.log('✅ 表单已显示 (form_enabled = true)');
-                // 启用表单提交功能
-                setupFormSubmit();
-            } else {
-                inquiryEl.classList.add('hidden');
-                console.log('🔒 表单已隐藏 (form_enabled = false)');
             }
         }
 
@@ -1557,55 +1531,85 @@
         // ========================================
         function setupFormSubmit() {
             const form = document.getElementById('inquiryForm');
-            if (!form) return;
+            if (!form) {
+                console.warn('⚠️ 未找到表单元素');
+                return;
+            }
 
-            // 移除之前的事件监听（防止重复绑定）
-            form.removeEventListener('submit', handleFormSubmit);
-            form.addEventListener('submit', handleFormSubmit);
-        }
-
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            const btn = this.querySelector('.btn-send');
-            const originalText = btn.textContent;
-            
-            // 提交中状态
-            btn.textContent = '⏳ Sending...';
-            btn.style.background = '#1a3a5c';
-            btn.disabled = true;
-
-            // 模拟提交
-            setTimeout(() => {
-                btn.textContent = '✅ Sent!';
-                btn.style.background = '#1f8b4c';
-                btn.disabled = false;
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                console.log('📋 表单数据：', {
-                    name: document.getElementById('inq_name')?.value || '',
-                    contact: document.getElementById('inq_contact')?.value || '',
-                    message: document.getElementById('inq_message')?.value || ''
-                });
-                
-                // 2秒后恢复按钮
+                const btn = this.querySelector('.btn-send');
+                const originalText = btn.textContent;
+                btn.textContent = '⏳ Sending...';
+                btn.style.background = '#1a3a5c';
+                btn.disabled = true;
+
                 setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = '#0b1e33';
-                }, 2000);
-            }, 1200);
+                    btn.textContent = '✅ Sent!';
+                    btn.style.background = '#1f8b4c';
+                    btn.disabled = false;
+                    console.log('📋 表单数据：', {
+                        name: document.getElementById('inq_name')?.value || '',
+                        contact: document.getElementById('inq_contact')?.value || '',
+                        message: document.getElementById('inq_message')?.value || ''
+                    });
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '#0b1e33';
+                    }, 2000);
+                }, 1200);
+            });
+            
+            console.log('✅ 表单提交事件已绑定');
         }
 
         // ========================================
-        // 确保 DOM 加载完成后执行
+        // 初始化（使用 await 等待 API 返回）
+        // ========================================
+        async function initQuickInquiry() {
+            console.log('🔄 开始初始化...');
+            
+            const inquiryEl = document.getElementById('quickInquiry');
+            if (!inquiryEl) {
+                console.error('❌ 未找到 #quickInquiry 元素');
+                return;
+            }
+            console.log('✅ 找到 #quickInquiry 元素');
+
+            // ✅ 关键：使用 await 等待 API 返回结果
+            const enabled = await getFormEnabledFromAPI();
+            
+            // 现在 enabled 是 true 或 false，不是 Promise
+            console.log('📋 form_enabled 最终值:', enabled);
+            console.log('📋 类型:', typeof enabled);
+
+            // 根据配置显示或隐藏
+            if (enabled === true) {
+                inquiryEl.classList.remove('hidden');
+                console.log('✅ 表单已显示 (form_enabled = true)');
+                setupFormSubmit();
+            } else {
+                inquiryEl.classList.add('hidden');
+                console.log('🔒 表单已隐藏 (form_enabled = false)');
+            }
+            
+            console.log('✅ 初始化完成');
+        }
+
+        // ========================================
+        // 执行初始化
         // ========================================
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initQuickInquiry);
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('✅ DOMContentLoaded 事件触发');
+                initQuickInquiry();
+            });
         } else {
+            console.log('✅ DOM 已加载，立即执行');
             initQuickInquiry();
         }
-
-    })();
-</script>
+    </script>
 
 
         </div>
