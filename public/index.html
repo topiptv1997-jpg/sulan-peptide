@@ -1313,309 +1313,335 @@
 
           <!-- ===== 嵌入到 index.html 的 body 中 ===== -->
 
-          <style>
-            /* ===== 左右两栏容器 ===== */
-            .quick-inquiry {
-              display: flex;
-              gap: 40px;
-              /* max-width: 100%; */
-              max-width: 1280px;
-              margin: 40px auto;
-              padding: 40px 48px;
-              background: #ffffff;
-              border-radius: 16px;
-              box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-              align-items: stretch;
-            }
+         <style>
+    /* ===== 左右两栏容器 ===== */
+    .quick-inquiry {
+        display: flex;
+        gap: 40px;
+        /* max-width: 100%; */
+        max-width: 1280px;
+        margin: 40px auto;
+        padding: 40px 48px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        align-items: stretch;
+    }
 
-            /* ===== 左侧 ===== */
-            .quick-inquiry .left {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              padding-right: 20px;
-            }
+    /* ===== 左侧 ===== */
+    .quick-inquiry .left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-right: 20px;
+    }
 
-            .quick-inquiry .left .badge {
-              font-size: 13px;
-              font-weight: 700;
-              color: #1a4b7a;
-              letter-spacing: 0.5px;
-              margin-bottom: 8px;
-            }
+    .quick-inquiry .left .badge {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1a4b7a;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
 
-            .quick-inquiry .left h2 {
-              font-size: 32px;
-              font-weight: 700;
-              color: #0b1e33;
-              margin: 0 0 12px 0;
-              line-height: 1.2;
-            }
+    .quick-inquiry .left h2 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #0b1e33;
+        margin: 0 0 12px 0;
+        line-height: 1.2;
+    }
 
-            .quick-inquiry .left p {
-              font-size: 15px;
-              line-height: 1.7;
-              color: #2d4055;
-              margin: 0;
-            }
+    .quick-inquiry .left p {
+        font-size: 15px;
+        line-height: 1.7;
+        color: #2d4055;
+        margin: 0;
+    }
 
-            .quick-inquiry .left p strong {
-              color: #0b1e33;
-            }
+    .quick-inquiry .left p strong {
+        color: #0b1e33;
+    }
 
-            /* ===== 右侧 ===== */
-            .quick-inquiry .right {
-              flex: 1.1;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-            }
+    /* ===== 右侧 ===== */
+    .quick-inquiry .right {
+        flex: 1.1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-            .quick-inquiry .form-group {
-              margin-bottom: 16px;
-            }
+    .quick-inquiry .form-group {
+        margin-bottom: 16px;
+    }
 
-            .quick-inquiry .form-group:last-of-type {
-              margin-bottom: 20px;
-            }
+    .quick-inquiry .form-group:last-of-type {
+        margin-bottom: 20px;
+    }
 
-            .quick-inquiry .form-group label {
-              display: block;
-              font-size: 14px;
-              font-weight: 600;
-              color: #1e2f40;
-              margin-bottom: 5px;
-            }
+    .quick-inquiry .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e2f40;
+        margin-bottom: 5px;
+    }
 
-            .quick-inquiry .form-group input,
-            .quick-inquiry .form-group textarea {
-              width: 100%;
-              padding: 11px 15px;
-              font-size: 14px;
-              font-family: inherit;
-              background: #f8fafc;
-              border: 1.5px solid #e2e8f0;
-              border-radius: 10px;
-              transition: all 0.2s;
-              color: #0b1e33;
-              outline: none;
-              box-sizing: border-box;
-            }
+    .quick-inquiry .form-group input,
+    .quick-inquiry .form-group textarea {
+        width: 100%;
+        padding: 11px 15px;
+        font-size: 14px;
+        font-family: inherit;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.2s;
+        color: #0b1e33;
+        outline: none;
+        box-sizing: border-box;
+    }
 
-            .quick-inquiry .form-group input:focus,
-            .quick-inquiry .form-group textarea:focus {
-              border-color: #1a4b7a;
-              background: #ffffff;
-              box-shadow: 0 0 0 3px rgba(26, 75, 122, 0.08);
-            }
+    .quick-inquiry .form-group input:focus,
+    .quick-inquiry .form-group textarea:focus {
+        border-color: #1a4b7a;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(26, 75, 122, 0.08);
+    }
 
-            .quick-inquiry .form-group input::placeholder,
-            .quick-inquiry .form-group textarea::placeholder {
-              color: #aab9cd;
-            }
+    .quick-inquiry .form-group input::placeholder,
+    .quick-inquiry .form-group textarea::placeholder {
+        color: #aab9cd;
+    }
 
-            .quick-inquiry .form-group textarea {
-              resize: vertical;
-              min-height: 72px;
-              line-height: 1.5;
-            }
+    .quick-inquiry .form-group textarea {
+        resize: vertical;
+        min-height: 72px;
+        line-height: 1.5;
+    }
 
-            /* 提交按钮 */
-            .quick-inquiry .btn-send {
-              width: 100%;
-              padding: 13px 20px;
-              background: #087451;
-              color: #ffffff;
-              font-size: 16px;
-              font-weight: 600;
-              border: none;
-              border-radius: 40px;
-              cursor: pointer;
-              transition: background 0.2s;
-            }
+    /* 提交按钮 */
+    .quick-inquiry .btn-send {
+        width: 100%;
+        padding: 13px 20px;
+        background: #087451;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 40px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
 
-            .quick-inquiry .btn-send:hover {
-              background: #cc9809;
-            }
+    .quick-inquiry .btn-send:hover {
+        background: #cc9809;
+    }
 
-            /* ===== 移动端响应式 ===== */
-            @media (max-width: 768px) {
-              .quick-inquiry {
-                flex-direction: column;
-                padding: 58px 10px;
-                gap: 24px;
-                margin: 20px 12px;
-              }
+    .quick-inquiry .btn-send:disabled {
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
 
-              .quick-inquiry .left {
-                padding-right: 0;
-              }
-
-              .quick-inquiry .left h2 {
-                font-size: 26px;
-              }
-            }
-          </style>
-
-          <!-- ===== HTML 结构 ===== -->
-          <div class="quick-inquiry"  id="quickInquiry">
-            <!-- 左侧：文字 -->
-            <div class="left">
-              <div class="badge">QUICK MESSAGE</div>
-              <h1>Send a short sourcing request</h1>
-              <p>
-                Leave yourproduct list, quantity, destination, or documentation question here.
-                This shorter form helps buyers contact Sulan without opening the full Contact page.
-              </p>
-            </div>
-
-            <!-- 右侧：表单 -->
-            <div class="right">              
-                <form id="inquiryForm" action="/go/whatsapp" method="GET">
-                <div class="form-group">
-                  <label for="inq_name">Name or company</label>
-                  <input type="text" id="inq_name" name="name" placeholder="Name or company">
-                </div>
-
-                <div class="form-group">
-                  <label for="inq_contact">Email or WhatsApp</label>
-                  <input type="text" id="inq_contact" name="contact" placeholder="Email or WhatsApp">
-                </div>
-
-                <div class="form-group">
-                  <label for="inq_message">Product, quantity, destination, and message</label>
-                  <textarea id="inq_message" name="message" rows="3"
-                    placeholder="Product, quantity, destination, and message"></textarea>
-                </div>
-
-                <button type="submit" class="btn-send">Send Message</button>
-              </form>
-            </div>
-          </div>
-
-<!-- ===== JavaScript：从配置读取 form_enabled ===== -->
-    <!-- ===== JavaScript ===== -->
-    <script>
-        console.log('✅ 脚本开始执行');
-
-        // ========================================
-        // 从 API 获取配置
-        // ========================================
-        async function getFormEnabledFromAPI() {
-            try {
-                console.log('🔄 正在请求 API...');
-                const response = await fetch('/api/public/config');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('✅ API 返回数据:', data);
-                
-                // 获取 form_enabled 值
-                const enabled = data.form_enabled === true;
-                console.log('📋 form_enabled 原始值:', data.form_enabled);
-                console.log('📋 form_enabled 布尔值:', enabled);
-                
-                return enabled;
-            } catch (error) {
-                console.error('❌ 获取配置失败:', error);
-                return false; // 默认隐藏
-            }
+    /* ===== 移动端响应式 ===== */
+    @media (max-width: 768px) {
+        .quick-inquiry {
+            flex-direction: column;
+            padding: 58px 10px;
+            gap: 24px;
+            margin: 20px 12px;
         }
 
-        // ========================================
-        // 表单提交功能
-        // ========================================
-        function setupFormSubmit() {
-            // const form = document.getElementById('inquiryForm');
-            // if (!form) {
-            //     console.warn('⚠️ 未找到表单元素');
-            //     return;
-            // }
+        .quick-inquiry .left {
+            padding-right: 0;
+        }
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();                
-                const btn = this.querySelector('.btn-send');
-                const originalText = btn.textContent;
-                btn.textContent = '⏳ Sending...';
-                btn.style.background = '#1a3a5c';
-                btn.disabled = true;
+        .quick-inquiry .left h2 {
+            font-size: 26px;
+        }
+    }
+</style>
 
-                setTimeout(() => {
-                    btn.textContent = '✅ Sent!';
+<!-- ===== HTML 结构 ===== -->
+<div class="quick-inquiry" id="quickInquiry">
+    <!-- 左侧：文字 -->
+    <div class="left">
+        <div class="badge">QUICK MESSAGE</div>
+        <h1>Send a short sourcing request</h1>
+        <p>
+            Leave your product list, quantity, destination, or documentation question here.
+            This shorter form helps buyers contact Sultan without opening the full Contact page.
+        </p>
+    </div>
+
+    <!-- 右侧：表单 -->
+    <div class="right">
+        <!-- ✅ 移除 action 和 method，由 JavaScript 控制 -->
+        <form id="inquiryForm">
+            <div class="form-group">
+                <label for="inq_name">Name or company</label>
+                <input type="text" id="inq_name" name="name" placeholder="Name or company">
+            </div>
+
+            <div class="form-group">
+                <label for="inq_contact">Email or WhatsApp</label>
+                <input type="text" id="inq_contact" name="contact" placeholder="Email or WhatsApp">
+            </div>
+
+            <div class="form-group">
+                <label for="inq_message">Product, quantity, destination, and message</label>
+                <textarea id="inq_message" name="message" rows="3" placeholder="Product, quantity, destination, and message"></textarea>
+            </div>
+
+            <button type="submit" class="btn-send" id="sendBtn">Send Message</button>
+        </form>
+    </div>
+</div>
+
+<!-- ===== JavaScript ===== -->
+<script>
+    console.log('✅ 脚本开始执行');
+
+    // ========================================
+    // 从 API 获取配置
+    // ========================================
+    async function getFormEnabledFromAPI() {
+        try {
+            console.log('🔄 正在请求 API...');
+            const response = await fetch('/api/public/config');
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('✅ API 返回数据:', data);
+
+            const enabled = data.form_enabled === true;
+            console.log('📋 form_enabled 原始值:', data.form_enabled);
+            console.log('📋 form_enabled 布尔值:', enabled);
+
+            return enabled;
+        } catch (error) {
+            console.error('❌ 获取配置失败:', error);
+            return false;
+        }
+    }
+
+    // ========================================
+    // 表单提交功能（新窗口打开 + 倒计时）
+    // ========================================
+    function setupFormSubmit() {
+        const form = document.getElementById('inquiryForm');
+        const btn = document.getElementById('sendBtn');
+
+        if (!form || !btn) {
+            console.warn('⚠️ 未找到表单或按钮元素');
+            return;
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 收集表单数据
+            const name = document.getElementById('inq_name')?.value || '';
+            const contact = document.getElementById('inq_contact')?.value || '';
+            const message = document.getElementById('inq_message')?.value || '';
+
+            console.log('📋 表单数据：', { name, contact, message });
+
+            // ========================================
+            // 1. 按钮变为"正在提交..."状态
+            // ========================================
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ 正在提交...';
+            btn.style.background = '#1a3a5c';
+            btn.disabled = true;
+
+            // ========================================
+            // 2. 新窗口打开 WhatsApp
+            // ========================================
+            const newWindow = window.open('/go/whatsapp', '_blank');
+
+            // 如果浏览器拦截了弹窗
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                console.warn('⚠️ 弹窗被拦截');
+                // 可选：提示用户
+                // alert('请允许弹窗，或手动点击打开');
+            }
+
+            // ========================================
+            // 3. 10秒倒计时，然后显示"✅ 已发送"
+            // ========================================
+            let countdown = 10;
+            btn.textContent = `⏳ 正在提交... (${countdown}s)`;
+
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    btn.textContent = `⏳ 正在提交... (${countdown}s)`;
+                } else {
+                    clearInterval(timer);
+                    // 显示成功状态
+                    btn.textContent = '✅ 已发送';
                     btn.style.background = '#1f8b4c';
                     btn.disabled = false;
-                    console.log('📋 表单数据：', {
-                        name: document.getElementById('inq_name')?.value || '',
-                        contact: document.getElementById('inq_contact')?.value || '',
-                        message: document.getElementById('inq_message')?.value || ''
-                    });
+
+                    // 5秒后恢复原始状态
                     setTimeout(() => {
                         btn.textContent = originalText;
-                        btn.style.background = '#0b1e33';
-                    }, 2000);
-                }, 1200);
-            });
-            
-            console.log('✅ 表单提交事件已绑定');
+                        btn.style.background = '#087451';
+                    }, 5000);
+                }
+            }, 1000);
+        });
+
+        console.log('✅ 表单提交事件已绑定');
+    }
+
+    // ========================================
+    // 初始化
+    // ========================================
+    async function initQuickInquiry() {
+        console.log('🔄 开始初始化...');
+
+        const inquiryEl = document.getElementById('quickInquiry');
+        if (!inquiryEl) {
+            console.error('❌ 未找到 #quickInquiry 元素');
+            return;
         }
+        console.log('✅ 找到 #quickInquiry 元素');
 
-        // ========================================
-        // 初始化（使用 await 等待 API 返回）
-        // ========================================
-        async function initQuickInquiry() {
-            console.log('🔄 开始初始化...');
-            
-            const inquiryEl = document.getElementById('quickInquiry');
-            if (!inquiryEl) {
-                console.error('❌ 未找到 #quickInquiry 元素');
-                // return;
-            }
-            console.log('✅ 找到 #quickInquiry 元素');
+        const enabled = await getFormEnabledFromAPI();
 
-            // ✅ 关键：使用 await 等待 API 返回结果
-            const enabled = await getFormEnabledFromAPI();
-            
-            // 现在 enabled 是 true 或 false，不是 Promise
-            console.log('📋 form_enabled 最终值:', enabled);
-            console.log('📋 类型:', typeof enabled);
+        console.log('📋 form_enabled 最终值:', enabled);
+        console.log('📋 类型:', typeof enabled);
 
-            // 根据配置显示或隐藏
-            // if (enabled === true) {
-            //     inquiryEl.classList.remove('hidden');
-            //     console.log('✅ 表单已显示 (form_enabled = true)');
-            //     setupFormSubmit();
-            // } else {
-            //     inquiryEl.classList.add('hidden');
-            //     console.log('🔒 表单已隐藏 (form_enabled = false)');
-            // }
-            if (enabled === true) {
-    inquiryEl.style.display = 'flex';
-    console.log('✅ 表单已显示');
-    setupFormSubmit();
-} else {
-    inquiryEl.style.display = 'none';
-    console.log('🔒 表单已隐藏');
-}
-            console.log('✅ 初始化完成');
-        }
-
-        // ========================================
-        // 执行初始化
-        // ========================================
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('✅ DOMContentLoaded 事件触发');
-                initQuickInquiry();
-            });
+        if (enabled === true) {
+            inquiryEl.style.display = 'flex';
+            console.log('✅ 表单已显示');
+            setupFormSubmit();
         } else {
-            console.log('✅ DOM 已加载，立即执行');
-            initQuickInquiry();
+            inquiryEl.style.display = 'none';
+            console.log('🔒 表单已隐藏');
         }
-    </script>
+        console.log('✅ 初始化完成');
+    }
+
+    // ========================================
+    // 执行初始化
+    // ========================================
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOMContentLoaded 事件触发');
+            initQuickInquiry();
+        });
+    } else {
+        console.log('✅ DOM 已加载，立即执行');
+        initQuickInquiry();
+    }
+</script>
 
 
         </div>
