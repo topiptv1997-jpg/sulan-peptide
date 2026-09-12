@@ -625,10 +625,10 @@ function waUrl(
   const clean =
     normalizePhone(number);
 
-  // const base =
-  //   `https://wa.me/${clean}`;
-    const base =
-    `https://web.whatsapp.com/send/?phone=${clean}&amp;text&amp;type=phone_number&amp;app_absent=0`;
+  const base =
+    `https://wa.me/${clean}`;
+    // const base =
+    // `https://web.whatsapp.com/send/?phone=${clean}&amp;text&amp;type=phone_number&amp;app_absent=0`;
 
   if (!message) {
     return base;
