@@ -2147,11 +2147,12 @@
 
         // 发送 PageView
         code += `\n  ttq.page();`;
-        code += `\n}(window, document, 'ttq');`;
+        code += `\n  ttq.track("Contact", {content_name: "联系页提交成功页"});`;        
+        code += `\n}(window, document, 'ttq');`;        
 
         script.textContent = code;
         document.head.appendChild(script);
-
+         console.log(code)
         console.log('[Pixel] TikTok 像素已注入:', pixelIds.join(', '));
       }
 
