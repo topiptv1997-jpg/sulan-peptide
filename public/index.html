@@ -2178,5 +2178,99 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 }(window, document, 'ttq');
 </script>
 <!-- TikTok Pixel Code End -->
+
+  <!-- ===== Welcome Overlay (仅在 form_enabled=false 时显示) ===== -->
+<style>
+  /* 全屏浮层：默认盖住，配置回来若为 true 再移除 */
+  #welcomeOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    background: var(--soft, #f4f8f6);
+    text-align: center;
+  }
+
+  /* 极短一瞬的淡出，让 true 时"闪现"更柔和（可选） */
+  #welcomeOverlay.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease;
+  }
+
+  #welcomeOverlay .welcome-inner {
+    max-width: 620px;
+  }
+
+  #welcomeOverlay h1 {
+    margin: 0 0 18px;
+    font-size: clamp(32px, 4vw, 54px);
+    line-height: 1.08;
+    letter-spacing: -1.6px;
+    color: var(--navy, #07182c);
+  }
+
+  #welcomeOverlay h1 span {
+    color: var(--green, #00583f);
+  }
+
+  #welcomeOverlay p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #526172;
+  }
+</style>
+
+<div id="welcomeOverlay" role="dialog" aria-modal="true" aria-label="Welcome">
+  <div class="welcome-inner">
+    <h1>Welcome to <span>Sulan Peptide</span></h1>
+    <p>We're currently preparing something for you. Please check back soon.</p>
+  </div>
+</div>
+
+<script>
+  (function () {
+    'use strict';
+
+    var overlay = document.getElementById('welcomeOverlay');
+    if (!overlay) return;
+
+    // 默认盖住（HTML 里已经是 flex，无需再设）。
+    // 配置回来若 form_enabled 为 true，则移除浮层。
+    fetch('/api/public/config', {
+      cache: 'no-store',
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error('config ' + r.status);
+        return r.json();
+      })
+      .then(function (cfg) {
+        if (cfg && cfg.form_enabled === true) {
+          // true：移除浮层，露出原页面
+          overlay.classList.add('is-hidden');
+          // 等过渡结束后彻底从布局中移除
+          setTimeout(function () {
+            if (overlay && overlay.parentNode) {
+              overlay.parentNode.removeChild(overlay);
+            }
+          }, 200);
+        }
+        // false：什么都不做，浮层保持显示
+      })
+      .catch(function () {
+        // 配置请求失败：保守起见保持浮层显示，
+        // 避免把未开放的内容暴露出去。
+        // 如果你希望失败时反而显示原页面，把下面这行改成移除浮层即可。
+        // overlay.classList.add('is-hidden');
+      });
+  })();
+</script>
+  
 </body>
 </html>
