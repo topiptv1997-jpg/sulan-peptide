@@ -1798,14 +1798,14 @@
           const cfg = await r.json();
 
           // ============ 更新顶部栏 WhatsApp 号码 ============
-          const whatsappNumbers = cfg.whatsapp || [];
-          const activeNumber = whatsappNumbers.find(w => w.active === true);
-          const topbarContact = document.getElementById('topbar-contact');
-          if (topbarContact && activeNumber) {
-            topbarContact.innerHTML = 'info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp +' + activeNumber.id;
-          } else if (topbarContact) {
-            topbarContact.innerHTML = 'info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp';
-          }
+          // const whatsappNumbers = cfg.whatsapp || [];
+          // const activeNumber = whatsappNumbers.find(w => w.active === true);
+          // const topbarContact = document.getElementById('topbar-contact');
+          // if (topbarContact && activeNumber) {
+          //   topbarContact.innerHTML = 'info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp +' + activeNumber.id;
+          // } else if (topbarContact) {
+          //   topbarContact.innerHTML = 'info@sulanpeptide.us&nbsp;&nbsp;&nbsp; WhatsApp';
+          // }
 
           // ============ 原有的表单逻辑保持不变 ============    
 
